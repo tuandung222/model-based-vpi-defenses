@@ -19,16 +19,20 @@ def lint_file(fpath, auto_fix=False):
     issues = []
     modified_content = content
 
+    # Strip code blocks and inline code for \tag check
+    no_code_content = re.sub(r'```.*?```', '', content, flags=re.DOTALL)
+    no_code_content = re.sub(r'`.*?`', '', no_code_content)
+
     # 1. Check for \\tag{...}
-    tag_matches = list(re.finditer(r'\\tag\{([^}]+)\}', content))
+    tag_matches = list(re.finditer(r'\\tag\{([^}]+)\}', no_code_content))
     if tag_matches:
         for m in tag_matches:
             tag_val = m.group(1)
-            line_no = content[:m.start()].count("\n") + 1
+            line_no = no_code_content[:m.start()].count("\n") + 1
             issues.append(f"Line {line_no}: Found '\\tag{{{tag_val}}}' (triggers 'KaTeX parse error: \\tag works only in display equations'). Use '\\qquad ({tag_val})' instead.")
         if auto_fix:
-            # Replace \tag{X} with \qquad (X)
-            modified_content = re.sub(r'\\tag\{([^}]+)\}', r'\\qquad (\1)', modified_content)
+            # Replace \tag{X} with \qquad (X) in actual content (excluding code)
+            modified_content = re.sub(r'(?<!`)\\tag\{([^}]+)\}(?!`)', r'\\qquad (\1)', modified_content)
 
     # 2. Check for local file:/// URIs
     if "file:///" in content:

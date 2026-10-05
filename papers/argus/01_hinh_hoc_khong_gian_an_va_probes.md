@@ -16,7 +16,9 @@
 
 Trong một hệ thống tác tử đa phương thức (Multimodal Agent), mỗi mẫu dữ liệu đầu vào khi bị tấn công bởi Tiêm Nhiễm Chỉ Thị Gián Tiếp (Indirect Prompt Injection - IPI) được chuẩn hóa dưới dạng một bộ 7 thành phần hình thức:
 
-$$\mathcal{S} = \left( U, M, I, T, A^U, A^I, \mathcal{W} \right)$$
+$$
+\mathcal{S} = \left( U, M, I, T, A^U, A^I, \mathcal{W} \right)
+$$
 
 Trong đó:
 - $U$: Chỉ thị hợp pháp xuất phát từ người dùng có thẩm quyền (ví dụ: *"Hãy mô tả chi tiết các vật thể trong bức ảnh"*).
@@ -34,15 +36,21 @@ Trong đó:
 
 Khi chuỗi đầu vào được đóng gói qua khuôn mẫu hội thoại (Chat Template) $\mathcal{T}(\cdot)$:
 
-$$x_{\text{prefix}} = \mathcal{T}\left(U, \mathcal{W}(M, T \oplus I)\right)$$
+$$
+x_{\text{prefix}} = \mathcal{T}\left(U, \mathcal{W}(M, T \oplus I)\right)
+$$
 
 Bộ mã hóa phương thức (Vision/Audio Encoder) chiếu $M$ thành chuỗi embedding $H_M = \{h_1^M, \dots, h_K^M\}$, trong khi tokenizer ngôn ngữ chiếu $U$ thành $H_U = \{h_1^U, \dots, h_L^U\}$. Hai chuỗi này được nối lại và đưa vào các khối Transformer Decoder:
 
-$$H^{(0)} = [H_U \parallel H_M]$$
+$$
+H^{(0)} = [H_U \parallel H_M]
+$$
 
 Tại mỗi tầng $l \in \{1, \dots, L_{\text{total}}\}$, cơ chế tự chú ý đa đầu (Multi-Head Self-Attention) tính toán ma trận tương tác:
 
-$$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V$$
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V
+$$
 
 Trong trường hợp bình thường không có mã độc, các token truy vấn $Q$ xuất phát từ $U$ sẽ phân bổ trọng số chú ý chủ yếu vào các vùng biểu diễn thị giác hữu ích trong $H_M$. Tuy nhiên, khi xuất hiện cụm kích hoạt $T$ và chỉ thị $I$, các token độc hại tạo ra các "điểm hút chú ý cực mạnh" (Attention Sinks). Trạng thái kích hoạt ẩn $a_l \in \mathbb{R}^d$ của token cuối cùng rơi vào trạng thái xung đột lưỡng cực:
 - Hoặc hội tụ về attractor basin của tác vụ người dùng $U$ (hành vi lành tính).
@@ -94,26 +102,43 @@ flowchart TD
 ### 2.1. Xây Dựng Cặp Dữ Liệu Đối Kháng
 
 Từ mẫu đầu vào chứa tiêm nhiễm $x_{\text{prefix}}$, nhóm nghiên cứu ghép hai chuỗi phản hồi mục tiêu đại diện cho hai hành vi loại trừ lẫn nhau:
-1. **Chuỗi hành vi tuân thủ người dùng (Class 0 - Benign):**
-   $$x_{\text{user}} = x_{\text{prefix}} \oplus A^U, \quad \text{với nhãn } y = 0$$
-2. **Chuỗi hành vi tuân thủ kẻ tấn công (Class 1 - Hijacked):**
-   $$x_{\text{attacker}} = x_{\text{prefix}} \oplus A^I, \quad \text{với nhãn } y = 1$$
+
+1. **Chuỗi hành vi tuân thủ người dùng (Class 0 — Benign):**
+
+$$
+x_{\text{user}} = x_{\text{prefix}} \oplus A^U \quad (\text{nhãn } y = 0)
+$$
+
+2. **Chuỗi hành vi tuân thủ kẻ tấn công (Class 1 — Hijacked):**
+
+$$
+x_{\text{attacker}} = x_{\text{prefix}} \oplus A^I \quad (\text{nhãn } y = 1)
+$$
 
 ### 2.2. Trích Xuất Vector Kích Hoạt & Huấn Luyện Probe
 
 Cho mỗi tầng $l \in \{1, \dots, L\}$ của bộ giải mã Transformer, vector kích hoạt ẩn $a_l \in \mathbb{R}^d$ được trích xuất tại vị trí token cuối cùng của chuỗi đầu vào (Last Token Index):
 
-$$a_l = \text{HiddenState}^{(l)}[\text{last\_token\_idx}]$$
+$$
+a_l = h_l[T_{\text{last}}] \in \mathbb{R}^d
+$$
+
+trong đó $h_l[T_{\text{last}}]$ biểu thị trạng thái kích hoạt của token cuối cùng ở tầng $l$.
 
 Một bộ phân loại hồi quy logistic tuyến tính (Linear Logistic Regression Probe) $P_l$ được huấn luyện độc lập cho từng tầng:
 
-$$P_l(a_l) = \sigma\left( w_l \cdot a_l + b_l \right) = \frac{1}{1 + \exp\left( -(w_l \cdot a_l + b_l) \right)}$$
+$$
+P_l(a_l) = \sigma\left( w_l \cdot a_l + b_l \right) = \frac{1}{1 + \exp\left( -(w_l \cdot a_l + b_l) \right)}
+$$
 
 Trong đó:
 - $w_l \in \mathbb{R}^d$: Vector trọng số pháp tuyến của siêu phẳng phân chia trong không gian biểu diễn ẩn của tầng $l$.
 - $b_l \in \mathbb{R}$: Hệ số chệch (bias term).
 - Siêu phẳng phân chia ranh giới quyết định được định nghĩa tại mức logit bằng 0:
-  $$\mathcal{H}_l = \{ x \in \mathbb{R}^d \mid w_l \cdot x + b_l = 0 \}$$
+
+$$
+\mathcal{H}_l = \left\{ x \in \mathbb{R}^d \;\middle|\; w_l \cdot x + b_l = 0 \right\}
+$$
 
 ```mermaid
 flowchart LR
@@ -188,14 +213,18 @@ Khi kiểm tra độ chính xác phân loại của các linear probe trên tậ
 
 Dựa trên vector pháp tuyến $w_l$ của probe, chuẩn hóa thành vector đơn vị:
 
-$$v_{\text{att}} = \frac{w_l}{\|w_l\|_2}, \quad v_{\text{def}} = -\frac{w_l}{\|w_l\|_2}$$
+$$
+v_{\text{att}} = \frac{w_l}{\|w_l\|_2}, \quad v_{\text{def}} = -\frac{w_l}{\|w_l\|_2}
+$$
 
 Thực hiện phép can thiệp nắn dòng kích hoạt tại tầng $l$ trong quá trình suy luận:
 
-$$\mathcal{S}_l(\alpha, v) = a_l + \alpha \cdot v$$
+$$
+\mathcal{S}_l(\alpha, v) = a_l + \alpha \cdot v
+$$
 
 Thực nghiệm cho thấy:
-- Khi can thiệp theo hướng $v_{\text{def}}$ với hệ số $\alpha > 0$, tỷ lệ tấn công thành công ($AIA$) giảm dốc đứng từ $25.1\%$ xuống **$0\%$**. Hành vi của mô hình lập tức quay trở lại thực thi lệnh người dùng $U$.
+- Khi can thiệp theo hướng $v_{\text{def}}$ với hệ số $\alpha > 0$, tỷ lệ tấn công thành công ($AIA$) giảm dốc đứng từ $25.1\%$ xuống **0.0%**. Hành vi của mô hình lập tức quay trở lại thực thi lệnh người dùng $U$.
 - Khi can thiệp theo hướng $v_{\text{att}}$, mô hình bị ép buộc thực thi lệnh tấn công ngay cả khi đầu vào không chứa cụm trigger $T$.
 - **Ranh giới đánh đổi:** Tuy nhiên, nếu tiếp tục tăng $\alpha$ vượt qua một ngưỡng tới hạn $\alpha_{\text{crit}}$, độ chính xác trên nhiệm vụ người dùng ($UIA$) bị suy thoái nghiêm trọng do vector kích hoạt bị đẩy văng ra khỏi miền phân phối ngôn ngữ tự nhiên.
 
@@ -217,9 +246,13 @@ Một hiện tượng bất ngờ xuất hiện khi nghiên cứu hành vi can t
 Để kiểm tra xem ranh giới an toàn có phải là duy nhất, nhóm nghiên cứu áp dụng thuật toán trực giao hóa Gram-Schmidt để huấn luyện các probe liên tiếp trực giao nhau:
 1. Huấn luyện probe đầu tiên thu được $w_l^{(1)}$.
 2. Cưỡng bức probe thứ hai phải trực giao với probe thứ nhất:
-   $$w_l^{(2)} \perp w_l^{(1)} \iff \langle w_l^{(2)}, w_l^{(1)} \rangle = 0$$
+   $$
+   w_l^{(2)} \perp w_l^{(1)} \iff \langle w_l^{(2)}, w_l^{(1)} \rangle = 0
+   $$
 3. Tiếp tục huấn luyện probe thứ ba trực giao với cả hai probe trước:
-   $$w_l^{(3)} \perp \text{span}\{w_l^{(1)}, w_l^{(2)}\}$$
+   $$
+   w_l^{(3)} \perp \operatorname{span}\{w_l^{(1)}, w_l^{(2)}\}
+   $$
 
 **Kết quả thực nghiệm:**  
 Cả $w_l^{(1)}$, $w_l^{(2)}$ và $w_l^{(3)}$ **đều đạt độ chính xác phân loại trên 95%** trên cả 3 phương thức Ảnh, Video và Âm thanh!
@@ -230,13 +263,18 @@ Cả $w_l^{(1)}$, $w_l^{(2)}$ và $w_l^{(3)}$ **đều đạt độ chính xác 
 | **Probe Trực Giao 1 ($w_l^{(2)}$)** | 98.6% | 97.8% | 96.7% |
 | **Probe Trực Giao 2 ($w_l^{(3)}$)** | 96.2% | 95.1% | 95.0% |
 
-> **Kết luận đột phá:**  
-> Biểu diễn phân biệt chỉ thị tuân thủ không bị giới hạn trong một vector 1 chiều đơn lẻ. Nó cấu thành một **Không gian con an toàn đa chiều (Multi-dimensional Safety Subspace)** $\mathcal{V}_{\text{safe}} \subset \mathbb{R}^d$ với số chiều $n \ge 3$.  
+> **Kết luận:**  
+> Biểu diễn phân biệt chỉ thị tuân thủ không bị giới hạn trong một vector 1 chiều đơn lẻ. Nó cấu thành một **Không gian con an toàn đa chiều (Multi-dimensional Safety Subspace)**:
+> 
+> $$
+> \mathcal{V}_{\text{safe}} \subset \mathbb{R}^d \quad (n \ge 3)
+> $$
+> 
 > Đây chính là cơ sở toán học để ARGUS thực hiện tối ưu hóa: thay vì dùng một vector cứng nhắc $w_l^{(1)}$, hệ thống có thể tự do tìm kiếm một hướng lái $V_l^u \in \mathcal{V}_{\text{safe}}$ sao cho vừa thỏa mãn an toàn ($AIA \to 0$) vừa bảo toàn tối đa năng lực người dùng ($UIA \to \max$).
 
 ---
 
-## 4. Thiết Kế Bộ Phát Hiện Tiêm Nhiễm Động Ở Tầng Sớm ($P_{\text{detect}}$)
+## 4. Thiết Kế Bộ Phát Hiện Tiêm Nhiễm Động Ở Tầng Sớm (Early Detection Probe P_detect)
 
 Việc áp dụng cơ chế nắn dòng kích hoạt trên mọi đầu vào là một sai lầm nghiêm trọng, vì can thiệp không cần thiết trên dữ liệu sạch sẽ gây biến dạng biểu diễn và làm giảm hiệu năng tác vụ thông thường. Do đó, ARGUS xây dựng một cơ chế phát hiện tiêm nhiễm động (On-Demand Injection Detection) tại **Giai đoạn 1**.
 
@@ -282,13 +320,17 @@ Dựa trên bằng chứng thực nghiệm đó, ARGUS cố định vị trí c�
 - **Phương thức Video:** Layer 6
 - **Phương thức Âm thanh:** Layer 8
 
-### 4.2. Huấn Luyện & Vận Hành Của $P_{\text{detect}}$
+### 4.2. Huấn Luyện & Vận Hành Của P_detect
 
 1. **Dữ liệu huấn luyện:** Tập dữ liệu phân loại nhị phân được tạo trực tiếp từ tập huấn luyện:
    - Lớp 0 (Clean): $x_{\text{clean}} = \mathcal{T}(U, M)$
    - Lớp 1 (Injected): $x_{\text{inject}} = \mathcal{T}(U, \mathcal{W}(M, T \oplus I))$
 2. **Quy tắc phán quyết:** Tại bước sinh token đầu tiên ($t = 1$), vector kích hoạt tại tầng phát hiện $a_{\text{early}}$ được đưa qua probe:
-   $$P_{\text{detect}}(a_{\text{early}}) = \sigma(w_{\text{det}} \cdot a_{\text{early}} + b_{\text{det}})$$
+
+   $$
+   P_{\text{detect}}(a_{\text{early}}) = \sigma(w_{\text{det}} \cdot a_{\text{early}} + b_{\text{det}})
+   $$
+
 3. **Chuyển mạch điều khiển (Conditional Defense Switch):**
    - Nếu $P_{\text{detect}}(a_{\text{early}}) < 0.5$: Mẫu được xác nhận là dữ liệu sạch. Toàn bộ các cơ chế nắn dòng kích hoạt ở các tầng sau được **tắt hoàn toàn** ($\alpha = 0$). Quá trình giải mã diễn ra bình thường, đảm bảo chi phí trễ bằng 0 và không gây suy thoái năng lực sạch ($UIA_{\text{clean}}$ giữ nguyên mức gốc).
    - Nếu $P_{\text{detect}}(a_{\text{early}}) \ge 0.5$: Mẫu bị tiêm nhiễm. Hệ thống bật cờ phòng vệ và chuyển quyền xử lý cho **Giai đoạn 2: Nắn dòng kích hoạt thích ứng**.
