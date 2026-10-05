@@ -34,7 +34,10 @@ Tại một tầng bất kỳ $l \in \{1, 2, \dots, L\}$, trạng thái ẩn c�
 ### 1.2. Vector Đại Diện Không Gian An Toàn ($s_M^l$)
 
 Để làm mốc đo lường sự trôi dạt ngữ nghĩa của từng token đầu vào, toàn bộ chuỗi trạng thái ẩn an toàn $H_{safe}^l$ được nén thành một vector đại diện ngữ nghĩa duy nhất tại tầng $l$ thông qua toán tử lấy trung bình (mean pooling):
-$$s_M^l = \frac{1}{C} \sum_{c=1}^{C} s_c^l \in \mathbb{R}^D \tag{1}$$
+
+$$
+s_M^l = \frac{1}{C} \sum_{c=1}^{C} s_c^l \in \mathbb{R}^D \qquad (1)
+$$
 
 Vector $s_M^l$ đóng vai trò là "ngọn hải đăng an toàn" (safety anchor) xác định tâm của phân phối biểu diễn chuẩn mực trong không gian vector $D$ chiều.
 
@@ -86,7 +89,10 @@ flowchart TD
 ### 2.1. Độ Lệch Ngữ Nghĩa Của Từng Token
 
 Khoảng cách ngữ nghĩa giữa một token thị giác thứ $i$ ($v_i^l$) và anchor an toàn $s_M^l$ được lượng hóa thông qua khoảng cách Cosine:
-$$\mathcal{S}\left(v_i^l, s_M^l\right) = 1 - \text{Cosine}\left(v_i^l, s_M^l\right) = 1 - \frac{\langle v_i^l, s_M^l \rangle}{\|v_i^l\|_2 \, \|s_M^l\|_2} \tag{2}$$
+
+$$
+\mathcal{S}\left(v_i^l, s_M^l\right) = 1 - \text{Cosine}\left(v_i^l, s_M^l\right) = 1 - \frac{\langle v_i^l, s_M^l \rangle}{\|v_i^l\|_2 \, \|s_M^l\|_2} \qquad (2)
+$$
 
 - Khi $\text{Cosine}(v_i^l, s_M^l) \to 1 \implies \mathcal{S} \to 0$: Token mang đặc trưng gần gũi với phân phối an toàn.
 - Khi $\text{Cosine}(v_i^l, s_M^l) \to -1 \implies \mathcal{S} \to 2$: Token trôi dạt cực đoan khỏi không gian an toàn, biểu hiện nguy cơ chứa mã độc đối kháng.
@@ -101,7 +107,10 @@ Do đó, SafePTR áp dụng chiến lược **Lựa chọn Top-K thích ứng** 
 $$K = \lfloor k \cdot M \rfloor$$
 
 Tập chỉ số các token độc hại $\mathbb{I}_p \subset \{1, 2, \dots, M\}$ với lực lượng $|\mathbb{I}_p| = K$ được xác định thỏa mãn điều kiện:
-$$\sum_{x \in \mathbb{I}_p} \text{Cosine}\left(v_x^l, s_M^l\right) < \sum_{y \notin \mathbb{I}_p} \text{Cosine}\left(v_y^l, s_M^l\right), \quad \forall v_x^l \in H_{img}^l, \, s_M^l \in H_{safe}^l \tag{3}$$
+
+$$
+\sum_{x \in \mathbb{I}_p} \text{Cosine}\left(v_x^l, s_M^l\right) < \sum_{y \notin \mathbb{I}_p} \text{Cosine}\left(v_y^l, s_M^l\right), \quad \forall v_x^l \in H_{img}^l, \, s_M^l \in H_{safe}^l \qquad (3)
+$$
 
 Nói cách khác, $\mathbb{I}_p$ chứa đúng $K$ token có độ tương đồng Cosine thấp nhất (tương đương khoảng cách ngữ nghĩa $\mathcal{S}$ lớn nhất).
 
@@ -112,18 +121,27 @@ Do sự sai khác cố hữu về mặt hình học phân phối giữa không g
 Vì vậy, HTP thực thi toán tử cắt tỉa độc lập:
 
 1. **Trên phương thức thị giác (Visual stream):**
-   $$\hat{H}_{img}^l = \text{HTP}\left(H_{img}^l\right) = \left\{ v_j^l \in H_{img}^l \;\middle|\; j \notin \mathbb{I}_p \right\} \in \mathbb{R}^{(M - K) \times D} \tag{4}$$
+
+   $$
+   \hat{H}_{img}^l = \text{HTP}\left(H_{img}^l\right) = \left\{ v_j^l \in H_{img}^l \;\middle|\; j \notin \mathbb{I}_p \right\} \in \mathbb{R}^{(M - K) \times D} \qquad (4)
+   $$
 
 2. **Trên phương thức văn bản chỉ thị (Instruction stream):**
    Xác định $K_{ins} = \lfloor k \cdot T \rfloor$ token văn bản có độ lệch lớn nhất so với $s_M^l$, lập thành tập chỉ số $\mathbb{I}_p^{ins}$, và cắt tỉa:
-   $$\hat{H}_{ins}^l = \text{HTP}\left(H_{ins}^l\right) = \left\{ u_j^l \in H_{ins}^l \;\middle|\; j \notin \mathbb{I}_p^{ins} \right\} \in \mathbb{R}^{(T - K_{ins}) \times D} \tag{5}$$
+
+   $$
+   \hat{H}_{ins}^l = \text{HTP}\left(H_{ins}^l\right) = \left\{ u_j^l \in H_{ins}^l \;\middle|\; j \notin \mathbb{I}_p^{ins} \right\} \in \mathbb{R}^{(T - K_{ins}) \times D} \qquad (5)
+   $$
 
 Thiết kế độc lập này đảm bảo SafePTR phòng thủ hiệu quả đối kháng hai mũi giáp công: vừa triệt tiêu mã độc giấu trong ảnh (Vision-driven như FigStep/MM-SafetyBench), vừa bẻ gãy các prompt bẫy logic giấu trong văn bản (Text-driven như JailbreakV-28K).
 
 ### 2.4. Lan Truyền Qua Khối Transformer Trong Dải Tầng Nhạy Cảm
 
 Trong toàn bộ cửa sổ tầng nhạy cảm $l \in [n, n + \Delta_n)$ (ví dụ tầng 7 và tầng 8 trên LLaVA-1.5):
-$$\left[ \hat{H}_{img}^{l+1}, \hat{H}_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ \hat{H}_{img}^l, \hat{H}_{ins}^l, H_{safe}^l \right] \right) \right) \tag{6}$$
+
+$$
+\left[ \hat{H}_{img}^{l+1}, \hat{H}_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ \hat{H}_{img}^l, \hat{H}_{ins}^l, H_{safe}^l \right] \right) \right) \qquad (6)
+$$
 
 Do các token độc hại thuộc $\mathbb{I}_p$ đã bị loại bỏ hoàn toàn khỏi phép nhân ma trận Chú ý $\text{Softmax}(QK^T / \sqrt{d_k})V$, cơ chế Attention Sinks bị phá vỡ hoàn toàn, các trọng số chú ý được phân bổ lành mạnh cho ngữ cảnh an toàn còn lại.
 
@@ -185,11 +203,18 @@ Khi bước vào tầng chuyển tiếp $l = n + \Delta_n$ (ví dụ tầng 9 tr
 
 1. **Xác định tập chỉ số bù ($\hat{\mathbb{I}}_p$):**  
    Tập hợp tất cả các chỉ số token lành tính không bị HTP cắt tỉa:
-   $$\hat{\mathbb{I}}_p = \{ t_1, t_2, \dots, t_{M-K} \} \quad \text{sao cho} \quad \mathbb{I}_p \cap \hat{\mathbb{I}}_p = \emptyset, \quad \mathbb{I}_p \cup \hat{\mathbb{I}}_p = \{1, 2, \dots, M\} \tag{7}$$
+
+   $$
+   \hat{\mathbb{I}}_p = \{ t_1, t_2, \dots, t_{M-K} \} \quad \text{sao cho} \quad \mathbb{I}_p \cap \hat{\mathbb{I}}_p = \emptyset, \quad \mathbb{I}_p \cup \hat{\mathbb{I}}_p = \{1, 2, \dots, M\} \qquad (7)
+   $$
 
 2. **Toán tử tái tạo BFR:**  
    BFR thu nhận tensor $\hat{H}_{img}^{n+\Delta_n-1}$ từ nhánh phòng vệ và tensor $H_{img}^{n+\Delta_n-1}$ từ nhánh nguyên bản để tái tạo chuỗi token hoàn chỉnh $SH_{img}^{n+\Delta_n}$:
-   $$SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\{ (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\} \tag{8}$$
+
+   $$
+   SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\{ (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\} \qquad (8)
+   $$
+
    trong đó $i$ là chỉ số vị trí ban đầu (Positional Index), đảm bảo toàn bộ các vector được sắp xếp lại đúng tọa độ không gian tuyệt đối.
 
 3. **Ý nghĩa vật lý của phương trình (8):**
@@ -202,7 +227,10 @@ Khi bước vào tầng chuyển tiếp $l = n + \Delta_n$ (ví dụ tầng 9 tr
 ### 3.4. Bàn Giao Cho Các Tầng Sâu (Safety Layers)
 
 Sau khi được phục hồi đầy đủ số lượng token ($M$ token ảnh và $T$ token chữ), chuỗi trạng thái ẩn $SH$ được đưa vào tầng $l = n + \Delta_n$:
-$$\left[ H_{img}^{l+1}, H_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ SH_{img}^l, SH_{ins}^l, H_{safe}^l \right] \right) \right), \quad l = n + \Delta_n \tag{9}$$
+
+$$
+\left[ H_{img}^{l+1}, H_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ SH_{img}^l, SH_{ins}^l, H_{safe}^l \right] \right) \right), \quad l = n + \Delta_n \qquad (9)
+$$
 
 Từ tầng $n + \Delta_n$ đến tầng cuối cùng $L$, mô hình tiến hành suy luận tiêu chuẩn. Do mã độc đã bị trung hòa ở dải tầng nhạy cảm, các tầng sâu có thể tập trung hoàn toàn vào việc tổng hợp thông tin đa phương thức và trau chuốt ngôn ngữ mà không bị kích hoạt hành vi jailbreak.
 

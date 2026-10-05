@@ -143,12 +143,12 @@ flowchart TD
         SafeRef["Chỉ thị an toàn tham chiếu (R)<br/>C safety tokens"]
     end
 
-    subgraph EARLY_LAYERS["2. CÁC TẦNG KHỞI TẠO [0, n)"]
+    subgraph EARLY_LAYERS["2. CÁC TẦNG KHỞI TẠO (Tầng 0 đến n)"]
         direction TB
         L_Early["Khối Transformer Chuẩn<br/>(Không can thiệp, lan truyền tự nhiên)"]
     end
 
-    subgraph VULNERABLE_STAGE["3. DẢI TẦNG NHẠY CẢM [n, n + Delta_n) (VD: Tầng 7, 8)"]
+    subgraph VULNERABLE_STAGE["3. DẢI TẦNG NHẠY CẢM (Tầng n đến n + Delta_n) (VD: Tầng 7, 8)"]
         direction TB
         subgraph PATH_DEF["Nhánh Phòng Vệ (Defended Branch)"]
             CosineCalc["Tính Độ Tương Đồng Cosine:<br/>cos(v_i, s_M) vs Safety Reference"]
@@ -167,7 +167,7 @@ flowchart TD
         BFR_Module["Benign Features Restoration (BFR):<br/>• Giữ nguyên đặc trưng đã thanh lọc từ Nhánh Phòng Vệ<br/>• Lấy lại đặc trưng lành tính (I_p_bar) từ Nhánh Nguyên Bản<br/>• Tái cấu trúc lại chuỗi token ban đầu (SH_img, SH_ins)"]
     end
 
-    subgraph DEEP_LAYERS["5. CÁC TẦNG SÂU [n + Delta_n, L]"]
+    subgraph DEEP_LAYERS["5. CÁC TẦNG SÂU (Tầng n + Delta_n đến L)"]
         direction TB
         DeepTrans["Tích Hợp Đa Phương Thức & Trau Chuốt Ngôn Ngữ<br/>(Cross-Modal Integration & Language Refinement)"]
         SafeOutput["Phản Hồi An Toàn & Chuẩn Xác<br/>(Từ chối hành vi xấu / Trả lời đúng tác vụ lành tính)"]
@@ -216,12 +216,12 @@ Nếu chỉ dừng lại ở bước cắt tỉa (HTP-only), các tầng tiếp 
 sequenceDiagram
     autonumber
     participant Input as "Đầu Vào (Img + Prompt)"
-    participant Early as "Tầng Sớm [0, n)"
+    participant Early as "Tầng Sớm (Tầng 0 đến n)"
     participant HTP as "HTP Module (Tầng n)"
-    participant DefBranch as "Nhánh Phòng Vệ [n, n+Delta_n)"
-    participant OrigBranch as "Nhánh Nguyên Bản [n, n+Delta_n)"
+    participant DefBranch as "Nhánh Phòng Vệ (Tầng n đến n+Delta_n)"
+    participant OrigBranch as "Nhánh Nguyên Bản (Tầng n đến n+Delta_n)"
     participant BFR as "BFR Module (Tầng n+Delta_n)"
-    participant Deep as "Tầng Sâu [n+Delta_n, L]"
+    participant Deep as "Tầng Sâu (Tầng n+Delta_n đến L)"
     participant Out as "Bộ Giải Mã (LM Head)"
 
     Input->>Early: Nạp chuỗi token đa phương thức
@@ -264,35 +264,59 @@ $$\mathcal{S}(v_i^l, s_M^l) = 1 - \text{Cosine}(v_i^l, s_M^l) = 1 - \frac{\langl
 Với tỷ lệ cắt tỉa định trước $k \in (0, 1)$ (thực nghiệm chọn $k = 10\%$), số lượng token cần loại bỏ là $K = \lfloor k \cdot M \rfloor$.
 
 Tập chỉ số các token độc hại $\mathbb{I}_p \subset \{1, 2, \dots, M\}$ với $|\mathbb{I}_p| = K$ thỏa mãn điều kiện tối thiểu hóa độ tương đồng Cosine:
-$$\sum_{x \in \mathbb{I}_p} \text{Cosine}(v_x^l, s_M^l) < \sum_{y \notin \mathbb{I}_p} \text{Cosine}(v_y^l, s_M^l), \quad \forall v_x^l \in H_{img}^l, \, s_M^l \in H_{safe}^l \tag{3}$$
+
+$$
+\sum_{x \in \mathbb{I}_p} \text{Cosine}(v_x^l, s_M^l) < \sum_{y \notin \mathbb{I}_p} \text{Cosine}(v_y^l, s_M^l), \quad \forall v_x^l \in H_{img}^l, \, s_M^l \in H_{safe}^l \qquad (3)
+$$
 
 Toán tử cắt tỉa $\text{HTP}(\cdot)$ loại bỏ hoàn toàn các token nằm trong tập chỉ số độc hại $\mathbb{I}_p$:
-$$\hat{H}_{img}^l = \text{HTP}(H_{img}^l) = \{ v_j^l \in H_{img}^l \mid j \notin \mathbb{I}_p \} \in \mathbb{R}^{(M - K) \times D}$$
+
+$$
+\hat{H}_{img}^l = \text{HTP}(H_{img}^l) = \{ v_j^l \in H_{img}^l \mid j \notin \mathbb{I}_p \} \in \mathbb{R}^{(M - K) \times D}
+$$
 
 Tương tự, đối với phương thức văn bản chỉ thị, tập chỉ số độc hại $\mathbb{I}_p^{ins}$ gồm $K_{ins} = \lfloor k \cdot T \rfloor$ token được xác định và cắt tỉa độc lập:
-$$\hat{H}_{ins}^l = \text{HTP}(H_{ins}^l) = \{ u_j^l \in H_{ins}^l \mid j \notin \mathbb{I}_p^{ins} \} \in \mathbb{R}^{(T - K_{ins}) \times D}$$
+
+$$
+\hat{H}_{ins}^l = \text{HTP}(H_{ins}^l) = \{ u_j^l \in H_{ins}^l \mid j \notin \mathbb{I}_p^{ins} \} \in \mathbb{R}^{(T - K_{ins}) \times D}
+$$
 
 ### 4.3. Lan Truyền Qua Khối Transformer Trong Dải Tầng Nhạy Cảm
 
 Trong suốt cửa sổ tầng nhạy cảm $l \in [n, n + \Delta_n)$, khối Transformer (bao gồm Multi-Head Self-Attention và Feed-Forward Network - FFN) thực hiện xử lý trên chuỗi token đã được cắt tỉa:
-$$\left[ \hat{H}_{img}^{l+1}, \hat{H}_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ \text{HTP}(H_{img}^l), \text{HTP}(H_{ins}^l), H_{safe}^l \right] \right) \right) \tag{2}$$
+
+$$
+\left[ \hat{H}_{img}^{l+1}, \hat{H}_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ \text{HTP}(H_{img}^l), \text{HTP}(H_{ins}^l), H_{safe}^l \right] \right) \right) \qquad (2)
+$$
 
 Song song với đó, nhánh nguyên bản duy trì lan truyền chuẩn trên tập token đầy đủ:
-$$\left[ H_{img}^{l+1}, H_{ins}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ H_{img}^l, H_{ins}^l \right] \right) \right)$$
+
+$$
+\left[ H_{img}^{l+1}, H_{ins}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ H_{img}^l, H_{ins}^l \right] \right) \right)
+$$
 
 ### 4.4. Module BFR & Tái Cấu Trúc Không Gian Ẩn Tại Tầng $n + \Delta_n$
 
 Khi bước vào tầng $l = n + \Delta_n$, ta định nghĩa tập chỉ số bù $\hat{\mathbb{I}}_p$ đại diện cho các vị trí token không bị cắt tỉa:
-$$\hat{\mathbb{I}}_p = \{ t_1, t_2, \dots, t_{M-K} \} \quad \text{sao cho} \quad \mathbb{I}_p \cap \hat{\mathbb{I}}_p = \emptyset, \quad \mathbb{I}_p \cup \hat{\mathbb{I}}_p = \{1, 2, \dots, M\}$$
+
+$$
+\hat{\mathbb{I}}_p = \{ t_1, t_2, \dots, t_{M-K} \} \quad \text{sao cho} \quad \mathbb{I}_p \cap \hat{\mathbb{I}}_p = \emptyset, \quad \mathbb{I}_p \cup \hat{\mathbb{I}}_p = \{1, 2, \dots, M\}
+$$
 
 Toán tử khôi phục đặc trưng lành tính $\text{BFR}(\cdot)$ kết hợp thông tin giữa nhánh phòng vệ $\hat{H}_{img}^{n+\Delta_n-1}$ và nhánh nguyên bản $H_{img}^{n+\Delta_n-1}$:
-$$SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\{ (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\} \tag{5}$$
+
+$$
+SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\{ (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\} \qquad (5)
+$$
 
 > [!NOTE]
 > Trong phương trình (5), các token tại vị trí an toàn $i \in \hat{\mathbb{I}}_p$ được giữ nguyên trạng thái biểu diễn giàu ngữ cảnh $v_i$, trong khi các vị trí nhạy cảm $i \in \mathbb{I}_p$ được thay thế bằng trạng thái đã được thanh lọc $\hat{v}_i$. Quá trình này được tiến hành tương tự cho chuỗi token chỉ thị để tạo ra $SH_{ins}^{n+\Delta_n}$.
 
 Sau khi khôi phục, toàn bộ chuỗi token đầy đủ được đưa vào tầng $l = n + \Delta_n$:
-$$\left[ H_{img}^{l+1}, H_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ SH_{img}^l, SH_{ins}^l, H_{safe}^l \right] \right) \right), \quad l = n + \Delta_n \tag{4}$$
+
+$$
+\left[ H_{img}^{l+1}, H_{ins}^{l+1}, H_{safe}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ SH_{img}^l, SH_{ins}^l, H_{safe}^l \right] \right) \right), \quad l = n + \Delta_n \qquad (4)
+$$
 
 ---
 

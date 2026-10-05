@@ -146,46 +146,66 @@ $$\tau = \frac{1}{|\mathcal{D}_{\text{user}}|} \sum_{x \in \mathcal{D}_{\text{us
 
 Mục tiêu can thiệp là biến đổi vector kích hoạt hiện tại $a_l$ thành vector mới $a_{\text{steered}}$ sao cho điểm số phân loại của nó đạt chính xác vị trí tâm phân phối an toàn:
 
-$$w_l^u \cdot a_{\text{steered}} + b_l^u = -\tau \tag{1}$$
+$$
+w_l^u \cdot a_{\text{steered}} + b_l^u = -\tau \qquad (1)
+$$
 
 #### Bước 3: Thiết lập phương trình nắn dòng
 Vì vector pháp tuyến $w_l^u$ trỏ về phía mã độc, hướng nắn an toàn bắt buộc phải ngược hướng với $w_l^u$, tức $-w_l^u$. Vector kích hoạt sau can thiệp được biểu diễn tuyến tính theo cường độ vô hướng $\alpha_o$:
 
-$$a_{\text{steered}} = a_l + \alpha_o \cdot \left(-w_l^u\right) = a_l - \alpha_o w_l^u \tag{2}$$
+$$
+a_{\text{steered}} = a_l + \alpha_o \cdot \left(-w_l^u\right) = a_l - \alpha_o w_l^u \qquad (2)
+$$
 
 #### Bước 4: Khai triển đại số giải phương trình
 Thay biểu thức (2) vào phương trình mục tiêu (1):
 
-$$w_l^u \cdot \left( a_l - \alpha_o w_l^u \right) + b_l^u = -\tau$$
+$$
+w_l^u \cdot \left( a_l - \alpha_o w_l^u \right) + b_l^u = -\tau
+$$
 
 Áp dụng tính chất phân phối của tích vô hướng:
 
-$$w_l^u \cdot a_l - \alpha_o \left( w_l^u \cdot w_l^u \right) + b_l^u = -\tau$$
+$$
+w_l^u \cdot a_l - \alpha_o \left( w_l^u \cdot w_l^u \right) + b_l^u = -\tau
+$$
 
 Nhận xét rằng tích vô hướng của một vector với chính nó chính là bình phương chuẩn Euclid:
 
-$$w_l^u \cdot w_l^u = \|w_l^u\|_2^2$$
+$$
+w_l^u \cdot w_l^u = \|w_l^u\|_2^2
+$$
 
 Do đó phương trình trở thành:
 
-$$w_l^u \cdot a_l - \alpha_o \|w_l^u\|_2^2 + b_l^u = -\tau$$
+$$
+w_l^u \cdot a_l - \alpha_o \|w_l^u\|_2^2 + b_l^u = -\tau
+$$
 
 Chuyển vế đại lượng chứa $\alpha_o$:
 
-$$\alpha_o \|w_l^u\|_2^2 = w_l^u \cdot a_l + b_l^u + \tau$$
+$$
+\alpha_o \|w_l^u\|_2^2 = w_l^u \cdot a_l + b_l^u + \tau
+$$
 
 Vì $w_l^u$ là vector trọng số khác không của probe đã hội tụ, $\|w_l^u\|_2^2 > 0$. Ta chia cả hai vế cho $\|w_l^u\|_2^2$:
 
-$$\alpha_o = \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \tag{3}$$
+$$
+\alpha_o = \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \qquad (3)
+$$
 
 #### Bước 5: Ràng buộc không âm (Non-negativity Projection)
 Xét trường hợp trạng thái kích hoạt ban đầu $a_l$ đã nằm sâu trong vùng an toàn vượt quá lề $\tau$:
 
-$$w_l^u \cdot a_l + b_l^u < -\tau \iff w_l^u \cdot a_l + b_l^u + \tau < 0$$
+$$
+w_l^u \cdot a_l + b_l^u < -\tau \iff w_l^u \cdot a_l + b_l^u + \tau < 0
+$$
 
 Khi đó, giá trị $\alpha_o$ tính toán từ phương trình (3) sẽ mang dấu âm. Một giá trị $\alpha_o < 0$ đồng nghĩa với việc ta sẽ đẩy vector $a_l$ ngược trở lại phía độc hại. Để loại bỏ hiện tượng can thiệp ngược này, ta áp dụng hàm chiếu cực đại với 0:
 
-$$\alpha_o = \max\left( 0, \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \right) \tag{4}$$
+$$
+\alpha_o = \max\left( 0, \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \right) \qquad (4)
+$$
 
 $\blacksquare$ *(Điều phải chứng minh)*
 
