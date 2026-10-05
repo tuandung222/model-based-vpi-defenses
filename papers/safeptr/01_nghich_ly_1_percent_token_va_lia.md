@@ -192,10 +192,16 @@ Khi chiếu tọa độ các mẫu thử nghiệm lên đồ thị không gian 2
 ### 4.1. Truy Vết Cấp Độ Token (Token-Level Attribution)
 
 Để trả lời câu hỏi *Which* (Những token cụ thể nào chịu trách nhiệm cho hiện tượng trôi dạt ngữ nghĩa?), nhóm nghiên cứu tính toán khoảng cách ngữ nghĩa độc lập cho từng token thứ $i$ trong chuỗi biểu diễn ẩn tại tầng nhạy cảm $l$:
-$$S_i^l = 1 - \text{Cosine}(v_i^l, s_{\text{ref}}^l) = 1 - \frac{\langle v_i^l, s_{\text{ref}}^l \rangle}{\|v_i^l\|_2 \, \|s_{\text{ref}}^l\|_2}$$
+
+$$
+S_i^l = 1 - \operatorname{Cosine}(v_i^l, s_{\text{ref}}^l) = 1 - \frac{\langle v_i^l, s_{\text{ref}}^l \rangle}{\|v_i^l\|_2 \, \|s_{\text{ref}}^l\|_2}
+$$
 
 Một token $v_i^l$ được định danh là **token độc hại (Harmful Token)** nếu độ lệch ngữ nghĩa $S_i^l$ của nó vượt qua một ngưỡng sai lệch $\alpha$:
-$$\mathbb{I}_{\text{harmful}} = \left\{ i \in \{1, \dots, M\} \;\middle|\; S_i^l > \alpha \right\}$$
+
+$$
+\mathbb{I}_{\text{harmful}} = \left\lbrace i \in \{1, \dots, M\} \mid S_i^l > \alpha \right\rbrace
+$$
 
 ### 4.2. Bảng Thống Kê Tỷ Lệ Token Kích Hoạt Trên Các Kiến Trúc MLLM
 

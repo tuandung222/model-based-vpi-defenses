@@ -77,31 +77,40 @@ flowchart TD
 
 Để đánh giá toàn diện sự cân bằng giữa **Tính An Toàn (Safety)**, **Năng Lực Tác Vụ (Utility)**, và **Hiệu Suất Tính Toán (Efficiency)**, bốn thước đo định lượng được xác lập:
 
-### 2.1. Attacker Instruction Accuracy ($AIA$)
+### 2.1. Attacker Instruction Accuracy (AIA)
 Đo lường tỷ lệ phần trăm mẫu mà mô hình sinh ra chính xác chuỗi kết quả mong muốn của kẻ tấn công ($A_i^I$) trong chuỗi đầu ra $O_i$:
 
-$$AIA = \frac{1}{N} \sum_{i=1}^N \mathbb{I}\left( A_i^I \subseteq O_i \right)$$
+$$
+AIA = \frac{1}{N} \sum_{i=1}^N \mathbb{I}\left( A_i^I \subseteq O_i \right)
+$$
 
 *Mục tiêu an toàn:* $AIA \to 0\%$.
 
-### 2.2. User Instruction Accuracy ($UIA_{\text{inject}}$ và $UIA_{\text{clean}}$)
+### 2.2. User Instruction Accuracy (UIA_inject và UIA_clean)
 Đo lường năng lực của mô hình trong việc duy trì việc thực thi chính xác chỉ thị hợp pháp của người dùng $U$:
 
-$$UIA = \frac{1}{N} \sum_{i=1}^N \mathbb{I}\left( A_i^U \subseteq O_i \right)$$
+$$
+UIA = \frac{1}{N} \sum_{i=1}^N \mathbb{I}\left( A_i^U \subseteq O_i \right)
+$$
 
 - $UIA_{\text{inject}}$: Đo lường khi đầu vào có chứa mã độc tiêm nhiễm (đánh giá khả năng miễn nhiễm).
 - $UIA_{\text{clean}}$: Đo lường khi đầu vào hoàn toàn sạch (đánh giá mức độ bảo toàn năng lực gốc).  
 *Mục tiêu năng lực:* $UIA \to \max$.
 
-### 2.3. Attacker Instruction Following Rate ($AIFR$)
+### 2.3. Attacker Instruction Following Rate (AIFR)
 Đo lường mức độ mô hình bị chiếm quyền điều khiển và có nỗ lực tuân theo chỉ thị độc hại, ngay cả khi câu trả lời chưa chuẩn xác 100%:
 
-$$AIFR = \frac{1}{N} \sum_{i=1}^N \mathbb{I}\left( \text{Hijacked}(O_i, I_i, A_i^I) \right)$$
+$$
+AIFR = \frac{1}{N} \sum_{i=1}^N \mathbb{I}\left( \operatorname{Hijacked}(O_i, I_i, A_i^I) \right)
+$$
 
-Trong đó hàm $\text{Hijacked}(\cdot)$ được định nghĩa hình thức:
+Trong đó hàm $\operatorname{Hijacked}(\cdot)$ được định nghĩa hình thức:
 - Với các tác vụ GLUE (tập Val): Kiểm tra xem đầu ra $O_i$ có chứa nhãn lớp hợp lệ của bài toán hay không (ví dụ: xuất ra *"positive"* hoặc *"negative"* cho tác vụ SST-2).
 - Với tác vụ ép chuỗi ký tự ngẫu nhiên (tập Test): Kiểm tra nếu độ dài chuỗi con chung dài nhất (**Longest Common Substring - LCS**) giữa đầu ra $O_i$ và chuỗi mục tiêu $A_i^I$ (gồm 10 ký tự) **lớn hơn 7 ký tự**:
-  $$\text{LCS}\left(O_i, A_i^I\right) > 7$$
+
+$$
+\operatorname{LCS}\left(O_i, A_i^I\right) > 7
+$$
 
 ### 2.4. Thời Gian Trễ Bổ Sung (Additional Inference Time)
 Đo lường thời gian trễ tính toán phát sinh cho mỗi mẫu tính bằng mili-giây (ms), so với mô hình gốc không có phòng vệ chạy trên cụm 4 card **NVIDIA A800 GPUs**.
@@ -233,15 +242,19 @@ xychart-beta
 
 Phân tích độ phức tạp tính toán giải thích lý do ARGUS hầu như không tiêu tốn tài nguyên phần cứng:
 
-1. **Giai đoạn 1 ($P_{\text{detect}}$):** Chỉ thực hiện một phép nhân ma trận - vector ở tầng 6 hoặc tầng 8 tại token đầu tiên:
-   $$\text{FLOPs}_{\text{detect}} = 2 \cdot d \quad (\text{với } d = 4096, \approx 8 \times 10^3 \text{ FLOPs})$$
-   So với hàng trăm tỷ FLOPs của một lượt suy luận MLLM, chi phí này là không đáng kể ($\ll 0.001\%$).
-2. **Giai đoạn 2 (Activation Steering):** Tại mỗi bước sinh token tự hồi quy trên tập tầng $\mathcal{L}_{\text{steer}}$ ($|\mathcal{L}_{\text{steer}}| \le 4$ tầng):
+1. **Giai đoạn 1 (P_detect):** Chỉ thực hiện một phép nhân ma trận - vector ở tầng 6 hoặc tầng 8 tại token đầu tiên:
+
+$$
+\text{FLOPs}_{\text{detect}} = 2 \cdot d \quad (\text{với } d = 4096, \approx 8 \times 10^3 \text{ FLOPs})
+$$
+
+So với hàng trăm tỷ FLOPs của một lượt suy luận MLLM, chi phí này là không đáng kể ($\ll 0.001\%$).
+2. **Giai đoạn 2 (Activation Steering):** Tại mỗi bước sinh token tự hồi quy trên tập tầng $\mathcal{L}_{\text{steer}}$ (số tầng can thiệp $\le 4$):
    - Tính logit và nghiệm giải tích: Phép nhân vô hướng $w_l^u \cdot a_l \implies \mathcal{O}(d)$.
    - Phép chia và hàm $\max$: $\mathcal{O}(1)$.
    - Phép cộng vector cập nhật trạng thái $a_l' = a_l - \alpha_o w_l^u \implies \mathcal{O}(d)$.
    - Tổng độ phức tạp cho mỗi token: $\mathcal{O}(|\mathcal{L}_{\text{steer}}| \cdot d)$, tương đương vài phép tính tuyến tính cấp thấp (BLAS Level 1).
-3. **Giai đoạn 3 ($P_{\text{late}}$):** Chỉ thực thi một phép tính $\mathcal{O}(d)$ duy nhất tại token kết thúc ($EOS$).
+3. **Giai đoạn 3 (P_late):** Chỉ thực thi một phép tính $\mathcal{O}(d)$ duy nhất tại token kết thúc ($EOS$).
 
 Do toàn bộ các thao tác trên đều diễn ra trực tiếp trên GPU VRAM mà không cần gọi thêm bất kỳ mô hình ngoại vi nào hay cấp phát thêm bộ nhớ động, độ trễ phát sinh của ARGUS gần như biến mất hoàn toàn trong thời gian truyền thông PCIe.
 

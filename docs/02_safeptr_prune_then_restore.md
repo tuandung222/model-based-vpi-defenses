@@ -306,7 +306,7 @@ $$
 Toán tử khôi phục đặc trưng lành tính $\text{BFR}(\cdot)$ kết hợp thông tin giữa nhánh phòng vệ $\hat{H}_{img}^{n+\Delta_n-1}$ và nhánh nguyên bản $H_{img}^{n+\Delta_n-1}$:
 
 $$
-SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\{ (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\} \qquad (5)
+SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\lbrace (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\rbrace \qquad (5)
 $$
 
 > [!NOTE]

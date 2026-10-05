@@ -137,7 +137,7 @@ Trong đó:
 - Siêu phẳng phân chia ranh giới quyết định được định nghĩa tại mức logit bằng 0:
 
 $$
-\mathcal{H}_l = \left\{ x \in \mathbb{R}^d \;\middle|\; w_l \cdot x + b_l = 0 \right\}
+\mathcal{H}_l = \left\lbrace x \in \mathbb{R}^d \mid w_l \cdot x + b_l = 0 \right\rbrace
 $$
 
 ```mermaid
@@ -246,13 +246,16 @@ Một hiện tượng bất ngờ xuất hiện khi nghiên cứu hành vi can t
 Để kiểm tra xem ranh giới an toàn có phải là duy nhất, nhóm nghiên cứu áp dụng thuật toán trực giao hóa Gram-Schmidt để huấn luyện các probe liên tiếp trực giao nhau:
 1. Huấn luyện probe đầu tiên thu được $w_l^{(1)}$.
 2. Cưỡng bức probe thứ hai phải trực giao với probe thứ nhất:
-   $$
-   w_l^{(2)} \perp w_l^{(1)} \iff \langle w_l^{(2)}, w_l^{(1)} \rangle = 0
-   $$
+
+$$
+w_l^{(2)} \perp w_l^{(1)} \iff \langle w_l^{(2)}, w_l^{(1)} \rangle = 0
+$$
+
 3. Tiếp tục huấn luyện probe thứ ba trực giao với cả hai probe trước:
-   $$
-   w_l^{(3)} \perp \operatorname{span}\{w_l^{(1)}, w_l^{(2)}\}
-   $$
+
+$$
+w_l^{(3)} \perp \operatorname{span}\{w_l^{(1)}, w_l^{(2)}\}
+$$
 
 **Kết quả thực nghiệm:**  
 Cả $w_l^{(1)}$, $w_l^{(2)}$ và $w_l^{(3)}$ **đều đạt độ chính xác phân loại trên 95%** trên cả 3 phương thức Ảnh, Video và Âm thanh!
@@ -264,13 +267,13 @@ Cả $w_l^{(1)}$, $w_l^{(2)}$ và $w_l^{(3)}$ **đều đạt độ chính xác 
 | **Probe Trực Giao 2 ($w_l^{(3)}$)** | 96.2% | 95.1% | 95.0% |
 
 > **Kết luận:**  
-> Biểu diễn phân biệt chỉ thị tuân thủ không bị giới hạn trong một vector 1 chiều đơn lẻ. Nó cấu thành một **Không gian con an toàn đa chiều (Multi-dimensional Safety Subspace)**:
-> 
-> $$
-> \mathcal{V}_{\text{safe}} \subset \mathbb{R}^d \quad (n \ge 3)
-> $$
-> 
-> Đây chính là cơ sở toán học để ARGUS thực hiện tối ưu hóa: thay vì dùng một vector cứng nhắc $w_l^{(1)}$, hệ thống có thể tự do tìm kiếm một hướng lái $V_l^u \in \mathcal{V}_{\text{safe}}$ sao cho vừa thỏa mãn an toàn ($AIA \to 0$) vừa bảo toàn tối đa năng lực người dùng ($UIA \to \max$).
+> Biểu diễn phân biệt chỉ thị tuân thủ không bị giới hạn trong một vector 1 chiều đơn lẻ. Nó cấu thành một **Không gian con an toàn đa chiều (Multi-dimensional Safety Subspace)**.
+
+$$
+\mathcal{V}_{\text{safe}} \subset \mathbb{R}^d \quad (n \ge 3)
+$$
+
+Đây chính là cơ sở toán học để ARGUS thực hiện tối ưu hóa: thay vì dùng một vector cứng nhắc $w_l^{(1)}$, hệ thống có thể tự do tìm kiếm một hướng lái $V_l^u \in \mathcal{V}_{\text{safe}}$ sao cho vừa thỏa mãn an toàn ($AIA \to 0$) vừa bảo toàn tối đa năng lực người dùng ($UIA \to \max$).
 
 ---
 
@@ -327,9 +330,9 @@ Dựa trên bằng chứng thực nghiệm đó, ARGUS cố định vị trí c�
    - Lớp 1 (Injected): $x_{\text{inject}} = \mathcal{T}(U, \mathcal{W}(M, T \oplus I))$
 2. **Quy tắc phán quyết:** Tại bước sinh token đầu tiên ($t = 1$), vector kích hoạt tại tầng phát hiện $a_{\text{early}}$ được đưa qua probe:
 
-   $$
-   P_{\text{detect}}(a_{\text{early}}) = \sigma(w_{\text{det}} \cdot a_{\text{early}} + b_{\text{det}})
-   $$
+$$
+P_{\text{detect}}(a_{\text{early}}) = \sigma(w_{\text{det}} \cdot a_{\text{early}} + b_{\text{det}})
+$$
 
 3. **Chuyển mạch điều khiển (Conditional Defense Switch):**
    - Nếu $P_{\text{detect}}(a_{\text{early}}) < 0.5$: Mẫu được xác nhận là dữ liệu sạch. Toàn bộ các cơ chế nắn dòng kích hoạt ở các tầng sau được **tắt hoàn toàn** ($\alpha = 0$). Quá trình giải mã diễn ra bình thường, đảm bảo chi phí trễ bằng 0 và không gây suy thoái năng lực sạch ($UIA_{\text{clean}}$ giữ nguyên mức gốc).

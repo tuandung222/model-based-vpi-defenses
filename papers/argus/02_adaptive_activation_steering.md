@@ -18,13 +18,17 @@ Như đã chỉ ra trong Bài 1 (Phát hiện 3), việc can thiệp ngây thơ 
 
 Mặt khác, Phát hiện 5 đã chứng minh sự tồn tại của một **Không gian con an toàn đa chiều (Multimodal Safety Subspace)** cấu thành từ tập hợp $n$ vector trọng số probe trực giao đôi một:
 
-$$\mathcal{W}_l = \left\{ w_l^{(1)}, w_l^{(2)}, \dots, w_l^{(n)} \right\}, \quad \text{với } \langle w_l^{(i)}, w_l^{(j)} \rangle = 0 \quad (\forall i \neq j)$$
+$$
+\mathcal{W}_l = \left\lbrace w_l^{(1)}, w_l^{(2)}, \dots, w_l^{(n)} \right\rbrace, \quad \text{với } \langle w_l^{(i)}, w_l^{(j)} \rangle = 0 \quad (\forall i \neq j)
+$$
 
 Chuẩn hóa các vector này thành hệ cơ sở trực chuẩn (Orthonormal Basis):
 
-$$v_l^{(i)} = \frac{w_l^{(i)}}{\|w_l^{(i)}\|_2}, \quad \|v_l^{(i)}\|_2 = 1$$
+$$
+v_l^{(i)} = \frac{w_l^{(i)}}{\|w_l^{(i)}\|_2}, \quad \|v_l^{(i)}\|_2 = 1
+$$
 
-Mục tiêu là tìm kiếm một vector hướng lái $V_l \in \text{span}\{v_l^{(1)}, \dots, v_l^{(n)}\}$ sao cho khi can thiệp, mô hình vừa triệt tiêu được mã độc, vừa tối đa hóa xác suất sinh ra chuỗi đáp án chuẩn $A^U$ của người dùng.
+Mục tiêu là tìm kiếm một vector hướng lái $V_l \in \operatorname{span}\{v_l^{(1)}, \dots, v_l^{(n)}\}$ sao cho khi can thiệp, mô hình vừa triệt tiêu được mã độc, vừa tối đa hóa xác suất sinh ra chuỗi đáp án chuẩn $A^U$ của người dùng.
 
 ```mermaid
 flowchart TD
@@ -129,11 +133,15 @@ flowchart LR
 #### Bước 1: Hiệu chuẩn siêu phẳng phân chia dọc theo hướng tối ưu
 Sau khi tìm được hướng lái tối ưu $V_l^u$, ARGUS huấn luyện lại một bộ probe tuyến tính $P_l^u$ cho mỗi tầng $l \in \mathcal{L}_{\text{steer}}$. Để bảo toàn tính nhất quán hình học, vector trọng số $w_l^u \in \mathbb{R}^d$ của probe bị cưỡng bức phải song song với hướng tối ưu $V_l^u$:
 
-$$w_l^u \parallel V_l^u \iff w_l^u = \kappa \cdot V_l^u \quad (\kappa > 0)$$
+$$
+w_l^u \parallel V_l^u \iff w_l^u = \kappa \cdot V_l^u \quad (\kappa > 0)
+$$
 
 Phương trình siêu phẳng quyết định của probe được định nghĩa tại mức logit triệt tiêu:
 
-$$\mathcal{H}_l^u = \left\{ x \in \mathbb{R}^d \mid w_l^u \cdot x + b_l^u = 0 \right\}$$
+$$
+\mathcal{H}_l^u = \left\lbrace x \in \mathbb{R}^d \mid w_l^u \cdot x + b_l^u = 0 \right\rbrace
+$$
 
 Trong đó vector pháp tuyến $w_l^u$ trỏ từ phía lành tính (Class 0 - User instruction) sang phía độc hại (Class 1 - Attacker instruction):
 - Nếu $w_l^u \cdot x + b_l^u > 0$: Điểm $x$ nằm về phía tuân theo lệnh tấn công.
@@ -142,7 +150,9 @@ Trong đó vector pháp tuyến $w_l^u$ trỏ từ phía lành tính (Class 0 - 
 #### Bước 2: Thiết lập lề an toàn mục tiêu $\tau$
 Gọi $\tau > 0$ là lề an toàn (Safety Margin), được đo lường bằng khoảng cách logit trung bình từ các mẫu biểu diễn lành tính trong tập huấn luyện đến siêu phẳng phân định:
 
-$$\tau = \frac{1}{|\mathcal{D}_{\text{user}}|} \sum_{x \in \mathcal{D}_{\text{user}}} \left| w_l^u \cdot a_l(x) + b_l^u \right|$$
+$$
+\tau = \frac{1}{|\mathcal{D}_{\text{user}}|} \sum_{x \in \mathcal{D}_{\text{user}}} \left| w_l^u \cdot a_l(x) + b_l^u \right|
+$$
 
 Mục tiêu can thiệp là biến đổi vector kích hoạt hiện tại $a_l$ thành vector mới $a_{\text{steered}}$ sao cho điểm số phân loại của nó đạt chính xác vị trí tâm phân phối an toàn:
 

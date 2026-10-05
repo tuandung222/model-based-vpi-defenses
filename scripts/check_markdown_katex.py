@@ -31,16 +31,30 @@ def lint_file(fpath, auto_fix=False):
             line_no = no_code_content[:m.start()].count("\n") + 1
             issues.append(f"Line {line_no}: Found '\\tag{{{tag_val}}}' (triggers 'KaTeX parse error: \\tag works only in display equations'). Use '\\qquad ({tag_val})' instead.")
         if auto_fix:
-            # Replace \tag{X} with \qquad (X) in actual content (excluding code)
             modified_content = re.sub(r'(?<!`)\\tag\{([^}]+)\}(?!`)', r'\\qquad (\1)', modified_content)
 
-    # 2. Check for local file:/// URIs
+    # 2. Check for \\left\\{ or \\right\\} which gets unescaped by CommonMark into \\left{ causing delimiter error
+    delim_matches = list(re.finditer(r'\\(left|right)\s*\\([{}])', no_code_content))
+    if delim_matches:
+        for m in delim_matches:
+            line_no = no_code_content[:m.start()].count("\n") + 1
+            issues.append(f"Line {line_no}: Found '\\{m.group(1)}\\{m.group(2)}'. GFM unescapes this to '\\{m.group(1)}{m.group(2)}' causing 'Missing or unrecognized delimiter for \\left'. Use '\\{m.group(1)}\\{'lbrace' if m.group(2)=='{' else 'rbrace'}' instead.")
+        if auto_fix:
+            modified_content = re.sub(r'\\left\s*\\\{', r'\\left\\lbrace', modified_content)
+            modified_content = re.sub(r'\\right\s*\\\}', r'\\right\\rbrace', modified_content)
+
+    # 3. Check for indented $$ display blocks (must be at column 0 in GFM)
+    for idx, line in enumerate(content.splitlines()):
+        if re.match(r'^\s{1,}\$\$\s*$', line):
+            issues.append(f"Line {idx+1}: Indented display math '$$'. In GFM, display math blocks must start at column 0 without indentation.")
+
+    # 4. Check for local file:/// URIs
     if "file:///" in content:
         for idx, line in enumerate(content.splitlines()):
             if "file:///" in line:
                 issues.append(f"Line {idx+1}: Contains local URI 'file:///' which breaks outside local machine.")
 
-    # 3. Check for Mermaid half-open brackets inside label quotes
+    # 5. Check for Mermaid half-open brackets inside label quotes
     mermaid_blocks = re.findall(r'```mermaid\n(.*?)\n```', content, re.DOTALL)
     for b_idx, block in enumerate(mermaid_blocks):
         for l_idx, line in enumerate(block.splitlines()):
@@ -52,7 +66,7 @@ def lint_file(fpath, auto_fix=False):
     if auto_fix and modified_content != content:
         with open(fpath, "w", encoding="utf-8") as f:
             f.write(modified_content)
-        print(f"✅ Auto-fixed {len(tag_matches)} issue(s) in {fpath}")
+        print(f"✅ Auto-fixed issue(s) in {fpath}")
 
     return issues
 

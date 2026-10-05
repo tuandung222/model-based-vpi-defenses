@@ -19,17 +19,32 @@ Xét một mô hình Thị giác - Ngôn ngữ Lớn (MLLM) gồm bộ mã hóa 
 Tại một tầng bất kỳ $l \in \{1, 2, \dots, L\}$, trạng thái ẩn của mô hình được cấu thành từ ba dòng dữ liệu độc lập:
 
 1. **Chuỗi token văn bản chỉ thị của người dùng ($H_{ins}^l$):**
-   $$H_{ins}^l = \left[ u_1^l, u_2^l, \dots, u_T^l \right]^T \in \mathbb{R}^{T \times D}$$
+
+$$
+H_{ins}^l = \left[ u_1^l, u_2^l, \dots, u_T^l \right]^T \in \mathbb{R}^{T \times D}
+$$
+
    trong đó $T$ là số lượng token văn bản, $D$ là số chiều của không gian ẩn (hidden dimension).
 
 2. **Chuỗi token thị giác ($H_{img}^l$):**
-   $$H_{img}^l = \left[ v_1^l, v_2^l, \dots, v_M^l \right]^T \in \mathbb{R}^{M \times D}$$
+
+$$
+H_{img}^l = \left[ v_1^l, v_2^l, \dots, v_M^l \right]^T \in \mathbb{R}^{M \times D}
+$$
+
    trong đó $M$ là số lượng token ảnh (ví dụ với ảnh $336 \times 336$ qua patch size $14 \times 14$ của CLIP-ViT thì $M = 576$).
 
 3. **Chuỗi token chỉ thị an toàn tham chiếu ($H_{safe}^l$):**
-   $$H_{safe}^l = \left[ s_1^l, s_2^l, \dots, s_C^l \right]^T \in \mathbb{R}^{C \times D}$$
+
+$$
+H_{safe}^l = \left[ s_1^l, s_2^l, \dots, s_C^l \right]^T \in \mathbb{R}^{C \times D}
+$$
+
    trong đó $C$ là độ dài token của câu lệnh an toàn chuẩn mực (được kế thừa từ AdaShield):
-   $$R = \text{“Please answer this question safely and accurately. Reply ‘I am sorry.’ if the content is harmful.”}$$
+
+$$
+R = \text{"Please answer this question safely and accurately. Reply 'I am sorry.' if the content is harmful."}
+$$
 
 ### 1.2. Vector Đại Diện Không Gian An Toàn ($s_M^l$)
 
@@ -122,16 +137,16 @@ Vì vậy, HTP thực thi toán tử cắt tỉa độc lập:
 
 1. **Trên phương thức thị giác (Visual stream):**
 
-   $$
-   \hat{H}_{img}^l = \text{HTP}\left(H_{img}^l\right) = \left\{ v_j^l \in H_{img}^l \;\middle|\; j \notin \mathbb{I}_p \right\} \in \mathbb{R}^{(M - K) \times D} \qquad (4)
-   $$
+$$
+\hat{H}_{img}^l = \operatorname{HTP}\left(H_{img}^l\right) = \left\lbrace v_j^l \in H_{img}^l \mid j \notin \mathbb{I}_p \right\rbrace \in \mathbb{R}^{(M - K) \times D} \qquad (4)
+$$
 
 2. **Trên phương thức văn bản chỉ thị (Instruction stream):**
    Xác định $K_{ins} = \lfloor k \cdot T \rfloor$ token văn bản có độ lệch lớn nhất so với $s_M^l$, lập thành tập chỉ số $\mathbb{I}_p^{ins}$, và cắt tỉa:
 
-   $$
-   \hat{H}_{ins}^l = \text{HTP}\left(H_{ins}^l\right) = \left\{ u_j^l \in H_{ins}^l \;\middle|\; j \notin \mathbb{I}_p^{ins} \right\} \in \mathbb{R}^{(T - K_{ins}) \times D} \qquad (5)
-   $$
+$$
+\hat{H}_{ins}^l = \operatorname{HTP}\left(H_{ins}^l\right) = \left\lbrace u_j^l \in H_{ins}^l \mid j \notin \mathbb{I}_p^{ins} \right\rbrace \in \mathbb{R}^{(T - K_{ins}) \times D} \qquad (5)
+$$
 
 Thiết kế độc lập này đảm bảo SafePTR phòng thủ hiệu quả đối kháng hai mũi giáp công: vừa triệt tiêu mã độc giấu trong ảnh (Vision-driven như FigStep/MM-SafetyBench), vừa bẻ gãy các prompt bẫy logic giấu trong văn bản (Text-driven như JailbreakV-28K).
 
@@ -195,7 +210,10 @@ sequenceDiagram
 Tại tầng bắt đầu nhạy cảm $l = n$, mô hình phân tách quá trình tính toán thành hai nhánh song song:
 1. **Nhánh Phòng Vệ (Defended Branch):** Thực hiện cắt tỉa HTP, tính toán lan truyền qua dải tầng $[n, n + \Delta_n)$ trên chuỗi token rút gọn $\hat{H}_{img}^l$ và $\hat{H}_{ins}^l$.
 2. **Nhánh Nguyên Bản (Original Branch):** Tiếp tục lan truyền tiến tiêu chuẩn qua cùng dải tầng $[n, n + \Delta_n)$ trên chuỗi token đầy đủ ban đầu $H_{img}^l$ và $H_{ins}^l$ nhằm duy trì toàn bộ thông tin ngữ cảnh và mối liên kết không gian:
-   $$\left[ H_{img}^{l+1}, H_{ins}^{l+1} \right] = \text{FFN}^l \left( \text{Attention}^l \left( \left[ H_{img}^l, H_{ins}^l \right] \right) \right)$$
+
+$$
+\left[ H_{img}^{l+1}, H_{ins}^{l+1} \right] = \operatorname{FFN}^l \left( \operatorname{Attention}^l \left( \left[ H_{img}^l, H_{ins}^l \right] \right) \right)
+$$
 
 ### 3.3. Tái Cấu Trúc Biểu Diễn Ẩn Tại Tầng $n + \Delta_n$
 
@@ -204,16 +222,16 @@ Khi bước vào tầng chuyển tiếp $l = n + \Delta_n$ (ví dụ tầng 9 tr
 1. **Xác định tập chỉ số bù ($\hat{\mathbb{I}}_p$):**  
    Tập hợp tất cả các chỉ số token lành tính không bị HTP cắt tỉa:
 
-   $$
-   \hat{\mathbb{I}}_p = \{ t_1, t_2, \dots, t_{M-K} \} \quad \text{sao cho} \quad \mathbb{I}_p \cap \hat{\mathbb{I}}_p = \emptyset, \quad \mathbb{I}_p \cup \hat{\mathbb{I}}_p = \{1, 2, \dots, M\} \qquad (7)
-   $$
+$$
+\hat{\mathbb{I}}_p = \left\lbrace t_1, t_2, \dots, t_{M-K} \right\rbrace \quad \text{sao cho} \quad \mathbb{I}_p \cap \hat{\mathbb{I}}_p = \emptyset, \quad \mathbb{I}_p \cup \hat{\mathbb{I}}_p = \left\lbrace 1, 2, \dots, M \right\rbrace \qquad (7)
+$$
 
 2. **Toán tử tái tạo BFR:**  
    BFR thu nhận tensor $\hat{H}_{img}^{n+\Delta_n-1}$ từ nhánh phòng vệ và tensor $H_{img}^{n+\Delta_n-1}$ từ nhánh nguyên bản để tái tạo chuỗi token hoàn chỉnh $SH_{img}^{n+\Delta_n}$:
 
-   $$
-   SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\{ (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\} \qquad (8)
-   $$
+$$
+SH_{img}^{n+\Delta_n} = \operatorname{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\lbrace (h_i, i) \mid h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\rbrace \qquad (8)
+$$
 
    trong đó $i$ là chỉ số vị trí ban đầu (Positional Index), đảm bảo toàn bộ các vector được sắp xếp lại đúng tọa độ không gian tuyệt đối.
 
