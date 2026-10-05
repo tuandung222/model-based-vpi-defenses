@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Model-Based VPI Defense Taxonomy & Architecture",
+    "output": "visualizations/model-defense-taxonomy.html",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "full-taxonomy",
+        "label": "Complete defense landscape",
+        "focus": ["user", "attacker", "vit", "vq", "prune", "steering", "vlm", "guard_seq", "guard_par", "actuator"],
+        "note": "Follow the end-to-end data flow comparing internal representation interventions vs auxiliary guardrails."
+      },
+      {
+        "id": "internal-path",
+        "label": "Representation & latent space defenses",
+        "focus": ["vit", "vq", "prune", "steering", "vlm"],
+        "note": "Examine white-box vector quantization, token pruning, and activation steering within the VLM pipeline."
+      },
+      {
+        "id": "guardrail-path",
+        "label": "Auxiliary guardrail models",
+        "focus": ["user", "guard_seq", "guard_par", "vlm", "actuator"],
+        "note": "Examine black-box sequential inspection (Llama Guard 3V) and parallel async inspection (WARD)."
+      }
+    ]
+  },
+  "components": [
+    { "id": "user", "type": "external", "label": "User Intent", "sublabel": "intent at t=0", "pos": [40, 240], "size": [120, 60] },
+    { "id": "attacker", "type": "external", "label": "Adversarial GUI", "sublabel": "VPI payload", "pos": [40, 420], "size": [120, 60] },
+    { "id": "vit", "type": "cloud", "label": "Vision Encoder", "sublabel": "ViT patches", "pos": [210, 420], "size": [120, 60] },
+    { "id": "vq", "type": "security", "label": "Q-MLLM Codebook", "sublabel": "discrete VQ", "pos": [380, 420], "size": [120, 60], "tag": "NDSS 2026" },
+    { "id": "prune", "type": "security", "label": "SafePTR Pruning", "sublabel": "token prune", "pos": [550, 420], "size": [120, 60], "tag": "NeurIPS 2025" },
+    { "id": "steering", "type": "backend", "label": "ARGUS Steering", "sublabel": "h + α*v_safe", "pos": [720, 420], "size": [120, 60], "tag": "ArXiv 2025" },
+    { "id": "vlm", "type": "backend", "label": "VLM Decoder", "sublabel": "Core Agent", "pos": [720, 240], "size": [120, 60], "tag": "Planner" },
+    { "id": "guard_seq", "type": "security", "label": "Llama Guard 3V", "sublabel": "CoT guard", "pos": [550, 90], "size": [120, 60], "tag": "Meta / NeurIPS" },
+    { "id": "guard_par", "type": "security", "label": "WARD Web Guard", "sublabel": "async watcher", "pos": [720, 90], "size": [120, 60], "tag": "ArXiv 2026" },
+    { "id": "actuator", "type": "frontend", "label": "Agent Execution", "sublabel": "tool call", "pos": [890, 240], "size": [120, 60] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "Internal Representation & Latent Interventions (White-Box)", "wraps": ["vq", "prune", "steering"] },
+    { "kind": "security-group", "label": "Auxiliary Guardrail Models (Black-Box Compatible)", "wraps": ["guard_seq", "guard_par"] }
+  ],
+  "connections": [
+    { "id": "user-to-vlm", "from": "user", "to": "vlm", "label": "intent", "variant": "emphasis" },
+    { "id": "attacker-to-vit", "from": "attacker", "to": "vit", "label": "pixels" },
+    { "id": "vit-to-vq", "from": "vit", "to": "vq", "label": "features" },
+    { "id": "vq-to-prune", "from": "vq", "to": "prune", "label": "tokens" },
+    { "id": "prune-to-steering", "from": "prune", "to": "steering", "label": "benign" },
+    { "id": "steering-to-vlm", "from": "steering", "to": "vlm", "label": "steered", "fromSide": "top", "toSide": "bottom" },
+    { "id": "user-to-guard-seq", "from": "user", "to": "guard_seq", "label": "pre-audit", "variant": "dashed", "fromSide": "top", "toSide": "left" },
+    { "id": "guard-seq-to-guard-par", "from": "guard_seq", "to": "guard_par", "label": "policy", "variant": "dashed" },
+    { "id": "guard-par-to-vlm", "from": "guard_par", "to": "vlm", "label": "abort", "variant": "security", "fromSide": "bottom", "toSide": "top", "labelDy": 24 },
+    { "id": "vlm-to-actuator", "from": "vlm", "to": "actuator", "label": "action", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Internal Representation Defenses",
+      "items": [
+        "Q-MLLM uses vector quantization codebooks to disrupt continuous gradient attack vectors.",
+        "SafePTR prunes top harmful tokens in intermediate layers and restores benign features.",
+        "ARGUS steers latent states using an instruction-following directional vector."
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "Auxiliary Guardrail Models",
+      "items": [
+        "Llama Guard 3V & GuardReasoner-VL run sequential CoT reasoning across 13 hazard categories.",
+        "WARD runs an asynchronous 0.8B/2B web guard model in parallel for zero added latency."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Failure Boundaries & Trade-offs",
+      "items": [
+        "Representation defenses require white-box weights and risk GUI detail loss.",
+        "Guardrail models can be targeted by meta-injections and double API latency.",
+        "Stateless defenses remain vulnerable to multi-turn latent injection."
+      ]
+    }
+  ]
+}

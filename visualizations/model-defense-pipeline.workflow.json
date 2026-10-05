@@ -1,0 +1,85 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Model-Based VPI Defense Pipeline & Execution Flow",
+    "visual_preset": "signal-flow",
+    "quality_profile": "showcase",
+    "views": [
+      {
+        "id": "full-flow",
+        "label": "End-to-End Defense Flow",
+        "focus": ["user", "screen", "encoder", "prune", "steering", "vlm", "action"],
+        "note": "Follow the complete lifecycle from visual input to filtered actuation."
+      },
+      {
+        "id": "representation-path",
+        "label": "Internal Representation Path",
+        "focus": ["encoder", "prune", "steering", "vlm"],
+        "note": "Observe white-box token pruning, discrete quantization, and activation steering."
+      },
+      {
+        "id": "guard-alarm-path",
+        "label": "Auxiliary Guardrail Path",
+        "focus": ["screen", "guard", "alarm"],
+        "note": "Observe outer guard models flagging injection and triggering safety abort."
+      }
+    ],
+    "output": "visualizations/model-defense-pipeline.html"
+  },
+  "lanes": [
+    { "id": "guard", "label": "Auxiliary Guardrail Oversight", "variant": "exception" },
+    { "id": "rep", "label": "Internal Representation Defenses" },
+    { "id": "agent", "label": "Agent Planning & Execution" }
+  ],
+  "phases": [
+    { "id": "intake", "label": "Observation Intake", "fromCol": 0, "toCol": 0 },
+    { "id": "filtering", "label": "Representation & Guard Screening", "fromCol": 1, "toCol": 2, "variant": "emphasis" },
+    { "id": "actuation", "label": "Synthesis & Execution", "fromCol": 3, "toCol": 4, "variant": "dashed" }
+  ],
+  "groups": [
+    { "id": "guard_group", "label": "Outer Watchers", "lane": "guard", "fromCol": 1, "toCol": 3, "variant": "security" },
+    { "id": "rep_group", "label": "Latent Defense Pipeline", "lane": "rep", "fromCol": 0, "toCol": 2, "variant": "emphasis" }
+  ],
+  "mainPath": ["user", "vlm", "action"],
+  "nodes": [
+    { "id": "screen", "lane": "guard", "col": 0, "type": "external", "label": "GUI Screenshot / DOM", "sublabel": "untrusted visual input", "width": 132 },
+    { "id": "guard", "lane": "guard", "col": 1, "type": "security", "label": "WARD / Llama Guard", "sublabel": "parallel / CoT watcher", "tag": "0.8B - 11B", "width": 132 },
+    { "id": "alarm", "lane": "guard", "col": 3, "type": "security", "label": "Safety Abort", "sublabel": "halt on VPI alert", "width": 132 },
+    { "id": "encoder", "lane": "rep", "col": 0, "type": "cloud", "label": "Vision Encoder", "sublabel": "ViT / SigLIP patches", "width": 132 },
+    { "id": "prune", "lane": "rep", "col": 1, "type": "security", "label": "SafePTR / Q-MLLM", "sublabel": "prune tokens & VQ code", "tag": "NeurIPS / NDSS", "width": 132 },
+    { "id": "steering", "lane": "rep", "col": 2, "type": "backend", "label": "ARGUS Steering", "sublabel": "subspace h + α*v_safe", "tag": "ArXiv 2025", "width": 132 },
+    { "id": "user", "lane": "agent", "col": 0, "type": "external", "label": "User Task Prompt", "sublabel": "intent at t=0", "width": 132 },
+    { "id": "vlm", "lane": "agent", "col": 3, "type": "backend", "label": "VLM Core Agent", "sublabel": "LLaVA / Qwen / GPT-4o", "tag": "Planner", "width": 132 },
+    { "id": "action", "lane": "agent", "col": 4, "type": "frontend", "label": "Actuator / Tool Call", "sublabel": "click / shell execution", "width": 132 }
+  ],
+  "edges": [
+    { "id": "user-to-vlm", "from": "user", "to": "vlm", "label": "intent", "variant": "emphasis" },
+    { "id": "screen-to-guard", "from": "screen", "to": "guard", "label": "audit", "variant": "security" },
+    { "id": "guard-to-alarm", "from": "guard", "to": "alarm", "label": "flag VPI", "variant": "security", "role": "error" },
+    { "id": "screen-to-encoder", "from": "screen", "to": "encoder", "variant": "default" },
+    { "id": "encoder-to-prune", "from": "encoder", "to": "prune", "label": "raw tokens", "variant": "default" },
+    { "id": "prune-to-steering", "from": "prune", "to": "steering", "label": "clean tokens", "variant": "emphasis" },
+    { "id": "steering-to-vlm", "from": "steering", "to": "vlm", "label": "steered latent", "variant": "emphasis" },
+    { "id": "vlm-to-action", "from": "vlm", "to": "action", "label": "actuate", "variant": "emphasis" }
+  ],
+  "cards": [
+    {
+      "dot": "cyan",
+      "title": "Representation Pipeline",
+      "items": [
+        "Vision Encoder extracts continuous patch tokens from GUI screenshots.",
+        "SafePTR prunes top harmful tokens and restores benign features.",
+        "ARGUS steers latent states along instruction-following directions."
+      ]
+    },
+    {
+      "dot": "rose",
+      "title": "Guardrail Supervision",
+      "items": [
+        "WARD inspects DOM and screenshots asynchronously in parallel.",
+        "Flagged injections trigger immediate safety abort before action execution."
+      ]
+    }
+  ]
+}
