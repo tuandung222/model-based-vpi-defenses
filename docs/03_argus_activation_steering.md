@@ -19,7 +19,7 @@
 | **Cơ quan nghiên cứu** | Trường Khoa học & Kỹ thuật Máy tính - Đại học Công nghệ Hoa Nam (South China University of Technology - SCUT), Đại học Khoa học & Công nghệ Hồng Kông (HKUST), Đại học Sư phạm Chiết Giang (Zhejiang Normal University), Đại học Hàng không Vũ trụ Bắc Kinh (Beihang University) |
 | **Thời gian & Kênh công bố** | arXiv preprint (arXiv:2501.12781 [cs.CR / cs.CV / cs.CL]), Tháng 01/2025 |
 | **Mã nguồn công khai** | Trực thuộc dự án nghiên cứu an toàn MLLM của nhóm SCUT-SEALab |
-| **Liên kết tài liệu** | [arXiv:2501.12781](https://arxiv.org/abs/2501.12781) \| [Tệp PDF nội bộ cục bộ](file:///Users/admin/Library/CloudStorage/OneDrive-Personal/HCMUT_MAIL_FOLDER/Papers/Visual_Prompt_Injection/06_Defense_Methods/2025_ArXiv%20-%20ARGUS%20-%20Defending%20Against%20Multimodal%20Indirect%20Prompt%20Injection%20via%20Steering%20Instruction-Following%20Behavior.pdf) |
+| **Liên kết tài liệu** | [arXiv:2501.12781](https://arxiv.org/abs/2501.12781) \| [arXiv HTML](https://arxiv.org/html/2501.12781) \| [arXiv PDF](https://arxiv.org/pdf/2501.12781.pdf) |
 
 ---
 

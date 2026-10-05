@@ -68,6 +68,21 @@ The complete monograph is authored in high-rigor, publication-grade academic Vie
 
 ---
 
+## 📑 Dedicated Paper Series Subfolders (`papers/`)
+
+Similar to the multi-document deep dives for CaMeL and VPI-Bench, this repository provides dedicated subfolders containing comprehensive multi-chapter monographs for each individual landmark paper:
+
+| Paper Series | Subfolder | Documents Included | Focus & Scope |
+|:---|:---|:---:|:---|
+| **VLGuard** (ICML 2024) | [`papers/vlguard/`](papers/vlguard/) | 5 Documents | Multimodal Safety Duality, Dataset Engine, Loss Balancing, Empirical Benchmarks, Failure Boundaries |
+| **SafePTR** (NeurIPS 2025) | [`papers/safeptr/`](papers/safeptr/) | 5 Documents | 1% Token Paradox, Layer Sensitivity, Harmful Token Pruning, Benign Features Restoration, GUI Blindspots |
+| **ARGUS** (ArXiv 2025) | [`papers/argus/`](papers/argus/) | 5 Documents | Latent Subspace Probing, Closed-Form Adaptive Steering $\alpha_o$, Multimodal IPI Defense, DPO Comparison |
+| **WARD** (ArXiv 2026) | [`papers/ward/`](papers/ward/) | 5 Documents | Web Agent Threat Surface, PIG Vulnerability, Asynchronous Parallel Watcher, A3T Training, Mind2Web/WebArena |
+| **Q-MLLM & GTM** (NDSS / ICML 2026) | [`papers/qmllm/`](papers/qmllm/) | 5 Documents | Continuous Gradient Exploitation, Two-Level VQ Bottleneck, Voronoi Cells, Gradient-Guided Token Suppression |
+| **VLM Guardrails & CoT** | [`papers/guard_models/`](papers/guard_models/) | 5 Documents | Llama Guard 3V, LlavaGuard, GuardReasoner-VL CoT Reasoning, SafeGuard-VL Policy-Adaptive RLVR, Latency Trade-offs |
+
+---
+
 ## 🔬 7D Technical Comparison Matrix
 
 A comparative evaluation of the 8 studied model-based defense systems across seven fundamental dimensions:
