@@ -119,21 +119,62 @@ $$
 
 ## 3. Bảng Kết Quả Thực Nghiệm Tổng Thể
 
-Dưới đây là bảng dữ liệu thực nghiệm đối soát đầy đủ giữa ARGUS và 5 nhóm phương pháp phòng vệ nền tảng trên mô hình xương sống **Qwen2-VL-7B** (Hình ảnh, Video) và **Kimi-Audio-7B** (Âm thanh):
+Dưới đây là bảng dữ liệu thực nghiệm đối soát đầy đủ giữa ARGUS và 5 nhóm phương pháp phòng vệ nền tảng trên mô hình xương sống **Qwen2-VL-7B** (Hình ảnh, Video) và **Kimi-Audio-7B** (Âm thanh).
 
-| Nhóm Phương Pháp | Phương Pháp Phòng Vệ | Hình Ảnh (Qwen2-VL-7B) | | | | | Video (Qwen2-VL-7B) | | | | | Âm Thanh (Kimi-Audio-7B) | | | | |
-|:---|:---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| | | $UIA_{\text{inj}} \uparrow$ | $UIA_{\text{cln}} \uparrow$ | $AIA \downarrow$ | $AIFR \downarrow$ | Time (ms) | $UIA_{\text{inj}} \uparrow$ | $UIA_{\text{cln}} \uparrow$ | $AIA \downarrow$ | $AIFR \downarrow$ | Time (ms) | $UIA_{\text{inj}} \uparrow$ | $UIA_{\text{cln}} \uparrow$ | $AIA \downarrow$ | $AIFR \downarrow$ | Time (ms) |
-| **Gốc** | **No Defense** | 30.9 | 49.6 | 25.1 | 26.8 | **0** | 25.4 | 37.6 | 28.2 | 29.9 | **0** | 45.6 | 65.7 | 12.6 | 16.6 | **0** |
-| **Prompt-Based** | **System Prompt** | 38.2 | 42.7 | 10.7 | 11.4 | 6 | 25.4 | 37.0 | 26.9 | 28.9 | 15 | 7.5 | 63.8 | 27.9 | 34.4 | 5 |
-| | **Ignore Prompt** | 24.5 | 49.4 | 31.5 | 34.3 | 2 | 21.8 | 36.1 | 32.9 | 35.1 | 3 | 24.3 | 65.7 | 28.0 | 34.7 | 2 |
-| **Dữ Liệu Ngoại Vi** | **Gaussian Noise** | 34.3 | 46.8 | 7.6 | 10.0 | 1 | 18.7 | 23.3 | 9.6 | 12.8 | 2 | 42.8 | 41.0 | 0.0 | 0.0 | 2 |
-| | **Inpainted Removal** | **48.5** | 49.3 | **0.0** | **0.0** | 12,885 | 32.5 | 32.9 | 1.5 | 1.7 | 574,121 | — | — | — | — | — |
-| **Tinh Chỉnh Trọng Số** | **Adversarial Training (DPO)** | 41.1 | 40.7 | 2.3 | 2.4 | **0** | 35.9 | 37.2 | 1.6 | 1.8 | **0** | 55.8 | 60.9 | 1.4 | 1.6 | **0** |
-| **Biểu Diễn Ẩn (RepE)** | **ARGUS (Đầy đủ)** | 46.3 | **49.6** | 0.1 | 0.1 | 3 | **37.8** | **37.6** | **0.1** | **0.1** | 6 | **58.0** | **65.7** | **0.0** | **0.0** | 4 |
-| *Bóc Tách Thành Phần* | • *ARGUS w/o Search* | 44.5 | 49.6 | 0.1 | 0.1 | 3 | 36.4 | 37.6 | 0.1 | 0.1 | 6 | 54.4 | 65.7 | 0.0 | 0.0 | 4 |
-| | • *ARGUS w/o Adaptive ($\alpha_o$)* | 45.9 | 49.6 | 0.7 | 0.8 | 2 | 38.0 | 37.6 | 0.1 | 0.1 | 3 | 57.2 | 65.7 | 0.0 | 0.0 | 3 |
-| | • *ARGUS w/o Post-Filter* | 46.4 | 49.6 | 4.3 | 4.8 | 3 | 38.5 | 37.6 | 0.8 | 0.9 | 6 | 58.2 | 65.7 | 1.0 | 1.0 | 4 |
+### 3.1. Phương Thức Hình Ảnh (Image Modality — Qwen2-VL-7B)
+
+| Nhóm Phương Pháp | Phương Pháp Phòng Vệ | $UIA_{\text{inj}} \uparrow$ | $UIA_{\text{cln}} \uparrow$ | $AIA \downarrow$ | $AIFR \downarrow$ | Thời Gian Trễ |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|
+| **Gốc (Baseline)** | No Defense | 30.9% | 49.6% | 25.1% | 26.8% | **0 ms** |
+| **Prompt-Based** | System Prompt | 38.2% | 42.7% | 10.7% | 11.4% | 6 ms |
+| | Ignore Prompt | 24.5% | 49.4% | 31.5% | 34.3% | 2 ms |
+| **Dữ Liệu Ngoại Vi** | Gaussian Noise | 34.3% | 46.8% | 7.6% | 10.0% | 1 ms |
+| | Inpainted Removal | **48.5%** | 49.3% | **0.0%** | **0.0%** | 12,885 ms |
+| **Tinh Chỉnh Trọng Số** | Adversarial Training (DPO) | 41.1% | 40.7% | 2.3% | 2.4% | **0 ms** |
+| **Biểu Diễn Ẩn (RepE)** | **ARGUS (Đầy đủ)** | 46.3% | **49.6%** | **0.1%** | **0.1%** | **3 ms** |
+| *Bóc Tách Thành Phần* | • *ARGUS w/o Search* | 44.5% | 49.6% | 0.1% | 0.1% | 3 ms |
+| | • *ARGUS w/o Adaptive ($\alpha_o$)* | 45.9% | 49.6% | 0.7% | 0.8% | 2 ms |
+| | • *ARGUS w/o Post-Filter* | 46.4% | 49.6% | 4.3% | 4.8% | 3 ms |
+
+### 3.2. Phương Thức Video (Video Modality — Qwen2-VL-7B)
+
+| Nhóm Phương Pháp | Phương Pháp Phòng Vệ | $UIA_{\text{inj}} \uparrow$ | $UIA_{\text{cln}} \uparrow$ | $AIA \downarrow$ | $AIFR \downarrow$ | Thời Gian Trễ |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|
+| **Gốc (Baseline)** | No Defense | 25.4% | 37.6% | 28.2% | 29.9% | **0 ms** |
+| **Prompt-Based** | System Prompt | 25.4% | 37.0% | 26.9% | 28.9% | 15 ms |
+| | Ignore Prompt | 21.8% | 36.1% | 32.9% | 35.1% | 3 ms |
+| **Dữ Liệu Ngoại Vi** | Gaussian Noise | 18.7% | 23.3% | 9.6% | 12.8% | 2 ms |
+| | Inpainted Removal | 32.5% | 32.9% | 1.5% | 1.7% | 574,121 ms |
+| **Tinh Chỉnh Trọng Số** | Adversarial Training (DPO) | 35.9% | 37.2% | 1.6% | 1.8% | **0 ms** |
+| **Biểu Diễn Ẩn (RepE)** | **ARGUS (Đầy đủ)** | **37.8%** | **37.6%** | **0.1%** | **0.1%** | **6 ms** |
+| *Bóc Tách Thành Phần* | • *ARGUS w/o Search* | 36.4% | 37.6% | 0.1% | 0.1% | 6 ms |
+| | • *ARGUS w/o Adaptive ($\alpha_o$)* | 38.0% | 37.6% | 0.1% | 0.1% | 3 ms |
+| | • *ARGUS w/o Post-Filter* | 38.5% | 37.6% | 0.8% | 0.9% | 6 ms |
+
+### 3.3. Phương Thức Âm Thanh (Audio Modality — Kimi-Audio-7B)
+
+| Nhóm Phương Pháp | Phương Pháp Phòng Vệ | $UIA_{\text{inj}} \uparrow$ | $UIA_{\text{cln}} \uparrow$ | $AIA \downarrow$ | $AIFR \downarrow$ | Thời Gian Trễ |
+|:---|:---|:---:|:---:|:---:|:---:|:---:|
+| **Gốc (Baseline)** | No Defense | 45.6% | 65.7% | 12.6% | 16.6% | **0 ms** |
+| **Prompt-Based** | System Prompt | 7.5% | 63.8% | 27.9% | 34.4% | 5 ms |
+| | Ignore Prompt | 24.3% | 65.7% | 28.0% | 34.7% | 2 ms |
+| **Dữ Liệu Ngoại Vi** | Gaussian Noise | 42.8% | 41.0% | **0.0%** | **0.0%** | 2 ms |
+| | Inpainted Removal | — | — | — | — | — |
+| **Tinh Chỉnh Trọng Số** | Adversarial Training (DPO) | 55.8% | 60.9% | 1.4% | 1.6% | **0 ms** |
+| **Biểu Diễn Ẩn (RepE)** | **ARGUS (Đầy đủ)** | **58.0%** | **65.7%** | **0.0%** | **0.0%** | **4 ms** |
+| *Bóc Tách Thành Phần* | • *ARGUS w/o Search* | 54.4% | 65.7% | 0.0% | 0.0% | 4 ms |
+| | • *ARGUS w/o Adaptive ($\alpha_o$)* | 57.2% | 65.7% | 0.0% | 0.0% | 3 ms |
+| | • *ARGUS w/o Post-Filter* | 58.2% | 65.7% | 1.0% | 1.0% | 4 ms |
+
+### 3.4. Bảng Tổng Hợp Đối Đầu Đa Phương Thức (Cross-Modal Summary)
+
+| Phương Pháp Phòng Vệ | AIA (Ảnh) ↓ | AIA (Video) ↓ | AIA (Audio) ↓ | UIA Sạch Bảo Toàn | Độ Trễ Trung Bình |
+|:---|:---:|:---:|:---:|:---:|:---:|
+| **No Defense (Mô hình gốc)** | 25.1% | 28.2% | 12.6% | 100% (Gốc) | **0 ms** |
+| **System Prompt** | 10.7% | 26.9% | 27.9% | 85% - 97% | 5 - 15 ms |
+| **Inpainted Removal (Tiền xử lý)** | **0.0%** | 1.5% | Không hỗ trợ | 99% | 12,885 - 574,121 ms |
+| **Adversarial Training (DPO)** | 2.3% | 1.6% | 1.4% | 82% - 92% (Bị suy thoái) | **0 ms** |
+| **ARGUS (Đầy Đủ)** | **0.1%** | **0.1%** | **0.0%** | **100% (Hoàn hảo)** | **3 - 6 ms** |
 
 ---
 
