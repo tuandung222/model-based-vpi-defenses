@@ -426,7 +426,7 @@ Nói cách khác, những token thị giác nào có đóng góp lớn nhất tr
 Thuật toán GTM vận hành hoàn toàn không cần huấn luyện lại mô hình (training-free), chỉ yêu cầu duy nhất một lượt lan truyền tiến - lùi (single forward-backward pass) để tính gradient trước khi sinh phản hồi.
 
 ```python
-# Trích đoạn mã nguồn thực thi cốt lõi từ thư viện chính thức của GTM (fish883/GTM-Defense)
+# Mã giả minh họa (pseudo-code) mô phỏng ý tưởng GTM, KHÔNG phải trích nguyên văn từ kho mã công khai; cần đối chiếu với kho mã trước khi dùng
 # Minh họa trên mô hình LLaVA / Qwen2-VL
 
 def get_llava_imb_index(inputs, text_input, model, processor, mask_rate=5):

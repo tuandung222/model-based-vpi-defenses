@@ -129,6 +129,8 @@ $$
 
 Trong đó $\lambda > 0$ là siêu tham số cân bằng trọng số giữa an toàn và năng lực hữu ích (trong thực nghiệm huấn luyện chuẩn của VLGuard, tỷ lệ dữ liệu được thiết kế sao cho gradient giữa hai pha đạt trạng thái cân bằng động tự nhiên tương đương $\lambda \approx 1.0$).
 
+> **Lưu ý:** công thức $\mathcal{L}_{total} = \mathcal{L}_{refusal} + \lambda \mathcal{L}_{utility}$ là **khung phân tích do chuyên khảo này dựng** để giải thích sự cân bằng an toàn–tiện ích. Bài gốc VLGuard (ICML 2024) không đặt hàm mục tiêu này: nó trộn dữ liệu an toàn vào tập tinh chỉnh (Mixed) hoặc tinh chỉnh bổ sung sau (Post-hoc) bằng mất mát tự hồi quy chuẩn.
+
 ---
 
 ## 3. Phân Tích Xung Đột Gradient & Cơ Chế Khắc Phục Hiện Tượng "An Toàn Thái Quá" (Exaggerated Safety)

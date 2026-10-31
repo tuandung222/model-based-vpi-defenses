@@ -93,6 +93,8 @@ $$
 \mathcal{L}_{\text{total}}(\theta) = \mathcal{L}_{\text{safety}}(\theta) + \alpha \cdot \mathcal{L}_{\text{utility}}(\theta)
 $$
 
+> **Lưu ý:** hàm mục tiêu tổng hợp $\mathcal{L}_{\text{total}}$ ở trên là **khung phân tích do chuyên khảo này dựng** để giải thích sự cân bằng an toàn–tiện ích. Bài gốc VLGuard (ICML 2024) không đặt hàm mục tiêu này: nó trộn dữ liệu an toàn vào tập tinh chỉnh (Mixed) hoặc tinh chỉnh bổ sung sau (Post-hoc) bằng mất mát tự hồi quy chuẩn.
+
 trong đó:
 
 $$

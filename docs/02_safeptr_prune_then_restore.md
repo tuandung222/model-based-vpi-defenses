@@ -128,6 +128,8 @@ trong đó $V^l$ là tập hợp các token đầu vào và $R^l$ là biểu di�
 
 > [!IMPORTANT]
 > **Đột phá then chốt:** Trên tất cả các tập dữ liệu và kiến trúc thử nghiệm, **chưa đến 1% tổng số token đa phương thức** là nguyên nhân trực tiếp kích hoạt hành vi jailbreak!  
+
+> **Lưu ý đối chiếu số liệu:** tuyên bố "chưa đến 1%" là kết luận tổng quát của bài báo; trong các bảng của chương này, DeepSeek-VL2 có tỷ lệ 1.66% và 1.25% ở một số cấu hình, và thực nghiệm cắt tỉa dùng $k = 10\%$. Hãy đọc "chưa đến 1%" như thứ tự độ lớn, không phải ngưỡng tuyệt đối.
 > Hiện tượng này bắt nguồn từ cơ chế **Giếng hút chú ý (Attention Sinks)**: Một nhóm rất nhỏ token thị giác sở hữu năng lượng kích hoạt bất thường, thu hút phần lớn trọng số chú ý trong khối Self-Attention, lấn át toàn bộ ngữ cảnh xung quanh và biến thành vật chủ chứa mã độc vượt rào.
 >
 > Biểu đồ nhiệt (Heatmap) biểu diễn độ lệch ngữ nghĩa tại tầng 8 của LLaVA-1.5 cho thấy: các token liên quan trực tiếp đến nội dung bạo lực ("nhân vật mang vũ khí", "khói", "địa hình chiến tranh") xuất hiện độ trôi dạt ngữ nghĩa cực độ. Đáng ngạc nhiên, một số token vùng nền mờ nhạt (background) cũng bị trôi dạt, chứng minh rằng kẻ tấn công có thể chèn các tín hiệu đối kháng tinh vi vào các vùng không ngờ tới để phá vỡ cấu trúc an toàn.
