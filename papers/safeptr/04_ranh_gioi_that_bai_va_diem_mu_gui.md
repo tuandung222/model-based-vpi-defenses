@@ -51,7 +51,10 @@ Về mặt toán học, mỗi thành phần này chỉ chiếm diện tích từ
 ### 2.2. Cơ Chế Nhận Diện Nhầm Của HTP
 
 Khoảng cách ngữ nghĩa của SafePTR được đo so với câu lệnh an toàn tham chiếu $s_M^l$:
-$$\mathcal{S}\left(v_i^l, s_M^l\right) = 1 - \text{Cosine}\left(v_i^l, s_M^l\right)$$
+
+$$
+\mathcal{S}\left(v_i^l, s_M^l\right) = 1 - \text{Cosine}\left(v_i^l, s_M^l\right)
+$$
 
 - Vector $s_M^l$ đại diện cho một câu lệnh đạo đức tự nhiên (*"Please answer this question safely and accurately..."*). Do đó, các token mang đặc trưng của ngôn ngữ thông dụng hoặc các mảng ảnh tự nhiên (bầu trời, con người, phong cảnh) sẽ có xu hướng gần gũi với không gian này hơn.
 - Ngược lại, các visual token biểu diễn một icon hình mũi tên, một dấu tích xanh nhỏ, hay một ký hiệu tiền tệ "$" trên màn hình máy tính có **độ phân kỳ trực quan cực cao (high visual anomaly)** so với phân phối dữ liệu tự nhiên.
@@ -105,7 +108,10 @@ Giả định này hoàn toàn đúng đắn đối với các kỹ thuật tấ
 ### 3.2. Thuật Toán Tấn Công Thích Ứng Phân Tán (Diffused PGD Attack)
 
 Kẻ tấn công có thể xây dựng một bài toán tối ưu hóa có ràng buộc sử dụng giải thuật **Projected Gradient Descent (PGD)**:
-$$\max_{\delta} \mathcal{L}_{\text{jailbreak}}\left(f(X_{\text{img}} + \delta, X_{\text{ins}}), y_{\text{target}}\right) \quad \text{sao cho} \quad \|\delta\|_\infty \le \epsilon \quad \text{và} \quad \max_{i \in \{1,\dots,M\}} \mathcal{S}(v_i^l, s_M^l) \le \tau_{\text{threshold}}$$
+
+$$
+\max_{\delta} \mathcal{L}_{\text{jailbreak}}\left(f(X_{\text{img}} + \delta, X_{\text{ins}}), y_{\text{target}}\right) \quad \text{sao cho} \quad \|\delta\|_\infty \le \epsilon \quad \text{và} \quad \max_{i \in \{1,\dots,M\}} \mathcal{S}(v_i^l, s_M^l) \le \tau_{\text{threshold}}
+$$
 
 - **Cơ chế hoạt động:** Thay vì dồn ép tín hiệu đối kháng vào một cụm 4-5 token để gây trôi dạt ngữ nghĩa cục bộ cực đại, kẻ tấn công rải đều một lớp nhiễu vi mô vô hình $\delta$ (với chuẩn $\|\delta\|_\infty \le 8/255$) lên **toàn bộ 576 patches** của ảnh.
 - **Vô hiệu hóa Top-K:** Dưới sự tối ưu hóa này, khoảng cách ngữ nghĩa $\mathcal{S}(v_i^l, s_M^l)$ của từng token riêng lẻ đều rất nhỏ, chỉ dao động nhẹ quanh mức bình thường và tuyệt đối **không có token nào chạm tới ngưỡng Top-10%** của thuật toán HTP.
@@ -183,13 +189,20 @@ Toàn bộ các nhà cung cấp mô hình thương mại đóng hàng đầu hi�
 ## 6. Điểm Mù 5: Nguy Cơ Bị Tấn Công Thích Ứng Đích Danh (Anchor Spoofing Attack)
 
 Trong thiết kế của SafePTR, vector tham chiếu an toàn $s_M^l$ được tạo ra từ một câu lệnh chỉ thị cố định và công khai:
-$$R = \text{“Please answer this question safely and accurately. Reply ‘I am sorry.’ if the content is harmful.”}$$
+
+$$
+R = \text{“Please answer this question safely and accurately. Reply ‘I am sorry.’ if the content is harmful.”}
+$$
 
 ### 6.1. Nguyên Lý Tấn Công Ngụy Trang Vector (Vector Spoofing)
 
 Một đối thủ nguy hiểm có quyền truy cập hộp trắng vào mô hình có thể xây dựng một cuộc tấn công đánh lừa chính bộ đo khoảng cách Cosine của SafePTR:
 - Mục tiêu của kẻ tấn công là thiết kế các patch ảnh độc hại sao cho trạng thái ẩn của chúng $v_{\text{adv}}^l$ có góc lệch cực tiểu so với vector chỉ thị an toàn $s_M^l$:
-  $$\min_{\delta} \left( 1 - \text{Cosine}\left( v_{\text{adv}}^l(X_{\text{img}} + \delta), s_M^l \right) \right) \quad \text{đồng thời} \quad \text{kích hoạt jailbreak ở các tầng sau}$$
+
+$$
+\min_{\delta} \left( 1 - \text{Cosine}\left( v_{\text{adv}}^l(X_{\text{img}} + \delta), s_M^l \right) \right) \quad \text{đồng thời} \quad \text{kích hoạt jailbreak ở các tầng sau}
+$$
+
 - **Hệ quả ngược đời:** Khi $v_{\text{adv}}^l$ được tối ưu hóa để "giả mạo" độ tương đồng ngữ nghĩa cực cao với $s_M^l$, thuật toán HTP sẽ đánh giá các token độc hại này là "siêu an toàn"!
 - Ngược lại, các token lành tính tự nhiên trong bức ảnh sẽ có độ tương đồng Cosine thấp hơn so với token đối kháng đã qua tối ưu. Kết quả là **SafePTR sẽ cắt tỉa sạch các token lành tính và giữ lại nguyên vẹn các token mang mã độc vượt rào!**
 

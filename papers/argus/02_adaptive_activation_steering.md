@@ -67,23 +67,35 @@ flowchart TD
 
 ARGUS tham số hóa vector hướng lái $V_l$ tại tầng $l$ bằng một tổ hợp lồi có trọng số Softmax dựa trên vector tham số học được $\mathbf{a} = [a_1, a_2, \dots, a_n] \in \mathbb{R}^n$:
 
-$$V_l = \sum_{i=1}^n \left( \frac{\exp(a_i)}{\sum_{j=1}^n \exp(a_j)} \right) v_l^{(i)}$$
+$$
+V_l = \sum_{i=1}^n \left( \frac{\exp(a_i)}{\sum_{j=1}^n \exp(a_j)} \right) v_l^{(i)}
+$$
 
 Gọi $\mathcal{L}_{\text{steer}}$ là tập hợp các tầng can thiệp ở vùng giữa (Middle Layers). Tập các hướng lái trên toàn bộ các tầng này được biểu diễn là:
 
-$$\mathcal{V} = \{ V_l \mid l \in \mathcal{L}_{\text{steer}} \}$$
+$$
+\mathcal{V} = \{ V_l \mid l \in \mathcal{L}_{\text{steer}} \}
+$$
 
 Để đảm bảo hướng lái không làm thoái hóa cấu trúc biểu diễn ngôn ngữ tổng quát của mô hình, **toàn bộ trọng số của MLLM được đóng băng tuyệt đối** ($\nabla_{\Theta_{\text{MLLM}}} = \mathbf{0}$). Tham số huấn luyện duy nhất trong suốt quá trình này là vector hệ số $\mathbf{a}$.
 
 Hàm mất mát tối ưu hóa là Negative Log-Likelihood (Cross-Entropy) tính trên chuỗi nhãn chuẩn $A^U$ của người dùng trên tập huấn luyện đối kháng $\mathcal{D}_t$:
 
-$$\mathcal{L}(\mathcal{V}) = - \frac{1}{|\mathcal{D}_t|} \sum_{(x_{\text{prefix}}, A^U) \in \mathcal{D}_t} \sum_{t=1}^{|A^U|} \log P\left( A_t^U \mid x_{\text{prefix}}, A_{<t}^U, \mathcal{S}(\alpha_p, \mathcal{V}) \right)$$
+$$
+\mathcal{L}(\mathcal{V}) = - \frac{1}{|\mathcal{D}_t|} \sum_{(x_{\text{prefix}}, A^U) \in \mathcal{D}_t} \sum_{t=1}^{|A^U|} \log P\left( A_t^U \mid x_{\text{prefix}}, A_{<t}^U, \mathcal{S}(\alpha_p, \mathcal{V}) \right)
+$$
 
-$$\mathcal{V}^u = \arg\min_{\mathcal{V}} \mathcal{L}(\mathcal{V})$$
+$$
+\mathcal{V}^u = \arg\min_{\mathcal{V}} \mathcal{L}(\mathcal{V})
+$$
 
 Trong đó:
 - $\mathcal{S}(\alpha_p, \mathcal{V})$ đại diện cho thao tác nắn dòng kích hoạt áp dụng tại tất cả các tầng $l \in \mathcal{L}_{\text{steer}}$ với cường độ thử nghiệm $\alpha_p$:
-  $$a_l' = a_l + \alpha_p \cdot (-V_l)$$
+
+$$
+a_l' = a_l + \alpha_p \cdot (-V_l)
+$$
+
 - Nhờ việc cực tiểu hóa hàm mất mát trực tiếp trên câu trả lời đúng $A^U$, quá trình lan truyền ngược gradient sẽ tự động triệt tiêu các thành phần cơ sở gây suy thoái nhận thức và củng cố các thành phần cơ sở bảo tồn độ chính xác ngữ nghĩa của tác vụ gốc.
 
 ---

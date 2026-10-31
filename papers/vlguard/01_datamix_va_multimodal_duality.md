@@ -25,13 +25,21 @@ Tuy nhiên, các bằng chứng thực nghiệm đã bác bỏ hoàn toàn giả
 Xét không gian đầu vào đa phương thức $\mathcal{X} = \mathcal{X}_v \times \mathcal{X}_t$, trong đó $\mathcal{X}_v$ là không gian các biểu diễn hình ảnh (visual space) và $\mathcal{X}_t$ là không gian các chuỗi token chỉ thị văn bản (textual instruction space).
 
 Ta phân hoạch không gian hình ảnh thành hai tập hợp con rời rạc:
-$$\mathcal{X}_v = \mathcal{S}_v \cup \mathcal{U}_v, \quad \mathcal{S}_v \cap \mathcal{U}_v = \emptyset$$
+
+$$
+\mathcal{X}_v = \mathcal{S}_v \cup \mathcal{U}_v, \quad \mathcal{S}_v \cap \mathcal{U}_v = \emptyset
+$$
+
 Trong đó:
 - $\mathcal{S}_v$ là tập hợp các hình ảnh lành tính, an toàn (Safe visual inputs).
 - $\mathcal{U}_v$ là tập hợp các hình ảnh chứa nội dung độc hại nội tại (Unsafe visual inputs: bạo lực, chất cấm, rò rỉ danh tính PII, quảng cáo lừa đảo, meme thù địch).
 
 Tương tự, ta phân hoạch không gian câu lệnh văn bản thành hai tập hợp con rời rạc:
-$$\mathcal{X}_t = \mathcal{S}_t \cup \mathcal{U}_t, \quad \mathcal{S}_t \cap \mathcal{U}_t = \emptyset$$
+
+$$
+\mathcal{X}_t = \mathcal{S}_t \cup \mathcal{U}_t, \quad \mathcal{S}_t \cap \mathcal{U}_t = \emptyset
+$$
+
 Trong đó:
 - $\mathcal{S}_t$ là tập hợp các câu hỏi hoặc chỉ thị hợp lệ, an toàn (Safe textual instructions).
 - $\mathcal{U}_t$ là tập hợp các câu hỏi hoặc chỉ thị độc hại, vi phạm đạo đức hoặc an ninh (Unsafe textual instructions).

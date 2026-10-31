@@ -17,11 +17,11 @@
 | **Tên bài báo** | WARD: Adversarially Robust Defense of Web Agents Against Prompt Injections |
 | **Nhóm tác giả** | Tri Cao, Yulin Chen, Hieu Cao, Yibo Li, Khoi Le, Thong Nguyen, Yuexin Li, Yufei He, Yue Liu, Shuicheng Yan, Bryan Hooi |
 | **Cơ quan nghiên cứu** | Đại học Quốc gia Singapore (National University of Singapore - NUS), Trường Đại học Khoa học Tự nhiên - Đại học Quốc gia TP.HCM (VNU-HCM) |
-| **Thời gian công bố** | ArXiv Preprint (12/2025 - 2026) |
-| **Mã định danh arXiv** | [arXiv:2512.01254](https://arxiv.org/html/2512.01254) |
+| **Thời gian công bố** | arXiv:2605.15030 (05/2026); **ICML 2026** |
+| **Mã định danh arXiv** | [arXiv:2605.15030](https://arxiv.org/html/2605.15030) |
 | **Phân loại bài toán** | Multimodal Web Agent Defense / Auxiliary Guard Model / Adversarial Co-Evolution / Prompt Injection on Guard (PIG) |
 | **Bộ trọng số nền tảng** | Qwen-3.5-0.8B và Qwen-3.5-2B (Vision-Language Compact Backbones) |
-| **Mã nguồn & Dữ liệu** | WARD-Base (177.585 mẫu, 709 URLs, 10 nền tảng), WARD-PIG (21.000 mẫu), WARD-Seed (A3T) |
+| **Mã nguồn & Dữ liệu** | WARD-Base (177.585 mẫu, 709 URLs + 10 nền tảng = 719 nguồn theo abstract), WARD-PIG (21.000 mẫu), WARD-Seed (A3T) |
 
 ---
 
@@ -30,7 +30,10 @@
 ### 1.1. Bản Chất Bề Mặt Tấn Công Của Web Agents Trong Môi Trường Mở
 
 Sự trỗi dậy của các tác tử duyệt web tự trị (Autonomous Web Agents như Browser-Use, Computer-Use của Anthropic, Mind2Web, VisualWebArena) đã mở rộng đáng kể năng lực tự động hóa tác vụ: người dùng chỉ cần cung cấp chỉ thị văn bản tổng quát $I$ (ví dụ: *"Đặt vé máy bay khứ hồi giá rẻ nhất trên Booking.com và thanh toán qua thẻ lưu sẵn"*), tác tử sẽ thực hiện chuỗi hành động lặp liên tục:
-$$\text{Quan sát (Observe)} \longrightarrow \text{Suy luận (Reason)} \longrightarrow \text{Hành động (Act)}$$
+
+$$
+\text{Quan sát (Observe)} \longrightarrow \text{Suy luận (Reason)} \longrightarrow \text{Hành động (Act)}
+$$
 
 Ở mỗi bước thời gian $t \in \{1, \dots, T\}$, tác tử tiếp nhận không gian quan sát đa phương thức $x_t = (S_t, H_t)$:
 - **$S_t \in \mathbb{R}^{H \times W \times 3}$**: Ảnh chụp màn hình giao diện đồ họa được render trực tiếp từ trình duyệt (Screenshot / Visual Interface).
@@ -208,14 +211,24 @@ WARD được xây dựng dựa trên các backbone thị giác - ngôn ngữ si
   - $r \in \mathcal{V}^*$: Chuỗi suy luận giải thích ngữ cảnh (Reasoning Chain) chứng minh tại sao phần tử đó là độc hại hoặc lành tính dựa trên $H$ và $S$.
 
 Mục tiêu tối ưu hóa Supervised Fine-Tuning ở Giai đoạn 1 và Giai đoạn 2 được định nghĩa qua hàm mất mát Negative Log-Likelihood trên chuỗi token mục tiêu $a$:
-$$\mathcal{L}_{\text{Base}} = - \sum_{(x, a) \in \mathcal{D}_{\text{Base}}} \sum_{t=1}^{|a|} \log p_\theta(a_t \mid x, a_{<t})$$
-$$\mathcal{L}_{\text{PIG}} = - \sum_{(x, a) \in \mathcal{D}_{\text{PIG}}} \sum_{t=1}^{|a|} \log p_\theta(a_t \mid x, a_{<t})$$
+
+$$
+\mathcal{L}_{\text{Base}} = - \sum_{(x, a) \in \mathcal{D}_{\text{Base}}} \sum_{t=1}^{|a|} \log p_\theta(a_t \mid x, a_{<t})
+$$
+
+$$
+\mathcal{L}_{\text{PIG}} = - \sum_{(x, a) \in \mathcal{D}_{\text{PIG}}} \sum_{t=1}^{|a|} \log p_\theta(a_t \mid x, a_{<t})
+$$
 
 ### 3.2. Cơ Chế Kiểm Tra Song Song Không Đồng Bộ (Asynchronous Parallel Inspection)
 
 Điểm yếu chí mạng khiến các mô hình guardrail ngoại vi (như Llama Guard hay GPT-4o Guard) bị từ chối trong môi trường sản xuất thực tế là **độ trễ cộng dồn tuần tự (Sequential Latency Overhead)**.
 Nếu ở mỗi bước tương tác của Web Agent:
-$$T_{\text{total}} = T_{\text{Agent}} + T_{\text{Guard}}$$
+
+$$
+T_{\text{total}} = T_{\text{Agent}} + T_{\text{Guard}}
+$$
+
 Hệ thống sẽ bị chậm gấp đôi, làm giảm nghiêm trọng trải nghiệm người dùng và tiêu tốn chi phí điện toán khổng lồ.
 
 WARD giải quyết bài toán này bằng cơ chế **chạy song song không đồng bộ (Asynchronous Parallelism)**:
@@ -223,7 +236,9 @@ WARD giải quyết bài toán này bằng cơ chế **chạy song song không �
 - Tác tử chính (sử dụng các mô hình khổng lồ như GPT-4o, Claude 3.7 Sonnet) thực hiện quy trình lập kế hoạch hành động phức tạp, thường mất từ **3.64 giây đến 11.99 giây**.
 - WARD (với kích thước chỉ 0.8B hoặc 2B tham số) thực hiện tác vụ phân loại và trích xuất chuỗi tư duy cực ngắn (~130 đến 150 token), hoàn thành chỉ trong **2.24 giây đến 2.45 giây**.
 
-$$\Delta T = T_{\text{Guard}} - T_{\text{Agent}} < 0 \implies \text{Độ trễ gia tăng thực tế (Added Latency)} = 0 \text{ ms}$$
+$$
+\Delta T = T_{\text{Guard}} - T_{\text{Agent}} < 0 \implies \text{Độ trễ gia tăng thực tế (Added Latency)} = 0 \text{ ms}
+$$
 
 ```mermaid
 sequenceDiagram
@@ -326,7 +341,10 @@ $$R(\hat{y}, \hat{\ell}; y, \ell) = \begin{cases}
 \end{cases}$$
 
 Mục tiêu tối ưu hóa cập nhật trọng số Guard ở chu kỳ $j+1$:
-$$\theta^{(j+1)} = \arg\max_\theta \mathbb{E}_{(x, a) \sim \mathcal{D}_{\text{AAA}}^{(j)}, \, o \sim G_\theta(\cdot \mid x)} \left[ R(o; a) \right]$$
+
+$$
+\theta^{(j+1)} = \arg\max_\theta \mathbb{E}_{(x, a) \sim \mathcal{D}_{\text{AAA}}^{(j)}, \, o \sim G_\theta(\cdot \mid x)} \left[ R(o; a) \right]
+$$
 
 Nhờ cơ chế hai vòng lặp lặp lại qua nhiều chu kỳ (Cycles), kẻ tấn công liên tục khám phá các vùng không gian gần ranh giới quyết định (Decision Boundary) của Guard, còn Guard liên tục được rèn luyện trên các mẫu đối kháng khó nhất, tạo ra sức bền vững vượt trội trước các cuộc tấn công chưa từng thấy (Zero-day Injections).
 
@@ -448,7 +466,11 @@ Mặc dù WARD thể hiện năng lực thực nghiệm vượt trội so với 
 ### 7.1. Thiếu Năng Lực Duy Trì Trạng Thái Dài Hạn Xuyên Suốt Phiên (Turn-Level Statelessness)
 
 WARD hoạt động theo cơ chế **kiểm tra độc lập theo từng bước (Step-by-Step Stateless Inspection)**:
-$$G(I, x_t) \quad \text{thay vì} \quad G(I, x_t, \mathcal{H}_{<t})$$
+
+$$
+G(I, x_t) \quad \text{thay vì} \quad G(I, x_t, \mathcal{H}_{<t})
+$$
+
 Mô hình chỉ phân tích quan sát hiện tại $x_t = (S_t, H_t)$ kết hợp với chỉ thị gốc $I$. Điều này mở ra kẽ hở cho các cuộc tấn công **tiêm phân mảnh đa bước (Multi-Step Split-State Injections)**:
 - Kẻ tấn công không chèn toàn bộ lệnh phá hoại trong một trang duy nhất.
 - Bước $t_1$: Trang web chèn biến định danh giả mạo: `"Ghi nhớ mã phiên xác thực: evil_token"`. WARD đánh giá là Benign vì không có hành vi nguy hại trực tiếp.
@@ -474,7 +496,11 @@ Nếu kẻ tấn công áp dụng các đòn tấn công gradient tối ưu hóa
 ### 7.4. Bản Chất Xác Suất Không Thể Đảm Bảo An Ninh Tuyệt Đối
 
 Vì bản thân WARD là một mạng nơ-ron học sâu (Deep Neural Network), mọi phán quyết của nó đều mang tính **xác suất thống kê (Probabilistic Output)**:
-$$P(y = \text{Malicious} \mid x) = \sigma(W^T z)$$
+
+$$
+P(y = \text{Malicious} \mid x) = \sigma(W^T z)
+$$
+
 Nó không có tính chất bảo đảm hình thức (Formal Guarantee). Nếu gặp phải một biến thể đối kháng nằm ngoài phân phối huấn luyện A3T mà WARD dự đoán nhầm $P < \tau$, toàn bộ hệ thống Web Agent sẽ thực thi mã độc. Đây chính là lý do vì sao một mô hình bảo vệ đơn lẻ (dù mạnh mẽ đến đâu) vẫn cần phải được kết hợp với các cơ chế cô lập thực thi và giám sát tham chiếu tất định ở tầng hệ thống (TCB Execution Gateways).
 
 ---

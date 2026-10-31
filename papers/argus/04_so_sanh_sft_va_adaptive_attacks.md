@@ -232,7 +232,7 @@ Mọi kỹ thuật can thiệp biểu diễn (Representation Intervention) đề
 
 ## 5. Tổng Kết Toàn Bộ Chuyên Đề ARGUS
 
-Chuyên đề nghiên cứu chuyên sâu về công trình **ARGUS** (arXiv:2501.12781) đã giải phẫu một trong những giải pháp phòng vệ Visual/Multimodal Prompt Injection thanh lịch và hiệu quả nhất hiện nay:
+Chuyên đề nghiên cứu chuyên sâu về công trình **ARGUS** (arXiv:2512.05745) đã giải phẫu một trong những giải pháp phòng vệ Visual/Multimodal Prompt Injection thanh lịch và hiệu quả nhất hiện nay:
 1. **Khoa học biểu diễn:** Khám phá sự tồn tại của Không gian con an toàn đa chiều ($\mathcal{V}_{\text{safe}}$) và tính khả phân tuyến tính của hành vi tuân thủ chỉ thị.
 2. **Đột phá giải thuật:** Xây dựng quy trình tìm kiếm hướng lái tối ưu tách rời suy giảm năng lực và dẫn xuất nghiệm giải tích dạng đóng $\alpha_o$ cho cường độ can thiệp thích ứng.
 3. **Thực thi vượt trội:** Bảo đảm an toàn gần như tuyệt đối ($AIA \to 0\%$) trên cả ba phương thức Ảnh, Video, Âm thanh với chi phí độ trễ chỉ từ **3 đến 6 ms**, bảo toàn trọn vẹn $100\%$ năng lực mô hình gốc.

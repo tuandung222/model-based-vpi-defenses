@@ -71,7 +71,9 @@ flowchart TD
 
 Trong lĩnh vực giải thích mô hình (Explainable AI), phương pháp kinh điển để xác định mức độ quan trọng của token đầu vào là tính đạo hàm của xác suất token đầu ra đầu tiên $P(y_1 \mid X)$ theo từng token thị giác $H_v^{(i)}$:
 
-$$S_i^{\text{prob}} = \left\| \frac{\partial P(y_1 \mid X)}{\partial H_v^{(i)}} \right\|_2$$
+$$
+S_i^{\text{prob}} = \left\| \frac{\partial P(y_1 \mid X)}{\partial H_v^{(i)}} \right\|_2
+$$
 
 Tuy nhiên, Zhang et al. chứng minh rằng phương pháp truyền thống này **hoàn toàn bất lực trong việc phòng vệ Visual Prompt Injection** do hai rào cản chí mạng:
 
@@ -107,11 +109,15 @@ Gọi:
 
 Hàm mục tiêu năng lượng trạng thái ẩn $\mathcal{L}_{\text{target}}$ được định nghĩa bằng chuẩn $\ell_2$ của véc-tơ này:
 
-$$\mathcal{L}_{\text{target}} = \|h_L^{\text{target}}\|_2 = \sqrt{\sum_{j=1}^d (h_{L, j}^{\text{target}})^2}$$
+$$
+\mathcal{L}_{\text{target}} = \|h_L^{\text{target}}\|_2 = \sqrt{\sum_{j=1}^d (h_{L, j}^{\text{target}})^2}
+$$
 
 Điểm nhạy cảm (Saliency Score) $S_i$ của token thị giác thứ $i$ được định nghĩa bằng chuẩn Frobenius của gradient của $\mathcal{L}_{\text{target}}$ theo véc-tơ biểu diễn của token đó:
 
-$$S_i = \left\| \nabla_{H_v^{(i)}} \mathcal{L}_{\text{target}} \right\|_2 = \left\| \frac{\partial \|h_L^{\text{target}}\|_2}{\partial H_v^{(i)}} \right\|_2$$
+$$
+S_i = \left\| \nabla_{H_v^{(i)}} \mathcal{L}_{\text{target}} \right\|_2 = \left\| \frac{\partial \|h_L^{\text{target}}\|_2}{\partial H_v^{(i)}} \right\|_2
+$$
 
 ---
 
@@ -168,7 +174,11 @@ sequenceDiagram
 
 #### Pha 2: Trung hòa (Neutralization Pass)
 1. Tạo tensor thị giác đã làm sạch $\tilde{H}_v$:
-   $$\tilde{H}_v^{(i)} = \begin{cases} \mathbf{0} & \text{nếu } i \in \mathcal{I}_{\text{suppress}} \\ H_v^{(i)} & \text{ngược lại} \end{cases}$$
+
+$$
+\tilde{H}_v^{(i)} = \begin{cases} \mathbf{0} & \text{nếu } i \in \mathcal{I}_{\text{suppress}} \\ H_v^{(i)} & \text{ngược lại} \end{cases}
+$$
+
 2. Ghép nối $\tilde{H}_v$ với token văn bản $H_t$ thành chuỗi đầu vào sạch: $\tilde{H}_{\text{fusion}} = [\tilde{H}_v \parallel H_t]$.
 3. Thực hiện quá trình sinh tự hồi quy thông thường để tạo ra phản hồi cho người dùng.
 

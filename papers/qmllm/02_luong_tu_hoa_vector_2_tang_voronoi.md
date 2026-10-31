@@ -80,15 +80,29 @@ flowchart TD
 ### 2.1. Tầng 1: Lượng Tử Hóa Ngữ Nghĩa Toàn Cục (Global-Semantic Quantization)
 - **Từ điển mã toàn cục:** $\mathcal{C}_{\text{cls}} = \{e_i^{\text{cls}}\}_{i=1}^K \subset \mathbb{R}^{K \times d_h}$, với kích thước từ điển nhỏ gọn $K = 128$.
 - **Cơ chế gán mã:** Embedding toàn cục liên tục sau bộ chiếu $h_{\text{cls}} = \mathcal{F}_h(z_{\text{cls}}) \in \mathbb{R}^{d_h}$ được lượng tử hóa bằng phép tìm kiếm lân cận gần nhất theo khoảng cách $\ell_2$:
-  $$k_{\text{cls}} = \arg\min_{i \in \{1, \dots, K\}} \|h_{\text{cls}} - e_i^{\text{cls}}\|_2^2$$
-  $$\tilde{h}_{\text{cls}} = e_{k_{\text{cls}}}^{\text{cls}} \in \mathbb{R}^{d_h}$$
+
+$$
+k_{\text{cls}} = \arg\min_{i \in \{1, \dots, K\}} \|h_{\text{cls}} - e_i^{\text{cls}}\|_2^2
+$$
+
+$$
+\tilde{h}_{\text{cls}} = e_{k_{\text{cls}}}^{\text{cls}} \in \mathbb{R}^{d_h}
+$$
+
 - **Mục đích thiết kế:** Với chỉ $K = 128$ từ mã, không gian ngữ nghĩa tổng thể được gom cụm chặt chẽ thành 128 khái niệm vĩ mô. Chỉ mục $k_{\text{cls}}$ đóng vai trò như một "chữ ký ngữ nghĩa" (semantic fingerprint) cho phép nhận diện ngay lập tức bức ảnh có chứa các chủ đề độc hại (vũ khí, khiêu dâm, bạo lực) hay không.
 
 ### 2.2. Tầng 2: Lượng Tử Hóa Mảnh Không Gian (Pixel-Patch Quantization)
 - **Từ điển mã mảnh:** $\mathcal{C}_{\text{patch}} = \{e_i^{\text{patch}}\}_{i=1}^P \subset \mathbb{R}^{P \times d_h}$, với dung lượng lớn hơn nhiều: $P = 16000$ (hoặc $4096$).
 - **Cơ chế gán mã:** Với mỗi mảnh không gian $j \in \{1, \dots, N\}$ (trong ViT-L/14-336px, $N = 576$ patches):
-  $$k_j = \arg\min_{i \in \{1, \dots, P\}} \|H_v^j - e_i^{\text{patch}}\|_2^2$$
-  $$\tilde{H}_v^j = e_{k_j}^{\text{patch}} \in \mathbb{R}^{d_h}$$
+
+$$
+k_j = \arg\min_{i \in \{1, \dots, P\}} \|H_v^j - e_i^{\text{patch}}\|_2^2
+$$
+
+$$
+\tilde{H}_v^j = e_{k_j}^{\text{patch}} \in \mathbb{R}^{d_h}
+$$
+
   Tập hợp véc-tơ sau lượng tử hóa là $\tilde{H}_v = [\tilde{H}_v^1, \tilde{H}_v^2, \dots, \tilde{H}_v^N] \in \mathbb{R}^{N \times d_h}$.
 - **Mục đích thiết kế:** Dung lượng $P = 16000$ đủ lớn để mô tả phong phú các hình thái thị giác hạt mịn, hình khối và màu sắc, đảm bảo mô hình vẫn giải quyết tốt các bài toán VQA và suy luận khoa học mà không bị vỡ ảnh.
 
@@ -98,7 +112,9 @@ flowchart TD
 
 Về mặt giải tích toán học, phép toán lượng tử hóa vector phân chia không gian véc-tơ liên tục $\mathbb{R}^{d_h}$ thành một tập hợp các đa diện lồi gọi là **Tế bào Voronoi (Voronoi Cells)**:
 
-$$\mathcal{V}_i = \{x \in \mathbb{R}^{d_h} \mid \|x - e_i\|_2 \le \|x - e_j\|_2, \forall j \ne i\}$$
+$$
+\mathcal{V}_i = \{x \in \mathbb{R}^{d_h} \mid \|x - e_i\|_2 \le \|x - e_j\|_2, \forall j \ne i\}
+$$
 
 ```
                    HÌNH HỌC PHÂN VÙNG TẾ BÀO VORONOI TRONG R^dh
@@ -120,14 +136,20 @@ $$\mathcal{V}_i = \{x \in \mathbb{R}^{d_h} \mid \|x - e_i\|_2 \le \|x - e_j\|_2,
 Ánh xạ lượng tử hóa $\text{VQ}(x) = e_{\arg\min_i \|x - e_i\|_2}$ là một **hàm hằng từng đoạn**.
 1. **Bên trong nội vi tế bào Voronoi ($x \in \text{int}(\mathcal{V}_i)$):**  
    Tại mọi điểm bên trong tế bào, giá trị đầu ra của hàm luôn là hằng số $e_i$. Do đó, đạo hàm Frechet của hàm lượng tử hóa bằng chính xác ma trận không:
-   $$\frac{\partial \text{VQ}(x)}{\partial x} = \mathbf{0} \in \mathbb{R}^{d_h \times d_h}, \quad \forall x \in \text{int}(\mathcal{V}_i)$$
+
+$$
+\frac{\partial \text{VQ}(x)}{\partial x} = \mathbf{0} \in \mathbb{R}^{d_h \times d_h}, \quad \forall x \in \text{int}(\mathcal{V}_i)
+$$
+
 2. **Tại ranh giới siêu phẳng ($\mathcal{H}_{ij} = \{x \mid \|x - e_i\|_2 = \|x - e_j\|_2\}$):**  
    Hàm xảy ra bước nhảy gián đoạn (jump discontinuity). Đạo hàm toán học tại đây **không xác định** (undefined).
 
 ### 3.2. Sự Cắt Đứt Hoàn Toàn Chuỗi Đạo Hàm Ngược
 Khi kẻ tấn công cố gắng tính đạo hàm của hàm mất mát đối kháng $\mathcal{L}_{\text{adv}}$ ngược về ảnh đầu vào, theo quy tắc chuỗi tại Bài 1:
 
-$$\nabla_\delta \mathcal{L}_{\text{adv}} = \frac{\partial \mathcal{L}_{\text{adv}}}{\partial \tilde{H}_v} \cdot \underbrace{\frac{\partial \tilde{H}_v}{\partial H_v}}_{\frac{\partial \text{VQ}(H_v)}{\partial H_v} = \mathbf{0}} \cdot \frac{\partial H_v}{\partial Z_v} \cdot \frac{\partial Z_v}{\partial (X_{\text{img}} + \delta)} = \mathbf{0}$$
+$$
+\nabla_\delta \mathcal{L}_{\text{adv}} = \frac{\partial \mathcal{L}_{\text{adv}}}{\partial \tilde{H}_v} \cdot \underbrace{\frac{\partial \tilde{H}_v}{\partial H_v}}_{\frac{\partial \text{VQ}(H_v)}{\partial H_v} = \mathbf{0}} \cdot \frac{\partial H_v}{\partial Z_v} \cdot \frac{\partial Z_v}{\partial (X_{\text{img}} + \delta)} = \mathbf{0}
+$$
 
 Dòng đạo hàm ngược bị chặn đứng hoàn toàn bởi ma trận không tại tầng VQ. Kẻ tấn công nhận về gradient bằng 0 trên toàn bộ các điểm ảnh, khiến mọi giải thuật tối ưu hóa dựa trên gradient (PGD, ImgJP, VAA) bị tê liệt ngay từ vòng lặp đầu tiên.
 
@@ -140,33 +162,55 @@ Do phép toán $\arg\min$ không có đạo hàm, việc huấn luyện một m�
 ### 4.1. Kỹ Thuật Ước Lượng Gradient Đi Thẳng (Straight-Through Estimator - STE)
 Để gradient có thể đi vòng qua bước lượng tử hóa trong quá trình huấn luyện xuôi - ngược, STE sao chép trực tiếp gradient từ đầu ra của VQ sang đầu vào của VQ thông qua toán tử chặn gradient $\text{sg}[\cdot]$:
 
-$$\tilde{x} = x + \text{sg}[\text{VQ}(x) - x]$$
+$$
+\tilde{x} = x + \text{sg}[\text{VQ}(x) - x]
+$$
 
 Trong lượt lan truyền tiến (forward pass), $\tilde{x} = \text{VQ}(x)$ vì phần hiệu số được thực thi.  
 Trong lượt lan truyền lùi (backward pass), do $\text{sg}[\cdot]$ có đạo hàm bằng 0, ta có:
-$$\frac{\partial \tilde{x}}{\partial x} = \frac{\partial x}{\partial x} + \mathbf{0} = \mathbf{I}$$
+
+$$
+\frac{\partial \tilde{x}}{\partial x} = \frac{\partial x}{\partial x} + \mathbf{0} = \mathbf{I}
+$$
 
 ### 4.2. Các Hàm Mất Mát Thành Phần
 Để huấn luyện đồng thời bộ từ điển mã và căn chỉnh đặc trưng, Q-MLLM thiết lập 4 hàm mất mát:
 
 1. **Codebook Loss ($\mathcal{L}_{\text{codebook}}$):** Cực tiểu hóa khoảng cách giữa véc-tơ mã hóa được chọn $e_k$ và véc-tơ biểu diễn của mạng:
-   $$\mathcal{L}_{\text{codebook}} = \|\text{VQ}(x) - \text{sg}[x]\|_2^2$$
+
+$$
+\mathcal{L}_{\text{codebook}} = \|\text{VQ}(x) - \text{sg}[x]\|_2^2
+$$
+
    Hàm này cập nhật trọng số của các véc-tơ trong Codebook để chúng di chuyển dần về tâm của các cụm đặc trưng thị giác.
 
 2. **Commitment Loss ($\mathcal{L}_{\text{commit}}$):** Ràng buộc đầu ra của bộ chiếu $x$ không được dao động quá xa khỏi từ mã được chọn:
-   $$\mathcal{L}_{\text{commit}} = \|x - \text{sg}[\text{VQ}(x)]\|_2^2$$
+
+$$
+\mathcal{L}_{\text{commit}} = \|x - \text{sg}[\text{VQ}(x)]\|_2^2
+$$
+
    Hàm này ép buộc bộ chiếu $\mathcal{F}_h$ phải cam kết hội tụ về không gian của Codebook.
 
    Tổng hàm mất mát VQ:
-   $$\mathcal{L}_{\text{vq}} = \mathcal{L}_{\text{codebook}} + \lambda_{\text{commit}} \mathcal{L}_{\text{commit}}, \quad \text{với } \lambda_{\text{commit}} = 0.25$$
+
+$$
+\mathcal{L}_{\text{vq}} = \mathcal{L}_{\text{codebook}} + \lambda_{\text{commit}} \mathcal{L}_{\text{commit}}, \quad \text{với } \lambda_{\text{commit}} = 0.25
+$$
 
 3. **Semantic Alignment Loss ($\mathcal{L}_{\text{semantic}}$):**  
    Để token toàn cục lượng tử hóa $\tilde{h}_{\text{cls}}$ nắm giữ được ngữ nghĩa cấp cao phục vụ việc phát hiện an toàn, Q-MLLM ép $\tilde{h}_{\text{cls}}$ phải căn chỉnh với véc-tơ biểu diễn ẩn tầng cuối cùng của câu mô tả ảnh ($H_{\text{caption}}$) sinh ra bởi LLM:
-   $$\mathcal{L}_{\text{semantic}} = \|\tilde{h}_{\text{cls}} - H_{\text{caption}}\|_2^2$$
+
+$$
+\mathcal{L}_{\text{semantic}} = \|\tilde{h}_{\text{cls}} - H_{\text{caption}}\|_2^2
+$$
 
 4. **Generative Loss ($\mathcal{L}_{\text{generative}}$):**  
    Hàm mất mát tự hồi quy tiêu chuẩn dự đoán chuỗi token văn bản mục tiêu:
-   $$\mathcal{L}_{\text{generative}} = - \sum_{t=1}^T \log P(y_t \mid H_{\text{fusion}}, y_{<t})$$
+
+$$
+\mathcal{L}_{\text{generative}} = - \sum_{t=1}^T \log P(y_t \mid H_{\text{fusion}}, y_{<t})
+$$
 
 ---
 
@@ -238,9 +282,16 @@ Hệ thống sử dụng một tập dữ liệu hiệu chuẩn nhỏ $\mathcal{
 1. Trích xuất chỉ mục $k_i = \arg\min_j \|h_{\text{cls}}^{(i)} - e_j^{\text{cls}}\|_2^2$ cho mọi ảnh trong $\mathcal{D}_{\text{map}}$.
 2. Xây dựng bảng tần suất $D[k][c]$ đếm số lần ảnh thuộc danh mục $c$ rơi vào tế bào Voronoi thứ $k$.
 3. Tính xác suất hậu nghiệm:
-   $$P(c \mid k) = \frac{D[k][c]}{\sum_{c'} D[k][c']}$$
+
+$$
+P(c \mid k) = \frac{D[k][c]}{\sum_{c'} D[k][c']}
+$$
+
 4. Xác lập hàm phân loại an toàn $M(k)$ theo ngưỡng tin cậy $\tau = 0.6$:
-   $$M(k) = \begin{cases} c_{\text{dom}} & \text{nếu } \max_c P(c \mid k) > \tau \\ \text{neutral} & \text{ngược lại} \end{cases}$$
+
+$$
+M(k) = \begin{cases} c_{\text{dom}} & \text{nếu } \max_c P(c \mid k) > \tau \\ \text{neutral} & \text{ngược lại} \end{cases}
+$$
 
 ### 5.2. Thuật Toán Thực Thi Tại Thời Gian Suy Luận (Inference Algorithm)
 

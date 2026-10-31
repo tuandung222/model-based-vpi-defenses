@@ -31,23 +31,33 @@
 
 Trong các mô hình Thị giác - Ngôn ngữ Lớn (Vision-Language Models - VLMs), ảnh đầu vào $X_{\text{img}} \in \mathbb{R}^{H \times W \times C}$ là một thực thể trong không gian liên tục. Bộ mã hóa thị giác $\mathcal{F}_v$ (thường là Vision Transformer như ViT-L/14 hoặc SigLIP) chia ảnh thành $N$ mảnh (patches), ánh xạ tuyến tính và đưa qua các tầng chú ý để sinh ra tập hợp véc-tơ đặc trưng liên tục:
 
-$$Z_v = \mathcal{F}_v(X_{\text{img}}) = \{z_{\text{cls}}, z_1, z_2, \dots, z_N\} \subset \mathbb{R}^{d_v}$$
+$$
+Z_v = \mathcal{F}_v(X_{\text{img}}) = \{z_{\text{cls}}, z_1, z_2, \dots, z_N\} \subset \mathbb{R}^{d_v}
+$$
 
 Các véc-tơ này tiếp tục được chiếu sang không gian chiều của mô hình ngôn ngữ lớn (LLM) thông qua bộ chiếu đa phương thức $\mathcal{F}_h$:
 
-$$H_v = \mathcal{F}_h(Z_v) \in \mathbb{R}^{N \times d_h}, \quad h_{\text{cls}} = \mathcal{F}_h(z_{\text{cls}}) \in \mathbb{R}^{d_h}$$
+$$
+H_v = \mathcal{F}_h(Z_v) \in \mathbb{R}^{N \times d_h}, \quad h_{\text{cls}} = \mathcal{F}_h(z_{\text{cls}}) \in \mathbb{R}^{d_h}
+$$
 
 Chuỗi biểu diễn thị giác $H_v$ sau đó được ghép nối trực tiếp với chuỗi biểu diễn văn bản $H_t$ thành chuỗi đầu vào $H_{\text{fusion}} = [H_v \parallel H_t]$. Tại đây, LLM decoder sinh ra xác suất của chuỗi phản hồi mục tiêu $Y = (y_1, y_2, \dots, y_T)$:
 
-$$P(Y \mid X_{\text{img}}, X_{\text{text}}) = \prod_{t=1}^T P(y_t \mid H_{\text{fusion}}, y_{<t})$$
+$$
+P(Y \mid X_{\text{img}}, X_{\text{text}}) = \prod_{t=1}^T P(y_t \mid H_{\text{fusion}}, y_{<t})
+$$
 
 Một kẻ tấn công thực hiện tấn công tiêm lệnh thị giác có chủ đích (Targeted Visual Prompt Injection hoặc Multimodal Jailbreak) nhằm mục đích buộc mô hình sinh ra một chuỗi văn bản nguy hại xác định $Y^* = (y_1^*, \dots, y_m^*)$ (ví dụ: *"Sure, here is how to manufacture a lethal toxin..."* hoặc một lệnh thực thi shell độc hại). Bài toán tối ưu hóa đối kháng được thiết lập dưới dạng cực tiểu hóa hàm mất mát đối kháng $\mathcal{L}_{\text{adv}}$ có ràng buộc chuẩn nhiễu $\ell_p$:
 
-$$\min_{\delta} \mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta, X_{\text{text}}, Y^*) \quad \text{s.a.} \quad \|\delta\|_p \le \epsilon$$
+$$
+\min_{\delta} \mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta, X_{\text{text}}, Y^*) \quad \text{s.a.} \quad \|\delta\|_p \le \epsilon
+$$
 
 Trong đó, hàm mất mát phổ biến là Cross-Entropy có điều kiện:
 
-$$\mathcal{L}_{\text{adv}} = - \sum_{t=1}^m \log P(y_t^* \mid \mathcal{F}_{\text{LLM}}(\mathcal{F}_h(\mathcal{F}_v(X_{\text{img}} + \delta)), X_{\text{text}}), y_{<t}^*)$$
+$$
+\mathcal{L}_{\text{adv}} = - \sum_{t=1}^m \log P(y_t^* \mid \mathcal{F}_{\text{LLM}}(\mathcal{F}_h(\mathcal{F}_v(X_{\text{img}} + \delta)), X_{\text{text}}), y_{<t}^*)
+$$
 
 ```mermaid
 flowchart LR
@@ -72,7 +82,9 @@ flowchart LR
 
 Sức mạnh của các thuật toán tấn công như Projected Gradient Descent (PGD), ImgJP, hay Visual Adversarial Attack (VAA) bắt nguồn từ tính khả vi hoàn toàn (end-to-end differentiability) của chuỗi hàm từ logit đầu ra của LLM ngược về từng điểm ảnh:
 
-$$\nabla_\delta \mathcal{L}_{\text{adv}} = \frac{\partial \mathcal{L}_{\text{adv}}}{\partial Y} \cdot \frac{\partial Y}{\partial H_{\text{fusion}}} \cdot \frac{\partial H_v}{\partial Z_v} \cdot \frac{\partial Z_v}{\partial (X_{\text{img}} + \delta)}$$
+$$
+\nabla_\delta \mathcal{L}_{\text{adv}} = \frac{\partial \mathcal{L}_{\text{adv}}}{\partial Y} \cdot \frac{\partial Y}{\partial H_{\text{fusion}}} \cdot \frac{\partial H_v}{\partial Z_v} \cdot \frac{\partial Z_v}{\partial (X_{\text{img}} + \delta)}
+$$
 
 Do các phép toán trong Transformer (Linear Projections, GELU/SiLU activations, Softmax Self-Attention) đều là các hàm trơn hoặc vi phân từng đoạn:
 1. **Độ dốc gradient luôn xác định và khác không:** Kẻ tấn công có thể dễ dàng tính toán chính xác hướng đi xuống dốc nhất để lái phân phối xác suất sinh văn bản của LLM vào vùng nguy hại.
@@ -139,9 +151,16 @@ Khác với các kiến trúc VQ-VAE truyền thống chỉ lượng tử hóa �
 
 #### Bước 1: Trích xuất và chiếu đặc trưng
 Từ ảnh đầu vào $X_{\text{img}}$, Vision Encoder $\mathcal{F}_v$ sinh ra:
-$$\{z_{\text{cls}}, Z_v^{1:N}\} = \mathcal{F}_v(X_{\text{img}})$$
+
+$$
+\{z_{\text{cls}}, Z_v^{1:N}\} = \mathcal{F}_v(X_{\text{img}})
+$$
+
 với $Z_v^{1:N} \in \mathbb{R}^{N \times d_v}$ biểu diễn $N$ patch (với ViT-L/14-336, $d_v = 1024, N = 576$) và $z_{\text{cls}} \in \mathbb{R}^{d_v}$ là token đại diện cho ngữ nghĩa trừu tượng toàn bức ảnh. Lớp chiếu tuyến tính $\mathcal{F}_h$ đưa các đặc trưng này vào không gian embedding của LLM ($d_h$):
-$$\{h_{\text{cls}}, H_v\} = \mathcal{F}_h(\{z_{\text{cls}}, Z_v^{1:N}\}), \quad H_v \in \mathbb{R}^{N \times d_h}, \quad h_{\text{cls}} \in \mathbb{R}^{d_h}$$
+
+$$
+\{h_{\text{cls}}, H_v\} = \mathcal{F}_h(\{z_{\text{cls}}, Z_v^{1:N}\}), \quad H_v \in \mathbb{R}^{N \times d_h}, \quad h_{\text{cls}} \in \mathbb{R}^{d_h}
+$$
 
 #### Bước 2: Rời rạc hóa qua từ điển mã (Codebook Lookup)
 Hệ thống duy trì hai từ điển mã riêng biệt được học trong quá trình huấn luyện:
@@ -150,12 +169,23 @@ Hệ thống duy trì hai từ điển mã riêng biệt được học trong qu
 
 Quá trình lượng tử hóa được thực hiện bằng phép tìm kiếm lân cận gần nhất theo khoảng cách Euclid:
 - Đối với embedding toàn cục $h_{\text{cls}}$:
-  $$k_{\text{cls}} = \arg\min_{i \in \{1, \dots, K\}} \|h_{\text{cls}} - e_i^{\text{cls}}\|_2^2, \quad \tilde{h}_{\text{cls}} = e_{k_{\text{cls}}}^{\text{cls}}$$
+
+$$
+k_{\text{cls}} = \arg\min_{i \in \{1, \dots, K\}} \|h_{\text{cls}} - e_i^{\text{cls}}\|_2^2, \quad \tilde{h}_{\text{cls}} = e_{k_{\text{cls}}}^{\text{cls}}
+$$
+
 - Đối với từng patch embedding $H_v^j$ ($j = 1, \dots, N$):
-  $$k_j = \arg\min_{i \in \{1, \dots, P\}} \|H_v^j - e_i^{\text{patch}}\|_2^2, \quad \tilde{H}_v^j = e_{k_j}^{\text{patch}}$$
+
+$$
+k_j = \arg\min_{i \in \{1, \dots, P\}} \|H_v^j - e_i^{\text{patch}}\|_2^2, \quad \tilde{H}_v^j = e_{k_j}^{\text{patch}}
+$$
 
 Về mặt hình học, thao tác này chia không gian véc-tơ liên tục $\mathbb{R}^{d_h}$ thành tập hợp các **tế bào Voronoi** (Voronoi cells):
-$$\mathcal{V}_i = \{x \in \mathbb{R}^{d_h} \mid \|x - e_i\|_2 \le \|x - e_j\|_2, \forall j \ne i\}$$
+
+$$
+\mathcal{V}_i = \{x \in \mathbb{R}^{d_h} \mid \|x - e_i\|_2 \le \|x - e_j\|_2, \forall j \ne i\}
+$$
+
 Bất kỳ véc-tơ liên tục nào rơi vào bên trong tế bào $\mathcal{V}_i$ đều bị thu gọn (collapse) về đúng điểm tựa duy nhất $e_i$.
 
 ---
@@ -191,10 +221,16 @@ sequenceDiagram
 Trước khi vận hành, Q-MLLM sử dụng một tập dữ liệu hiệu chuẩn nhỏ $\mathcal{D}_{\text{map}}$ gồm các ảnh đại diện từ các nhóm độc hại chính (ví dụ: 50 ảnh cho mỗi nhóm như khiêu dâm, máu me, vũ khí, cử chỉ xúc phạm) và khoảng 500 ảnh trung tính (neutral). Tập này **không dùng để cập nhật trọng số** mà chỉ dùng để đếm thống kê.
 
 Với mỗi ảnh $I_i \in \mathcal{D}_{\text{map}}$ thuộc nhãn $c_i$, hệ thống trích xuất chỉ mục $k_i = \arg\min_j \|h_{\text{cls}}^{(i)} - e_j^{\text{cls}}\|_2^2$. Xác suất hậu nghiệm của nhóm độc hại $c$ tại chỉ mục $k$ được tính bằng:
-$$P(c \mid k) = \frac{\sum_{i \in \mathcal{D}_{\text{map}}} \mathbb{I}(k_i = k \land c_i = c)}{\sum_{i \in \mathcal{D}_{\text{map}}} \mathbb{I}(k_i = k)}$$
+
+$$
+P(c \mid k) = \frac{\sum_{i \in \mathcal{D}_{\text{map}}} \mathbb{I}(k_i = k \land c_i = c)}{\sum_{i \in \mathcal{D}_{\text{map}}} \mathbb{I}(k_i = k)}
+$$
 
 Hàm phân loại an toàn $M(k)$ được xác lập thông qua ngưỡng tin cậy $\tau \in [0.4, 0.8]$:
-$$M(k) = \begin{cases} \arg\max_c P(c \mid k) & \text{nếu } \max_c P(c \mid k) > \tau \\ \text{neutral} & \text{ngược lại} \end{cases}$$
+
+$$
+M(k) = \begin{cases} \arg\max_c P(c \mid k) & \text{nếu } \max_c P(c \mid k) > \tau \\ \text{neutral} & \text{ngược lại} \end{cases}
+$$
 
 Trong thời gian suy luận, hệ thống chỉ cần tính $k_{\text{cls}}$ và tra bảng $M(k_{\text{cls}})$. Nếu $M(k_{\text{cls}}) \ne \text{neutral}$, mô hình trả về cảnh báo an toàn lập tức trong thời gian tính toán cỡ micro-giây, cắt đứt hoàn toàn nguy cơ jailbreak ở tầng sinh văn bản.
 
@@ -218,7 +254,7 @@ flowchart TD
         direction TB
         S2_Frozen["Vision Encoder F_v: ĐÓNG BĂNG<br/>Projector F_h: ĐÓNG BĂNG<br/>Codebooks C_cls, C_patch: ĐÓNG BĂNG"]
         S2_Trainable["Trọng số cập nhật:<br/>• LLM Decoder F_LLM"]
-        S2_Loss["Hàm tổn thất tự hồi quy L_generative:<br/>L_generative = - sum log P(y_t | H_fusion, y_<t)"]
+        S2_Loss["Hàm tổn thất tự hồi quy L_generative:<br/>L_generative = - sum log P(y_t | H_fusion, y_#lt;t)"]
         S2_Frozen --> S2_Trainable --> S2_Loss
     end
 
@@ -233,19 +269,40 @@ Mô hình đóng băng hoàn toàn $\mathcal{F}_v$ và $\mathcal{F}_{\text{LLM}}
 
 Hàm mất mát tổng quát trong Giai đoạn 1 gồm 4 thành phần:
 
-$$\mathcal{L}_{\text{pretrain}} = \mathcal{L}_{\text{generative}} + \lambda_1 (\mathcal{L}_{\text{vq}}^{\text{patch}} + \mathcal{L}_{\text{vq}}^{\text{cls}}) + \lambda_2 \mathcal{L}_{\text{semantic}}$$
+$$
+\mathcal{L}_{\text{pretrain}} = \mathcal{L}_{\text{generative}} + \lambda_1 (\mathcal{L}_{\text{vq}}^{\text{patch}} + \mathcal{L}_{\text{vq}}^{\text{cls}}) + \lambda_2 \mathcal{L}_{\text{semantic}}
+$$
 
 Trong đó:
 1. **Vector Quantization Loss ($\mathcal{L}_{\text{vq}}$):** Do phép toán $\arg\min$ không khả vi, kỹ thuật **Straight-Through Estimator (STE)** với toán tử chặn gradient $\text{sg}[\cdot]$ được áp dụng:
-   $$\mathcal{L}_{\text{vq}} = \mathcal{L}_{\text{codebook}} + \lambda_{\text{commit}} \mathcal{L}_{\text{commit}}$$
+
+$$
+\mathcal{L}_{\text{vq}} = \mathcal{L}_{\text{codebook}} + \lambda_{\text{commit}} \mathcal{L}_{\text{commit}}
+$$
+
    - **Codebook Loss:** Kéo các véc-tơ mã $e_i$ tiến gần về phân phối biểu diễn của Vision Encoder:
-     $$\mathcal{L}_{\text{codebook}} = \|\text{VQ}(x) - \text{sg}[x]\|_2^2$$
+
+$$
+\mathcal{L}_{\text{codebook}} = \|\text{VQ}(x) - \text{sg}[x]\|_2^2
+$$
+
    - **Commitment Loss:** Ép buộc đầu ra của bộ chiếu không dao động quá xa khỏi véc-tơ mã được chọn:
-     $$\mathcal{L}_{\text{commit}} = \|x - \text{sg}[\text{VQ}(x)]\|_2^2$$
+
+$$
+\mathcal{L}_{\text{commit}} = \|x - \text{sg}[\text{VQ}(x)]\|_2^2
+$$
+
 2. **Semantic Alignment Loss ($\mathcal{L}_{\text{semantic}}$):** Để embedding toàn cục lượng tử hóa $\tilde{h}_{\text{cls}}$ phản ánh chính xác ngữ nghĩa tổng thể, hàm mất mát này cực tiểu hóa khoảng cách giữa $\tilde{h}_{\text{cls}}$ và biểu diễn ẩn tầng cuối cùng của câu chú thích ảnh ($H_{\text{caption}}$):
-   $$\mathcal{L}_{\text{semantic}} = \|\tilde{h}_{\text{cls}} - H_{\text{caption}}\|_2^2$$
+
+$$
+\mathcal{L}_{\text{semantic}} = \|\tilde{h}_{\text{cls}} - H_{\text{caption}}\|_2^2
+$$
+
 3. **Generative Loss ($\mathcal{L}_{\text{generative}}$):** Tối ưu hóa xác suất sinh chuỗi từ ngữ thông thường:
-   $$\mathcal{L}_{\text{generative}} = - \sum_{t=1}^T \log P(y_t \mid H_{\text{fusion}}, y_{<t})$$
+
+$$
+\mathcal{L}_{\text{generative}} = - \sum_{t=1}^T \log P(y_t \mid H_{\text{fusion}}, y_{<t})
+$$
 
 #### Giai đoạn 2: Tinh chỉnh LLM (Fine-tuning)
 Tại giai đoạn này, toàn bộ thành phần thị giác ($\mathcal{F}_v$, $\mathcal{F}_h$, $\mathcal{C}_{\text{cls}}$, $\mathcal{C}_{\text{patch}}$) đều bị đóng băng. Chỉ có các tham số của $\mathcal{F}_{\text{LLM}}$ được mở để huấn luyện trên các tập dữ liệu chỉ thị đa phương thức (Visual Instruction Tuning). Điều này đảm bảo LLM học cách giải mã và suy luận hoàn toàn dựa trên các token thị giác rời rạc $\tilde{H}_v$, hình thành khả năng miễn nhiễm tự nhiên trước các nhiễu liên tục.
@@ -275,7 +332,11 @@ flowchart TD
 
 1. **Bản chất hàm bậc thang (Step Function):** Ánh xạ lượng tử hóa $\text{VQ}(x) = e_{\arg\min_i \|x - e_i\|_2}$ là một hàm hằng từng đoạn (piecewise constant function). Đạo hàm thực sự của hàm này bằng $\mathbf{0}$ ở hầu khắp mọi nơi bên trong mỗi tế bào Voronoi, và không xác định (undefined) tại các biên phân chia.
 2. **Hiện tượng bẫy gradient với bước nhảy nhỏ ($\alpha \le 1/255$):** Khi kẻ tấn công sử dụng bước nhảy gradient nhỏ để tối ưu hóa nhiễu tàng hình, sự thay đổi trong biểu diễn liên tục $\Delta h$ không đủ lớn để vượt qua bán kính tế bào Voronoi:
-   $$\|h_{\text{adv}} - e_{\text{current}}\|_2 < \|h_{\text{adv}} - e_j\|_2, \quad \forall j \ne \text{current}$$
+
+$$
+\|h_{\text{adv}} - e_{\text{current}}\|_2 < \|h_{\text{adv}} - e_j\|_2, \quad \forall j \ne \text{current}
+$$
+
    Kết quả là chỉ mục rời rạc không đổi, token cấp cho LLM giữ nguyên, khiến hàm mất mát đối kháng không thay đổi và thuật toán tấn công bị đình trệ hoàn toàn.
 3. **Hiện tượng nhảy vọt hỗn loạn với bước nhảy lớn ($\alpha \ge 4/255$):** Nếu kẻ tấn công tăng độ lớn bước nhảy để ép véc-tơ vượt ranh giới Voronoi, véc-tơ sẽ rơi sang một ô mã ngẫu nhiên khác. Sự chuyển dịch này không mang tính trơn mượt mà là một bước nhảy rời rạc thô thiển, làm nổ hoặc đảo chiều đột ngột hàm mất mát, phá hủy tính liên tục cần thiết để giải bài toán tối ưu hóa đối kháng.
 
@@ -321,7 +382,9 @@ flowchart TD
 
 Trong phân tích giải thích mô hình (interpretability), phương pháp phổ biến để đo độ nhạy của token đầu vào là tính đạo hàm của logit hoặc xác suất token đầu ra đầu tiên:
 
-$$S_i^{\text{prob}} = \left\| \frac{\partial P(y_1 \mid X)}{\partial H_v^{(i)}} \right\|_2$$
+$$
+S_i^{\text{prob}} = \left\| \frac{\partial P(y_1 \mid X)}{\partial H_v^{(i)}} \right\|_2
+$$
 
 Tuy nhiên, Zhang et al. chứng minh rằng phương pháp này **hoàn toàn thất bại** trong các tình huống VPI thực tế vì 2 lý do:
 1. **Thiếu thông tin về chuỗi mục tiêu (Target-Agnostic Challenge):** Trong phòng vệ thực tế, hệ thống không thể biết trước kẻ tấn công muốn mô hình sinh ra từ gì ($y_1^*$) để tính đạo hàm theo xác suất của từ đó.
@@ -337,16 +400,22 @@ Giả sử chuỗi đầu vào gồm $N$ token thị giác $H_v = (H_v^{(1)}, \d
 
 Hàm mục tiêu năng lượng đối kháng được định nghĩa bằng chuẩn $\ell_2$ của trạng thái ẩn này:
 
-$$\mathcal{L}_{\text{target}} = \|h_L^{\text{target}}\|_2 = \sqrt{\sum_{j=1}^d (h_{L, j}^{\text{target}})^2}$$
+$$
+\mathcal{L}_{\text{target}} = \|h_L^{\text{target}}\|_2 = \sqrt{\sum_{j=1}^d (h_{L, j}^{\text{target}})^2}
+$$
 
 Điểm nhạy cảm (Saliency Score) $S_i$ của token thị giác thứ $i$ được định nghĩa bằng chuẩn Frobenius của gradient của $\mathcal{L}_{\text{target}}$ theo véc-tơ embedding của token đó:
 
-$$S_i = \left\| \nabla_{H_v^{(i)}} \mathcal{L}_{\text{target}} \right\|_2 = \left\| \frac{\partial \|h_L^{\text{target}}\|_2}{\partial H_v^{(i)}} \right\|_2$$
+$$
+S_i = \left\| \nabla_{H_v^{(i)}} \mathcal{L}_{\text{target}} \right\|_2 = \left\| \frac{\partial \|h_L^{\text{target}}\|_2}{\partial H_v^{(i)}} \right\|_2
+$$
 
 #### Tính chất lý thuyết bảo đảm:
 Nhóm tác giả chứng minh bằng toán học rằng: **Chuẩn gradient trạng thái ẩn duy trì tính nhất quán về thứ tự xếp hạng (ranking consistency) với gradient của hàm mất mát đối kháng toàn phần $\mathcal{L}_{\text{adv}}$:**
 
-$$\text{Rank}(S_i) \approx \text{Rank}\left( \left\| \frac{\partial \mathcal{L}_{\text{adv}}}{\partial H_v^{(i)}} \right\|_2 \right)$$
+$$
+\text{Rank}(S_i) \approx \text{Rank}\left( \left\| \frac{\partial \mathcal{L}_{\text{adv}}}{\partial H_v^{(i)}} \right\|_2 \right)
+$$
 
 Nói cách khác, những token thị giác nào có đóng góp lớn nhất trong việc bẻ cong trạng thái biểu diễn của mô hình về phía mục tiêu tấn công sẽ biểu hiện chuẩn gradient $S_i$ vượt trội so với các token mang thông tin ngữ cảnh tự nhiên.
 

@@ -9,7 +9,7 @@
 > - **Tác giả:** Yongshuo Zong, Ondrej Bohdal, Tingyang Yu, Yongxin Yang, Timothy Hospedales
 > - **Đơn vị nghiên cứu:** University of Edinburgh, EPFL (École Polytechnique Fédérale de Lausanne)
 > - **Hội nghị xuất bản:** **ICML 2024** (International Conference on Machine Learning - Top-tier AI Conference)
-> - **Mã nguồn & Dữ liệu:** [GitHub - ys-zong/VLGuard](https://github.com/ys-zong/VLGuard) | [arXiv:2403.04252](https://arxiv.org/abs/2403.04252)
+> - **Mã nguồn & Dữ liệu:** [GitHub - ys-zong/VLGuard](https://github.com/ys-zong/VLGuard) | [arXiv:2402.02207](https://arxiv.org/abs/2402.02207)
 > - **Tóm tắt cốt lõi (Executive Summary):** Công trình tiên phong phát hiện và giải phẫu hiện tượng "quên lãng an toàn thảm họa" (Catastrophic Forgetting of Safety Alignment) khi chuyển đổi LLM đã căn chỉnh an toàn sang VLM đa phương thức. Nhóm tác giả đề xuất **VLGuard** — tập dữ liệu an toàn thị giác - ngôn ngữ đầu tiên bao quát cả rủi ro đơn phương thức và đa phương thức kết hợp thuật toán tối ưu hóa đa mục tiêu cân bằng (Safety vs. Utility Trade-off), cho phép triệt tiêu tỷ lệ tấn công thành công (ASR) của VPI/Jailbreak từ >80-90% xuống ~0% mà không làm suy giảm năng lực giải quyết tác vụ hữu ích (Utility), với chi phí huấn luyện dưới 1 giờ GPU.
 
 ---
@@ -59,27 +59,52 @@ Từ Bảng 1, các luận điểm kỹ thuật được rút ra:
 
 ### 2.1. Không Gian Biểu Diễn Đa Phương Thức & Hàm Mục Tiêu Tự Hồi Quy
 Xét mô hình VLM nhận đầu vào đa phương thức gồm hình ảnh $I \in \mathcal{I}$ và chỉ thị văn bản $X = (x_1, x_2, \dots, x_M) \in \mathcal{X}$. Quá trình tiền xử lý đưa ảnh qua bộ mã hóa thị giác Vision Encoder $\mathcal{E}_v$ và bộ chiếu Projector $\mathcal{P}$ để tạo chuỗi embedding thị giác:
-$$H_v = \mathcal{P}(\mathcal{E}_v(I)) \in \mathbb{R}^{K \times d_{\text{LLM}}}$$
+
+$$
+H_v = \mathcal{P}(\mathcal{E}_v(I)) \in \mathbb{R}^{K \times d_{\text{LLM}}}
+$$
 
 Chuỗi token văn bản được nhúng qua ma trận Word Embedding $E_t$ tạo thành $H_t = E_t(X) \in \mathbb{R}^{M \times d_{\text{LLM}}}$. Chuỗi đầu vào kết hợp được đưa vào khối Transformer Decoder:
-$$H_{\text{in}} = [H_t \parallel H_v]$$
+
+$$
+H_{\text{in}} = [H_t \parallel H_v]
+$$
 
 Xác suất sinh chuỗi phản hồi mục tiêu $Y = (y_1, y_2, \dots, y_T)$ được tính toán theo cơ chế tự hồi quy có điều kiện:
-$$P_\theta(Y \mid X, I) = \prod_{t=1}^{T} P_\theta(y_t \mid y_{<t}, X, H_v) = \prod_{t=1}^{T} \text{Softmax}\left( W_{\text{head}} h_t^{(L)} \right)_{y_t}$$
+
+$$
+P_\theta(Y \mid X, I) = \prod_{t=1}^{T} P_\theta(y_t \mid y_{<t}, X, H_v) = \prod_{t=1}^{T} \text{Softmax}\left( W_{\text{head}} h_t^{(L)} \right)_{y_t}
+$$
+
 trong đó $h_t^{(L)}$ là trạng thái ẩn tại tầng Transformer cuối cùng $L$, và $\theta$ là tập tham số khả vi của mô hình.
 
 ### 2.2. Xung Đột Gradient Giữa An Toàn (Safety) và Hữu Ích (Utility)
 Nếu chỉ thực hiện tinh chỉnh an toàn thuần túy trên tập dữ liệu từ chối $\mathcal{D}_{\text{safety}}$:
-$$\min_\theta \mathcal{L}_{\text{safety}}(\theta) = -\mathbb{E}_{(I, X, Y_{\text{refusal}}) \sim \mathcal{D}_{\text{safety}}} \left[ \sum_{t=1}^{|Y|} \log P_\theta(y_t \mid y_{<t}, X, \mathcal{P}(\mathcal{E}_v(I))) \right]$$
+
+$$
+\min_\theta \mathcal{L}_{\text{safety}}(\theta) = -\mathbb{E}_{(I, X, Y_{\text{refusal}}) \sim \mathcal{D}_{\text{safety}}} \left[ \sum_{t=1}^{|Y|} \log P_\theta(y_t \mid y_{<t}, X, \mathcal{P}(\mathcal{E}_v(I))) \right]
+$$
 
 Mô hình sẽ nhanh chóng rơi vào điểm cực tiểu suy biến (**Degenerate Refusal Attractor**). Tại đó, gradient cập nhật sẽ triệt tiêu các đặc trưng phân biệt ngữ cảnh, dẫn đến hiện tượng **Thận trọng Cực đoan (Exaggerated Safety / Over-refusal)**: Mô hình từ chối cả các câu hỏi an toàn chứa từ khóa nhạy cảm (như *"Cách tiêu diệt (kill) một tiến trình Python trong Linux?"* hay *"Làm sao để bắn (shoot) một bức ảnh đẹp?"*). 
 
 Để triệt tiêu hiện tượng này, VLGuard thiết lập bài toán tối ưu hóa đa mục tiêu với hàm ràng buộc neo giữ năng lực tác vụ hữu ích (Utility Regularization Anchor):
-$$\mathcal{L}_{\text{total}}(\theta) = \mathcal{L}_{\text{safety}}(\theta) + \alpha \cdot \mathcal{L}_{\text{utility}}(\theta)$$
+
+$$
+\mathcal{L}_{\text{total}}(\theta) = \mathcal{L}_{\text{safety}}(\theta) + \alpha \cdot \mathcal{L}_{\text{utility}}(\theta)
+$$
+
 trong đó:
-$$\mathcal{L}_{\text{utility}}(\theta) = -\mathbb{E}_{(I, X, Y_{\text{helpful}}) \sim \mathcal{D}_{\text{utility}}} \left[ \sum_{t=1}^{|Y|} \log P_\theta(y_t \mid y_{<t}, X, \mathcal{P}(\mathcal{E}_v(I))) \right]$$
+
+$$
+\mathcal{L}_{\text{utility}}(\theta) = -\mathbb{E}_{(I, X, Y_{\text{helpful}}) \sim \mathcal{D}_{\text{utility}}} \left[ \sum_{t=1}^{|Y|} \log P_\theta(y_t \mid y_{<t}, X, \mathcal{P}(\mathcal{E}_v(I))) \right]
+$$
+
 Hệ số cân bằng gradient $\alpha > 0$ đảm bảo rằng vector cập nhật tham số:
-$$g = \nabla_\theta \mathcal{L}_{\text{total}} = \nabla_\theta \mathcal{L}_{\text{safety}} + \alpha \nabla_\theta \mathcal{L}_{\text{utility}}$$
+
+$$
+g = \nabla_\theta \mathcal{L}_{\text{total}} = \nabla_\theta \mathcal{L}_{\text{safety}} + \alpha \nabla_\theta \mathcal{L}_{\text{utility}}
+$$
+
 nằm trong nón giao (intersection cone) của không gian suy giảm hàm mất mát an toàn và không gian bảo toàn tri thức thị giác tổng quát, ngăn chặn việc phá vỡ cấu trúc ma trận chú ý (Self-Attention Projections) đã học.
 
 ---
@@ -367,7 +392,10 @@ flowchart LR
 
 ### 6.1. Ranh Giới Thất Bại Trước Tấn Công Hộp Trắng Tối Ưu Gradient (White-Box Pixel Attacks)
 Đây là giới hạn nghiêm trọng nhất được chính nhóm tác giả thừa nhận trong Bảng 16 Phụ lục. Khi kẻ tấn công có quyền tiếp cận hộp trắng (hoặc chuyển giao gradient đối kháng) và tối ưu hóa ma trận nhiễu điểm ảnh $\delta \in \mathbb{R}^{H \times W \times 3}$ với ràng buộc $\|\delta\|_\infty \le \epsilon$ thông qua thuật toán PGD/FGSM dựa trên phương pháp của Qi et al. (2023a):
-$$\max_{\|\delta\|_\infty \le \epsilon} \mathcal{L}_{\text{toxic}}(\theta; I + \delta, X)$$
+
+$$
+\max_{\|\delta\|_\infty \le \epsilon} \mathcal{L}_{\text{toxic}}(\theta; I + \delta, X)
+$$
 
 #### Bảng 6: Mức độ tổn thương của mô hình trước tấn công tối ưu hóa điểm ảnh hộp trắng (Trích Bảng 16 bài báo)
 | Mô Hình | Có Tấn Công Gradient Pixel? | Tỷ Lệ Độc Hại Chung (Toxicity ASR % ↓) | Obscene (Tục tĩu % ↓) | Threat (Đe dọa % ↓) | Severe Toxicity (↓) |

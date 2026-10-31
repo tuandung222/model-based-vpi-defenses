@@ -17,13 +17,28 @@
 
 Mô hình Thị giác - Ngôn ngữ Lớn (Vision-Language Models - VLMs như GPT-4o, Claude 3.5 Sonnet, Qwen2.5-VL, LLaVA) được xây dựng dựa trên sự kết hợp giữa:
 1. **Bộ mã hóa thị giác (Vision Encoder - $\mathcal{E}_v$):** Thường là các mạng Vision Transformer (ViT, CLIP, SigLIP) trích xuất các vector đặc trưng liên tục từ ảnh $I \in \mathbb{R}^{H \times W \times 3}$:
-   $$Z_v = \mathcal{E}_v(I) = \{ z_1, z_2, \dots, z_M \} \subset \mathbb{R}^d$$
+
+$$
+Z_v = \mathcal{E}_v(I) = \{ z_1, z_2, \dots, z_M \} \subset \mathbb{R}^d
+$$
+
 2. **Bộ chiếu thích ứng (Multimodal Projector - $\mathcal{P}$):** Chiếu các vector đặc trưng thị giác sang không gian embedding của mô hình ngôn ngữ:
-   $$H_v = \mathcal{P}(Z_v) \subset \mathbb{R}^{d_{\text{LLM}}}$$
+
+$$
+H_v = \mathcal{P}(Z_v) \subset \mathbb{R}^{d_{\text{LLM}}}
+$$
+
 3. **Bộ giải mã ngôn ngữ tự hồi quy (LLM Decoder):** Tiếp nhận chuỗi token kết hợp giữa token văn bản của người dùng $H_t$ và token thị giác $H_v$:
-   $$X = [H_t \parallel H_v]$$
+
+$$
+X = [H_t \parallel H_v]
+$$
+
    và tính toán phân phối xác suất sinh token tiếp theo thông qua cơ chế tự chú ý đa đầu (Multi-Head Self-Attention):
-   $$P(y_k \mid y_{<k}, X) = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V$$
+
+$$
+P(y_k \mid y_{<k}, X) = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V
+$$
 
 ```mermaid
 flowchart TD
@@ -96,14 +111,14 @@ flowchart TD
             direction TB
             B1_A["Fine-Tuning An Toàn Đa Phương Thức<br/>• VLGuard (ICML 2024)<br/>• Cross-Modal Safety Alignment (EMNLP 2024)"]
             B1_B["Cắt Tỉa & Triệt Tiêu Token Ẩn (Token-Level Interventions)<br/>• SafePTR (NeurIPS 2025)<br/>• Localize & Neutralize (ICML 2026)"]
-            B1_C["Nắn Dòng Kích Hoạt & Định Vị Neuron (Activation Steering)<br/>• ARGUS (ArXiv 2025)<br/>• SafeNexus (ArXiv 2026)<br/>• CARE (CVPR 2026)"]
+            B1_C["Nắn Dòng Kích Hoạt & Định Vị Neuron (Activation Steering)<br/>• ARGUS (CVPR 2026)<br/>• SafeNexus (ArXiv 2026)<br/>• CARE (CVPR 2026)"]
             B1_D["Lượng Tử Hóa & Làm Rối Biểu Diễn Rời Rạc<br/>• Q-MLLM (NDSS 2026)<br/>• SmoothGuard (ICDM 2025)"]
         end
 
         subgraph BRANCH_2["2. Mô Hình Giám Sát Phụ Trợ & Tác Tử Tuần Tra (Auxiliary Guard Models)"]
             direction TB
             B2_A["VLM Guardrail Chuyên Dụng Tĩnh<br/>• Llama Guard 3 Vision (Meta 2024)<br/>• LlavaGuard (ICML 2025)"]
-            B2_B["Tác Tử Tuần Tra Chuyên Biệt Cho Web (Parallel Web Watchers)<br/>• WARD (ArXiv 2026)"]
+            B2_B["Tác Tử Tuần Tra Chuyên Biệt Cho Web (Parallel Web Watchers)<br/>• WARD (ICML 2026)"]
             B2_C["Mô Hình Suy Luận Chuỗi Tư Duy (CoT Reasoning Guards)<br/>• GuardReasoner-VL (NeurIPS 2025)<br/>• SafeGuard-VL (CVPR 2026)"]
             B2_D["Pipeline Lọc Hai Giai Đoạn (Detection + Detoxification)<br/>• MLLM-Protector (EMNLP 2024)"]
         end
@@ -146,8 +161,8 @@ Kho lưu trữ tài liệu này tiến hành giải phẫu kỹ thuật chi ti�
 
 1. **[Chương 1: VLGuard (ICML 2024)](01_vlguard_safety_finetuning.md)** — Tiên phong trong căn chỉnh an toàn đa phương thức (Safety Fine-Tuning) với tập dữ liệu cân bằng, giải quyết xung đột gradient giữa tác vụ hữu ích và từ chối an toàn.
 2. **[Chương 2: SafePTR (NeurIPS 2025)](02_safeptr_prune_then_restore.md)** — Cơ chế cắt tỉa token thị giác độc hại trong không gian kích hoạt ẩn ở tầng nhạy cảm và phục hồi đặc trưng lành tính ở tầng sau.
-3. **[Chương 3: ARGUS (ArXiv 2025)](03_argus_activation_steering.md)** — Kỹ thuật nắn dòng kích hoạt (Activation Steering) trong không gian con trạng thái ẩn, ép mô hình bảo toàn chỉ thị gốc bất chấp bẫy injection.
-4. **[Chương 4: WARD (ArXiv 2026)](04_ward_web_agent_robust_defense.md)** — Mô hình bảo vệ Web Agent chuyên dụng (0.8B/2B), huấn luyện đối kháng A3T, chạy song song không đồng bộ với độ trễ bằng 0.
+3. **[Chương 3: ARGUS (CVPR 2026)](03_argus_activation_steering.md)** — Kỹ thuật nắn dòng kích hoạt (Activation Steering) trong không gian con trạng thái ẩn, ép mô hình bảo toàn chỉ thị gốc bất chấp bẫy injection.
+4. **[Chương 4: WARD (ICML 2026)](04_ward_web_agent_robust_defense.md)** — Mô hình bảo vệ Web Agent chuyên dụng (0.8B/2B), huấn luyện đối kháng A3T, chạy song song không đồng bộ với độ trễ bằng 0.
 5. **[Chương 5: Llama Guard 3 Vision & LlavaGuard](05_guard_models_llama_guard_va_llavaguard.md)** — Khung kiến trúc Guardrail VLM đa phương thức ngoại vi, phân loại rủi ro trên 13 danh mục an toàn.
 6. **[Chương 6: GuardReasoner-VL & SafeGuard-VL](06_guardreasoner_vl_va_safeguard_vl_cot_reasoning.md)** — Mô hình bảo vệ suy luận chuỗi tư duy (CoT Reasoning) huấn luyện bằng Online RL và thích ứng chính sách an toàn động.
 7. **[Chương 7: Q-MLLM & Phòng Vệ Biểu Diễn Rời Rạc](07_qmllm_va_discrete_representation_defenses.md)** — Lượng tử hóa vector 2 tầng (Vector Quantization Codebook) triệt tiêu gradient đối kháng và các kỹ thuật đàn áp token.

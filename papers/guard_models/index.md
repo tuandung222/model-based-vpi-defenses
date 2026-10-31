@@ -26,7 +26,7 @@ flowchart TD
         end
 
         subgraph GEN2["THẾ HỆ 2: SUY LUẬN AN TOÀN CHUỖI TƯ DUY (REASONING & POLICY-ADAPTIVE GUARDS)"]
-            GRVL["GuardReasoner-VL (NeurIPS 2025)<br/>• Backbone: Qwen2.5-VL (3B, 7B)<br/>• Suy luận logic đa bước <think>...</think><br/>• Huấn luyện Online RL: Dynamic Clipping GRPO<br/>• Length-Aware Safety Reward"]
+            GRVL["GuardReasoner-VL (NeurIPS 2025)<br/>• Backbone: Qwen2.5-VL (3B, 7B)<br/>• Suy luận logic đa bước #lt;think#gt;...#lt;/think#gt;<br/>• Huấn luyện Online RL: Dynamic Clipping GRPO<br/>• Length-Aware Safety Reward"]
             SGVL["SafeGuard-VL (CVPR 2026)<br/>• Pipeline 2 giai đoạn: Self-Recaptioning + RLVR<br/>• Tách rời miêu tả rủi ro khỏi gán nhãn quy chuẩn<br/>• Benchmark SafeEditBench (Cặp ảnh đối xứng ngữ nghĩa)<br/>• Thích ứng 5 cấp độ chính sách động (L1 - L5)"]
         end
 
@@ -109,7 +109,11 @@ papers/guard_models/
 ### [Chương 4: Đánh Đổi Độ Trễ, Chi Phí Vận Hành, Nghịch Lý Meta-Jailbreak & Định Tuyến Thích Ứng](04_danh_doi_do_tre_va_meta_jailbreak.md)
 *   **Bùng nổ độ trễ (+200%) và chi phí suy luận trong thực tế:**
     *   Phương trình phân rã độ trễ tổng thể đường ống suy luận:
-        $$t_{\text{total}} = t_{\text{guard\_pre}} + t_{\text{primary\_agent}} + t_{\text{guard\_post}}$$
+
+$$
+t_{\text{total}} = t_{\text{guard\_pre}} + t_{\text{primary\_agent}} + t_{\text{guard\_post}}
+$$
+
     *   Sự bế tắc của các tác tử tự hành tương tác lặp (Agentic Loop $K$ bước): Bị cộng thêm từ $15$ đến $35$ giây độ trễ chết.
     *   Lạm phát chi phí tính toán: Phân tích số lượng Vision Tokens ($729$ - $2400$ tokens), System Policy Tokens ($800$ - $1500$ tokens) và CoT Reasoning Tokens ($180$ - $400$ tokens).
 *   **Nghịch lý tấn công ngược hướng đích vào Guardrail (Guard-Targeted Jailbreak & Meta-Jailbreak):**

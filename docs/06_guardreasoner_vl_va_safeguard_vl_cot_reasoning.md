@@ -34,7 +34,9 @@ Bảng dưới đây tổng hợp thông số xuất bản, tác giả và tài 
 
 Các mô hình Guardrail thế hệ đầu (như Llama Guard 3 Vision, LlavaGuard, NSFW-Detector hay OpenAI Moderation API) chủ yếu tiếp cận bài toán an toàn dưới dạng một tác vụ **phân loại nhãn nhị phân tĩnh** hoặc gán nhãn đa lớp đóng (Closed-set multi-label classification):
 
-$$\hat{y} = \arg\max_{c \in \{0, 1\}} P_\theta(y = c \mid X_{\text{input}})$$
+$$
+\hat{y} = \arg\max_{c \in \{0, 1\}} P_\theta(y = c \mid X_{\text{input}})
+$$
 
 Trong đó $X_{\text{input}} = \{T, I\}$ là cặp văn bản - hình ảnh. Mô hình trực tiếp ánh xạ từ không gian đa phương thức liên tục sang một phân phối xác suất trên một tập nhãn rời rạc mà không trải qua bất kỳ tiến trình diễn giải nội tại nào. Cách tiếp cận này bộc lộ ba khuyết tật mang tính bản thể luận (Ontological Flaws):
 
@@ -56,8 +58,8 @@ flowchart LR
     subgraph REASONING["MÔ HÌNH SUY LUẬN CHUỖI TƯ DUY (CoT GUARDRAIL)"]
         direction TB
         Inp2["Đầu vào đa phương thức<br/>Ảnh I + Lệnh T + Chính sách P"] --> CoT["VLM Suy Luận Logic<br/>(GuardReasoner-VL / SafeGuard-VL)"]
-        CoT --> Steps["Chuỗi CoT <think>:<br/>1. Trích xuất bằng chứng thị giác/chữ in<br/>2. Phân tích ngữ cảnh (Bảo tàng lịch sử)<br/>3. Đối chiếu điều khoản miễn trừ của P<br/>4. Xác định không có nguy cơ VPI</think>"]
-        Steps --> Out2["Phán quyết minh bạch <result>:<br/>'Safe (Phù hợp chính sách giáo dục)'"]
+        CoT --> Steps["Chuỗi CoT #lt;think#gt;:<br/>1. Trích xuất bằng chứng thị giác/chữ in<br/>2. Phân tích ngữ cảnh (Bảo tàng lịch sử)<br/>3. Đối chiếu điều khoản miễn trừ của P<br/>4. Xác định không có nguy cơ VPI#lt;/think#gt;"]
+        Steps --> Out2["Phán quyết minh bạch #lt;result#gt;:<br/>'Safe (Phù hợp chính sách giáo dục)'"]
     end
 
     style SHALLOW fill:#fef2f2,stroke:#ef4444,stroke-width:2px
@@ -138,7 +140,9 @@ Response Harmfulness: [Harmful / Unharmful]
 
 Mục tiêu huấn luyện khởi động lạnh bằng Reasoning Supervised Fine-Tuning (R-SFT):
 
-$$\mathcal{L}_{\text{R-SFT}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}} \left[ \log P_\theta(R, Y \mid Q, X, S) \right]$$
+$$
+\mathcal{L}_{\text{R-SFT}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}} \left[ \log P_\theta(R, Y \mid Q, X, S) \right]
+$$
 
 Trong đó $Q$ là chỉ thị nhiệm vụ kiểm duyệt, $X \in \{T, I, \{T, I\}\}$ là dữ liệu đầu vào người dùng, $S$ là phản hồi của mô hình VLM nạn nhân, $R$ là chuỗi suy luận, và $Y = \{Y_{\text{prom}}, Y_{\text{res}}\}$ là nhãn chân lý.
 
@@ -152,11 +156,15 @@ Nhằm tránh hiện tượng mô hình học vẹt các mẫu dễ trong giai �
 2. **Ghép nối dữ liệu nhạy an toàn (Safety-Aware Data Concatenation):**  
    Để rèn luyện khả năng phát hiện payload độc hại ẩn nấp tinh vi giữa những thông tin hoàn toàn vô hại, hai mẫu ngẫu nhiên $X_1 = \{T_1, I_1\}$ (nhãn $Y_1$) và $X_2 = \{T_2, I_2\}$ (nhãn $Y_2$) được ghép nối thành một mẫu mới $X_{\text{new}}$:
 
-$$T_{\text{new}} = \text{text\_concat}(T_1, T_2), \quad I_{\text{new}} = \text{image\_merge}(I_1, I_2), \quad X_{\text{new}} = \{T_{\text{new}}, I_{\text{new}}\}$$
+$$
+T_{\text{new}} = \text{text\_concat}(T_1, T_2), \quad I_{\text{new}} = \text{image\_merge}(I_1, I_2), \quad X_{\text{new}} = \{T_{\text{new}}, I_{\text{new}}\}
+$$
 
 Quy tắc gán nhãn an toàn hợp nhất (Safety Union Rule):
 
-$$Y_{\text{new}} = \begin{cases} \text{Unharmful} & \text{khi và chỉ khi } Y_1 = \text{Unharmful} \;\land\; Y_2 = \text{Unharmful} \\ \text{Harmful} & \text{nếu } Y_1 = \text{Harmful} \;\lor\; Y_2 = \text{Harmful} \end{cases}$$
+$$
+Y_{\text{new}} = \begin{cases} \text{Unharmful} & \text{khi và chỉ khi } Y_1 = \text{Unharmful} \;\land\; Y_2 = \text{Unharmful} \\ \text{Harmful} & \text{nếu } Y_1 = \text{Harmful} \;\lor\; Y_2 = \text{Harmful} \end{cases}
+$$
 
 Cơ chế này mô phỏng chính xác kịch bản tấn công VPI thực tế, nơi kẻ tấn công chèn một thông điệp tiêm lệnh nhỏ vào một bức ảnh phong cảnh hoặc tài liệu văn phòng hoàn toàn bình thường.
 
@@ -168,17 +176,31 @@ GuardReasoner-VL sử dụng thuật toán **Group Relative Policy Optimization 
 
 Mục tiêu tối ưu hóa được định nghĩa như sau:
 
-$$\mathcal{L}_{\text{RL}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}_{\text{RL}}, \{R_i, \hat{Y}_i\}_{i=1}^G \sim P_{\theta_{\text{old}}}} \left[ \frac{1}{G} \sum_{i=1}^G \min\left( K_i \cdot A_i, \; \text{clip}(K_i, 1 - B_s, 1 + B_s) \cdot A_i \right) \right]$$
+$$
+\mathcal{L}_{\text{RL}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}_{\text{RL}}, \{R_i, \hat{Y}_i\}_{i=1}^G \sim P_{\theta_{\text{old}}}} \left[ \frac{1}{G} \sum_{i=1}^G \min\left( K_i \cdot A_i, \; \text{clip}(K_i, 1 - B_s, 1 + B_s) \cdot A_i \right) \right]
+$$
 
 Trong đó:
 *   **Tỷ số cập nhật chính sách (Policy Ratio):**
-    $$K_i = \frac{P_\theta(R_i, \hat{Y}_i \mid Q, X, S)}{P_{\theta_{\text{old}}}(R_i, \hat{Y}_i \mid Q, X, S)}$$
+
+$$
+K_i = \frac{P_\theta(R_i, \hat{Y}_i \mid Q, X, S)}{P_{\theta_{\text{old}}}(R_i, \hat{Y}_i \mid Q, X, S)}
+$$
+
 *   **Hệ số lợi thế chuẩn hóa theo nhóm (Group Normalized Advantage):**
-    $$A_i = \frac{r_i - \text{mean}(\{r_1, r_2, \dots, r_G\})}{\text{std}(\{r_1, r_2, \dots, r_G\}) + \epsilon_0}$$
+
+$$
+A_i = \frac{r_i - \text{mean}(\{r_1, r_2, \dots, r_G\})}{\text{std}(\{r_1, r_2, \dots, r_G\}) + \epsilon_0}
+$$
+
 *   **Tham số Dynamic Clipping Parameter ($B_s$):**  
     Thay vì sử dụng ngưỡng cắt tĩnh ($\epsilon = 0.2$ cố định như PPO/GRPO tiêu chuẩn), GuardReasoner-VL đưa ra cơ chế suy giảm tích lũy theo số bước huấn luyện:
-    $$B_s = \left( \prod_{i=1}^s \frac{s_{\text{total}} - i}{s_{\text{total}}} \right) \cdot \epsilon$$
-    với $s$ là bước huấn luyện hiện tại và $s_{\text{total}}$ là tổng số bước. Ở giai đoạn đầu, $B_s$ có giá trị lớn cho phép mô hình tự do **khám phá (exploration)** các nhánh suy luận mới lạ. Ở giai đoạn cuối, $B_s$ co hẹp dần về 0 để ép mô hình **khai thác (exploitation)** và ổn định hội tụ vào chiến lược suy luận tối ưu nhất.
+
+$$
+B_s = \left( \prod_{i=1}^s \frac{s_{\text{total}} - i}{s_{\text{total}}} \right) \cdot \epsilon
+$$
+
+với $s$ là bước huấn luyện hiện tại và $s_{\text{total}}$ là tổng số bước. Ở giai đoạn đầu, $B_s$ có giá trị lớn cho phép mô hình tự do **khám phá (exploration)** các nhánh suy luận mới lạ. Ở giai đoạn cuối, $B_s$ co hẹp dần về 0 để ép mô hình **khai thác (exploitation)** và ổn định hội tụ vào chiến lược suy luận tối ưu nhất.
 
 ---
 
@@ -187,10 +209,18 @@ Trong đó:
 Để giải quyết mâu thuẫn giữa độ chính xác phân loại và độ dài suy luận (nguy cơ mô hình "nghĩ lan man" gây lãng phí tài nguyên tính toán), nhóm tác giả thiết kế hàm thưởng tích hợp 3 thành phần:
 
 1. **Phần thưởng an toàn cơ bản ($r_{\text{safety}}$):**
-   $$r_{\text{safety}} = I_{\text{format}} \times \left( 0.5 \cdot r_{\text{prompt}} + 0.5 \cdot r_{\text{response}} \right)$$
+
+$$
+r_{\text{safety}} = I_{\text{format}} \times \left( 0.5 \cdot r_{\text{prompt}} + 0.5 \cdot r_{\text{response}} \right)
+$$
+
    với $I_{\text{format}} = 1$ khi chuỗi xuất chứa đầy đủ các cặp thẻ `<think>...</think>` và `<result>...</result>`, ngược lại $I_{\text{format}} = 0$. Các biến $r_{\text{prompt}}, r_{\text{response}} \in \{0, 1\}$ phản ánh tính chính xác so với nhãn chân lý.
 2. **Hàm thưởng phạt điều tiết độ dài (Length-Aware Penalty):**
-   $$r = \frac{-1 + r_{\text{safety}}}{\min(l_{\text{norm}}, \beta)^2}$$
+
+$$
+r = \frac{-1 + r_{\text{safety}}}{\min(l_{\text{norm}}, \beta)^2}
+$$
+
    Trong đó $l_{\text{norm}} \in [0, 1]$ là độ dài chuỗi suy luận $R$ đã chuẩn hóa, và $\beta$ là ngưỡng trần cắt bớt (cut-off hyperparameter).
 
 > **Cơ chế hoạt động toán học sâu sắc:**
@@ -249,15 +279,23 @@ Mô hình không được tiếp xúc với nhãn `Safe` hay `Unsafe`. Thay vào
     1. Dùng Qwen2.5-VL tạo caption ban đầu (mang tính khái quát, ít chi tiết nguy hại).
     2. Dùng mô hình nới lỏng hơn (Gemma 27B) thực hiện **Recaptioning**: giữ nguyên cấu trúc ngữ pháp và các thực thể trung tính của caption gốc, nhưng bổ sung chính xác các thuộc tính vi phạm (chủng loại vũ khí, mức độ thương tổn, biểu tượng cực đoan).
 *   **Hàm mất mát:** Huấn luyện mô hình tiếp nhận ảnh và sinh lại đoạn mô tả chi tiết này:
-    $$\mathcal{L}_{\text{Recap}}(\theta) = - \sum_{t=1}^{|C_{\text{harm}}|} \log P_\theta(c_t \mid c_{<t}, I)$$
-    Kết quả: Mô hình nắm bắt sâu sắc bản chất thị giác của các mối nguy hại mà không hình thành định kiến nhãn đóng.
+
+$$
+\mathcal{L}_{\text{Recap}}(\theta) = - \sum_{t=1}^{|C_{\text{harm}}|} \log P_\theta(c_t \mid c_{<t}, I)
+$$
+
+Kết quả: Mô hình nắm bắt sâu sắc bản chất thị giác của các mối nguy hại mà không hình thành định kiến nhãn đóng.
 
 #### Giai Đoạn 2: Policy-Aware RL Với Phần Thưởng Kiểm Chứng Được (RLVR)
 Sau khi đã có nền tảng ngữ nghĩa vững chắc, mô hình được đưa vào môi trường Học Tăng Cường để học cách **tuân thủ chỉ thị chính sách**.
 *   **Đầu vào:** Cặp dữ liệu gồm Ảnh $I$ và Văn bản chính sách an toàn $P$ được viết bằng ngôn ngữ tự nhiên tùy biến (Open-schema Natural Language Policy).
 *   **Nhiệm vụ:** Mô hình phải sinh ra chuỗi suy luận đối chiếu hình ảnh với các điều khoản của $P$, sau đó chốt lại nhãn dự đoán $\hat{Y} \in \{\text{Safe}, \text{Unsafe}\}$.
 *   **Cơ chế Verifiable Reward (RLVR):** Nhãn an toàn dưới một chính sách cụ thể là một giá trị chân lý khách quan có thể kiểm chứng được ($Y_{\text{gt}}(I, P)$). Phần thưởng được trao dựa trên tính chính xác tuyệt đối của kết quả:
-    $$r(I, P, \hat{Y}, R) = \begin{cases} +1 & \text{nếu } \hat{Y} = Y_{\text{gt}}(I, P) \;\land\; \text{Đúng cấu trúc định dạng} \\ -1 & \text{nếu } \hat{Y} \neq Y_{\text{gt}}(I, P) \;\lor\; \text{Sai định dạng} \end{cases}$$
+
+$$
+r(I, P, \hat{Y}, R) = \begin{cases} +1 & \text{nếu } \hat{Y} = Y_{\text{gt}}(I, P) \;\land\; \text{Đúng cấu trúc định dạng} \\ -1 & \text{nếu } \hat{Y} \neq Y_{\text{gt}}(I, P) \;\lor\; \text{Sai định dạng} \end{cases}
+$$
+
 *   **Ưu thế cốt tử:** Do sử dụng RLVR (không ép khớp token cụ thể như SFT), mô hình giữ nguyên vẹn khả năng suy luận logic và kiến thức tổng quát, đồng thời biến năng lực kiểm duyệt thành một bài toán **Tuân thủ chỉ thị chính sách (Instruction-Following Problem)** thuần túy.
 
 ---

@@ -47,10 +47,16 @@ Khác với các kỹ thuật bẻ khóa thông qua câu lệnh văn bản hoặ
 
 Kẻ tấn công tìm kiếm một ma trận nhiễu cực tiểu $\delta \in \mathbb{R}^{H \times W \times C}$ bị chặn bởi chuẩn $\ell_\infty$ sao cho khi cộng vào ảnh ban đầu $\mathbf{I}$, hình ảnh mới $\mathbf{I}_{adv} = \mathbf{I} + \delta$ sẽ ép mô hình VLLM sinh ra tiền tố chấp thuận độc hại $\mathbf{Y}_{target}$ (ví dụ: `"Sure, here is how to manufacture..."`):
 
-$$\delta^* = \arg\min_{\|\delta\|_\infty \le \epsilon} \mathcal{L}_{CE}\left( \mathcal{M}_\theta\left( \left[ \mathcal{P}_\phi(\mathcal{E}_v(\mathbf{I} + \delta)) \,\|\, \mathbf{H}_t \right] \right), \mathbf{Y}_{target} \right)$$
+$$
+\delta^* = \arg\min_{\|\delta\|_\infty \le \epsilon} \mathcal{L}_{CE}\left( \mathcal{M}_\theta\left( \left[ \mathcal{P}_\phi(\mathcal{E}_v(\mathbf{I} + \delta)) \,\|\, \mathbf{H}_t \right] \right), \mathbf{Y}_{target} \right)
+$$
 
 Quá trình tối ưu hóa được giải quyết bằng thuật toán **Projected Gradient Descent (PGD)** qua $K$ bước lặp:
-$$\mathbf{I}^{(k+1)} = \Pi_{\mathcal{B}_\epsilon(\mathbf{I})} \left( \mathbf{I}^{(k)} - \alpha \cdot \text{sign}\left( \nabla_{\mathbf{I}^{(k)}} \mathcal{L}_{CE}\left(\mathcal{M}_\theta([\mathcal{P}_\phi(\mathcal{E}_v(\mathbf{I}^{(k)})), \mathbf{H}_t]), \mathbf{Y}_{target}\right) \right) \right)$$
+
+$$
+\mathbf{I}^{(k+1)} = \Pi_{\mathcal{B}_\epsilon(\mathbf{I})} \left( \mathbf{I}^{(k)} - \alpha \cdot \text{sign}\left( \nabla_{\mathbf{I}^{(k)}} \mathcal{L}_{CE}\left(\mathcal{M}_\theta([\mathcal{P}_\phi(\mathcal{E}_v(\mathbf{I}^{(k)})), \mathbf{H}_t]), \mathbf{Y}_{target}\right) \right) \right)
+$$
+
 Trong đó $\mathcal{B}_\epsilon(\mathbf{I}) = \{\mathbf{I}' \mid \|\mathbf{I}' - \mathbf{I}\|_\infty \le \epsilon\}$, với biên độ nhiễu $\epsilon = 16/255$ và bước nhảy gradient $\alpha = 1/255$. Về mặt thị giác con người, nhiễu $\delta$ hoàn toàn vô hình và bức ảnh trông hoàn toàn bình thường.
 
 ### 2.2. Bằng Chứng Thực Nghiệm: Bảng Số Liệu Giải Phẫu Pháp Y
@@ -61,7 +67,7 @@ Trong phần phụ lục kỹ thuật của bài báo (**Table 16**), chính nh�
 *(Số liệu ASR % trích xuất trực tiếp từ Table 16 trong bài báo gốc)*
 
 | Mô Hình Đánh Giá | Bị Tấn Công Nhiễu Điểm Ảnh? | Bất Kỳ Độc Tính Nào (Any Harm % ↓) | Tấn Công Danh Tính (Identity % ↓) | Nội Dung Khiêu Dâm (Obscene % ↓) | Độc Tính Nghiêm Trọng (Severe Toxicity % ↓) | Lăng Mạ / Xúc Phạm (Insult % ↓) | Đe Dọa (Threat % ↓) | Tổng Độc Tính (Toxicity % ↓) |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **LLaVA-v1.5-7B (Gốc)** | **Không (N)** | 39.01 | 2.54 | 32.12 | 1.33 | 19.81 | 2.41 | 40.96 |
 | **LLaVA-v1.5-7B-Mixed** | **Không (N)** | 19.33 | 1.11 | 14.58 | 0.63 | 8.56 | 0.63 | 19.33 |
 | **LLaVA-v1.5-7B-Posthoc** | **Không (N)** | **15.17** | **0.74** | **10.72** | **0.00** | **6.28** | **0.55** | **15.16** |

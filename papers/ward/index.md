@@ -17,8 +17,8 @@
 | **Tên bài báo** | **WARD: Adversarially Robust Defense of Web Agents Against Prompt Injections** |
 | **Nhóm tác giả** | Tri Cao†, Yulin Chen, Hieu Cao, Yibo Li, Khoi Le, Thong Nguyen, Yuexin Li, Yufei He, Yue Liu, Shuicheng Yan, Bryan Hooi |
 | **Cơ quan nghiên cứu** | Đại học Quốc gia Singapore (National University of Singapore - NUS)<br/>Trường Đại học Khoa học Tự nhiên, Đại học Quốc gia TP. Hồ Chí Minh (VNU-HCM) |
-| **Thời gian công bố** | Tháng 12/2025 (Cập nhật bản hoàn thiện 2026) |
-| **Định danh arXiv** | [arXiv:2512.01254](https://arxiv.org/abs/2512.01254) |
+| **Thời gian công bố** | Tháng 05/2026 (arXiv); **ICML 2026** |
+| **Định danh arXiv** | [arXiv:2605.15030](https://arxiv.org/abs/2605.15030) |
 | **Lĩnh vực chuyên sâu** | Multimodal Web Agent Security / Model-Based VPI Defense / Adversarial Co-Evolution / Reinforcement Learning from Rule-Based Feedback |
 | **Kiến trúc nền tảng (Backbones)** | Qwen-3.5-0.8B và Qwen-3.5-2B (Vision-Language Models siêu gọn nhẹ) |
 | **Bộ dữ liệu đóng góp** | • **WARD-Base**: 177.585 mẫu (709 URLs thực tế, 10 nền tảng mô phỏng, 13 kênh giao diện, 6 mục tiêu phá hoại)<br/>• **WARD-PIG**: 21.000 mẫu chuyên biệt hóa đề kháng đòn tấn công nhắm vào Guard<br/>• **WARD-Seed**: 49 URLs và 4 nền tảng phục vụ A3T |

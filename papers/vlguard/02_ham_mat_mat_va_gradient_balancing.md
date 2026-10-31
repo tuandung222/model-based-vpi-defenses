@@ -31,20 +31,36 @@ flowchart LR
 
 1. **Bộ mã hóa thị giác (Vision Encoder $\mathcal{E}_v$):**
    Tiếp nhận hình ảnh đầu vào $\mathbf{I} \in \mathbb{R}^{H \times W \times C}$, chia thành $N_v$ mảng điểm ảnh (patches), và trích xuất thành chuỗi vector đặc trưng ẩn:
-   $$\mathbf{F}_v = \mathcal{E}_v(\mathbf{I}) \in \mathbb{R}^{N_v \times D_v}$$
+
+$$
+\mathbf{F}_v = \mathcal{E}_v(\mathbf{I}) \in \mathbb{R}^{N_v \times D_v}
+$$
+
    Trong VLGuard, bộ mã hóa này là **CLIP-ViT-L/14** và được **đóng băng hoàn toàn** trong suốt quá trình tinh chỉnh an toàn ($\nabla_{\Theta_{enc}} \mathcal{L} = 0$).
 
 2. **Bộ chiếu đa phương thức (Multimodal Projector $\mathcal{P}_\phi$):**
    Biến đổi các vector đặc trưng thị giác từ chiều không gian $D_v$ sang chiều không gian ẩn $D_t$ của mô hình ngôn ngữ:
-   $$\mathbf{Z}_v = \mathcal{P}_\phi(\mathbf{F}_v) \in \mathbb{R}^{N_v \times D_t}$$
+
+$$
+\mathbf{Z}_v = \mathcal{P}_\phi(\mathbf{F}_v) \in \mathbb{R}^{N_v \times D_t}
+$$
+
    Trong LLaVA-v1.5, $\mathcal{P}_\phi$ là một mạng nơ-ron truyền thẳng đa tầng (MLP hai lớp với hàm kích hoạt phi tuyến GELU).
 
 3. **Mô hình ngôn ngữ tự hồi quy (Autoregressive LLM $\mathcal{M}_\theta$):**
    Chuỗi token văn bản của người dùng $\mathbf{X} = (x_1, x_2, \dots, x_M)$ được ánh xạ qua ma trận nhúng $\mathbf{E} \in \mathbb{R}^{|\mathcal{V}| \times D_t}$ thành $\mathbf{H}_t \in \mathbb{R}^{M \times D_t}$.
    Toàn bộ chuỗi đầu vào đa phương thức được ghép nối liên tiếp:
-   $$\mathbf{H}_{in} = \left[ \mathbf{Z}_v \,\|\, \mathbf{H}_t \right] \in \mathbb{R}^{(N_v + M) \times D_t}$$
+
+$$
+\mathbf{H}_{in} = \left[ \mathbf{Z}_v \,\|\, \mathbf{H}_t \right] \in \mathbb{R}^{(N_v + M) \times D_t}
+$$
+
    Mô hình tính toán phân phối xác suất có điều kiện trên từng bước thời gian $t$ để sinh chuỗi phản hồi $\mathbf{Y} = (y_1, y_2, \dots, y_L)$:
-   $$P(\mathbf{Y} | \mathbf{I}, \mathbf{X}; \Theta) = \prod_{t=1}^L P\left(y_t \,\middle|\, \mathbf{H}_{in}, y_{<t}; \Theta\right)$$
+
+$$
+P(\mathbf{Y} | \mathbf{I}, \mathbf{X}; \Theta) = \prod_{t=1}^L P\left(y_t \,\middle|\, \mathbf{H}_{in}, y_{<t}; \Theta\right)
+$$
+
    Trong đó $\Theta = \{\phi, \theta\}$ là tập hợp tham số có thể huấn luyện (gồm bộ chiếu $\phi$ và các trọng số LLM $\theta$).
 
 ---
@@ -72,28 +88,45 @@ flowchart TD
 ### 2.1. Nhánh Từ Chối An Toàn (Safety Refusal Objective)
 
 Tập dữ liệu độc hại tổng hợp bao gồm cả ảnh độc hại nội tại và ảnh lành tính bị cài cắm chỉ thị tấn công:
-$$\mathcal{D}_{unsafe\_total} = \mathcal{D}_{unsafe} \cup \mathcal{D}_{safe-unsafe}$$
+
+$$
+\mathcal{D}_{unsafe\_total} = \mathcal{D}_{unsafe} \cup \mathcal{D}_{safe-unsafe}
+$$
 
 Mỗi mẫu trong tập này bao gồm bộ ba $(\mathbf{I}_i, \mathbf{X}_i, \mathbf{Y}_i^{ref})$, trong đó $\mathbf{Y}_i^{ref} = (y_{i,1}^{ref}, \dots, y_{i,L_i}^{ref})$ là chuỗi phản hồi từ chối an toàn có lý giải chi tiết chuẩn mực. Hàm mất mát entropy chéo (Cross-Entropy Loss) trên nhánh an toàn được định nghĩa:
-$$\mathcal{L}_{refusal}(\Theta) = - \frac{1}{|\mathcal{D}_{unsafe\_total}|} \sum_{i=1}^{|\mathcal{D}_{unsafe\_total}|} \sum_{t=1}^{L_i} \log P\left(y_{i,t}^{ref} \,\middle|\, \mathbf{I}_i, \mathbf{X}_i, y_{i,<t}^{ref}; \Theta\right)$$
+
+$$
+\mathcal{L}_{refusal}(\Theta) = - \frac{1}{|\mathcal{D}_{unsafe\_total}|} \sum_{i=1}^{|\mathcal{D}_{unsafe\_total}|} \sum_{t=1}^{L_i} \log P\left(y_{i,t}^{ref} \,\middle|\, \mathbf{I}_i, \mathbf{X}_i, y_{i,<t}^{ref}; \Theta\right)
+$$
 
 Mục tiêu của $\mathcal{L}_{refusal}$ là tối đa hóa hàm hợp lý của việc sinh ra phản hồi từ chối bất cứ khi nào phát hiện tín hiệu độc tính từ $\mathbf{I}$ hoặc $\mathbf{X}$.
 
 ### 2.2. Nhánh Bảo Toàn Tính Hữu Ích (Utility Preservation Objective)
 
 Nếu chỉ tối ưu $\mathcal{L}_{refusal}$, mô hình sẽ nhanh chóng rơi vào trạng thái cực đoan: coi mọi câu hỏi đều là nguy hiểm và từ chối toàn bộ. Để tạo lực đối trọng, VLGuard tích hợp tập dữ liệu hữu ích:
-$$\mathcal{D}_{safe\_total} = \mathcal{D}_{safe-safe} \cup \mathcal{D}_{aux\_help}$$
+
+$$
+\mathcal{D}_{safe\_total} = \mathcal{D}_{safe-safe} \cup \mathcal{D}_{aux\_help}
+$$
+
 Trong đó:
 - $\mathcal{D}_{safe-safe}$ là tập các câu hỏi hiểu ảnh lành tính trích xuất từ 977 ảnh an toàn của VLGuard.
 - $\mathcal{D}_{aux\_help}$ là tập 5.000 mẫu dữ liệu hướng dẫn hữu ích tổng quát được lấy ngẫu nhiên từ tập huấn luyện ban đầu (LLaVA-Instruct) hoặc tập dữ liệu thuần văn bản Alpaca.
 
 Hàm mất mát trên nhánh hữu ích được xác định bởi:
-$$\mathcal{L}_{utility}(\Theta) = - \frac{1}{|\mathcal{D}_{safe\_total}|} \sum_{j=1}^{|\mathcal{D}_{safe\_total}|} \sum_{t=1}^{K_j} \log P\left(y_{j,t}^{help} \,\middle|\, \mathbf{I}_j, \mathbf{X}_j, y_{j,<t}^{help}; \Theta\right)$$
+
+$$
+\mathcal{L}_{utility}(\Theta) = - \frac{1}{|\mathcal{D}_{safe\_total}|} \sum_{j=1}^{|\mathcal{D}_{safe\_total}|} \sum_{t=1}^{K_j} \log P\left(y_{j,t}^{help} \,\middle|\, \mathbf{I}_j, \mathbf{X}_j, y_{j,<t}^{help}; \Theta\right)
+$$
 
 ### 2.3. Hàm Mất Mát Tổng Thể Cân Bằng
 
 Hàm mất mát toàn cục mà mô hình cần cực tiểu hóa là:
-$$\mathcal{L}_{total}(\Theta) = \mathcal{L}_{refusal}(\Theta) + \lambda \mathcal{L}_{utility}(\Theta)$$
+
+$$
+\mathcal{L}_{total}(\Theta) = \mathcal{L}_{refusal}(\Theta) + \lambda \mathcal{L}_{utility}(\Theta)
+$$
+
 Trong đó $\lambda > 0$ là siêu tham số cân bằng trọng số giữa an toàn và năng lực hữu ích (trong thực nghiệm huấn luyện chuẩn của VLGuard, tỷ lệ dữ liệu được thiết kế sao cho gradient giữa hai pha đạt trạng thái cân bằng động tự nhiên tương đương $\lambda \approx 1.0$).
 
 ---
@@ -103,10 +136,16 @@ Trong đó $\lambda > 0$ là siêu tham số cân bằng trọng số giữa an 
 ### 3.1. Hình Thức Hóa Xung Đột Gradient (Gradient Conflict)
 
 Xét không gian tham số $\Theta \in \mathbb{R}^d$. Khi cập nhật mô hình, gradient tổng thể là tổng hợp của hai vector gradient:
-$$\mathbf{g}_{total} = \mathbf{g}_{ref} + \lambda \mathbf{g}_{util}, \quad \text{với } \mathbf{g}_{ref} = \nabla_\Theta \mathcal{L}_{refusal}, \; \mathbf{g}_{util} = \nabla_\Theta \mathcal{L}_{utility}$$
+
+$$
+\mathbf{g}_{total} = \mathbf{g}_{ref} + \lambda \mathbf{g}_{util}, \quad \text{với } \mathbf{g}_{ref} = \nabla_\Theta \mathcal{L}_{refusal}, \; \mathbf{g}_{util} = \nabla_\Theta \mathcal{L}_{utility}
+$$
 
 Góc giữa hai vector gradient này được đo bằng tích vô hướng chuẩn hóa (Cosine Similarity):
-$$\rho = \cos\langle\mathbf{g}_{ref}, \mathbf{g}_{util}\rangle = \frac{\langle\mathbf{g}_{ref}, \mathbf{g}_{util}\rangle}{\|\mathbf{g}_{ref}\|_2 \|\mathbf{g}_{util}\|_2}$$
+
+$$
+\rho = \cos\langle\mathbf{g}_{ref}, \mathbf{g}_{util}\rangle = \frac{\langle\mathbf{g}_{ref}, \mathbf{g}_{util}\rangle}{\|\mathbf{g}_{ref}\|_2 \|\mathbf{g}_{util}\|_2}
+$$
 
 ```mermaid
 flowchart TD
@@ -153,7 +192,11 @@ Bằng cách đưa thêm 5.000 mẫu dữ liệu hữu ích ($\mathcal{D}_{aux\_
 ### 4.1. Toán Học Của Low-Rank Adaptation (LoRA)
 
 Trong phương pháp LoRA (Hu et al., 2022), trọng số gốc của mô hình ngôn ngữ $W_0 \in \mathbb{R}^{d \times k}$ được đóng băng cố định. Biến thiên cập nhật trọng số $\Delta W$ được tham số hóa thông qua phép nhân hai ma trận hạng thấp:
-$$W = W_0 + \Delta W = W_0 + \frac{\alpha}{r} B \cdot A$$
+
+$$
+W = W_0 + \Delta W = W_0 + \frac{\alpha}{r} B \cdot A
+$$
+
 Trong đó $B \in \mathbb{R}^{d \times r}$, $A \in \mathbb{R}^{r \times k}$, với hạng $r \ll \min(d, k)$, và $\alpha$ là hệ số tỷ lệ không đổi.
 
 ```mermaid
@@ -194,7 +237,10 @@ Một trong những phát hiện thực nghiệm gây ngạc nhiên nhất trong
 ## 5. Cơ Chế Đóng Băng Vision Encoder ($\mathcal{E}_v$ Frozen)
 
 Trong toàn bộ kiến trúc huấn luyện của VLGuard, bộ mã hóa hình ảnh Vision Encoder $\mathcal{E}_v$ (CLIP-ViT-L/14) được giữ đóng băng tuyệt đối:
-$$\frac{\partial \mathcal{L}_{total}}{\partial \Theta_{\mathcal{E}_v}} = \mathbf{0}$$
+
+$$
+\frac{\partial \mathcal{L}_{total}}{\partial \Theta_{\mathcal{E}_v}} = \mathbf{0}
+$$
 
 ### 5.1. Cơ Sở Khoa Học
 

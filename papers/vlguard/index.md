@@ -9,7 +9,7 @@
 > - **Tác giả:** Yongshuo Zong, Ondrej Bohdal, Tingyang Yu, Yongxin Yang, Timothy Hospedales
 > - **Đơn vị nghiên cứu:** University of Edinburgh & EPFL (École Polytechnique Fédérale de Lausanne)
 > - **Hội nghị xuất bản:** **ICML 2024** (International Conference on Machine Learning, Vienna, Austria, PMLR Vol. 235)
-> - **Mã nguồn & Dữ liệu:** [GitHub: ys-zong/VLGuard](https://github.com/ys-zong/VLGuard) | [arXiv: 2403.04252](https://arxiv.org/abs/2403.04252)
+> - **Mã nguồn & Dữ liệu:** [GitHub: ys-zong/VLGuard](https://github.com/ys-zong/VLGuard) | [arXiv: 2402.02207](https://arxiv.org/abs/2402.02207)
 > - **Phân loại phòng thủ:** Model-Based Defense / Explicit Safety Fine-Tuning (SFT) & Multi-Task Representation Alignment
 
 ---

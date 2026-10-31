@@ -46,7 +46,7 @@
 Đánh giá trên tập dữ liệu HOD (10.631 ảnh chứa nội dung độc hại thuộc 6 danh mục: Máu me, Cử chỉ xúc phạm, Rượu, Thuốc lá, Súng, Dao) và ToViLaG (5.600 ảnh khiêu dâm):
 
 | Phương Pháp Phòng Vệ | FPR ↓ | Khiêu Dâm (Porn) ↑ | Máu Me (Bloody) ↑ | Xúc Phạm (Insulting) ↑ | Rượu (Alcohol) ↑ | Thuốc Lá (Cigarette) ↑ | Súng (Gun) ↑ | Dao (Knife) ↑ | **AVG DSR** ↑ |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
 | **LLaVA-1.5 (Gốc)** | **0.0%** | 3.2% | 0.4% | 1.6% | 0.3% | 0.5% | 0.7% | 0.4% | 1.0% |
 | **LLaVA-NeXT-8B** | **0.0%** | 4.6% | 0.7% | 2.1% | 0.2% | 0.5% | 0.7% | 0.4% | 1.3% |
 | **Qwen2.5-VL-7B** | **0.0%** | 2.5% | 1.2% | 2.6% | 0.0% | 0.1% | 0.6% | 1.3% | 1.2% |
@@ -202,14 +202,26 @@ flowchart TD
 
 ### Cơ Chế Hoạt Động Của BPDA Trên Q-MLLM:
 1. **Lượt chạy tiến (Forward Pass):** Kẻ tấn công giữ nguyên hàm lượng tử hóa rời rạc của mô hình để đảm bảo kết quả trung thực:
-   $$\tilde{h} = \text{VQ}(h) = e_{\arg\min_i \|h - e_i\|_2}$$
+
+$$
+\tilde{h} = \text{VQ}(h) = e_{\arg\min_i \|h - e_i\|_2}
+$$
+
 2. **Lượt chạy lùi (Backward Pass):** Kẻ tấn công nhận thức được rằng đạo hàm thực tế $\frac{\partial \text{VQ}(h)}{\partial h} = \mathbf{0}$. Do đó, kẻ tấn công thay thế toán tử phi vi phân này bằng một hàm xấp xỉ khả vi $g(h) \approx \text{VQ}(h)$:
    - **Xấp xỉ đơn vị (Identity Approximation):**
-     $$\frac{\partial \text{VQ}(h)}{\partial h} \approx \mathbf{I}$$
-     (Đây chính là kỹ thuật STE mà chính các tác giả Q-MLLM đã dùng để huấn luyện mô hình!).
+
+$$
+\frac{\partial \text{VQ}(h)}{\partial h} \approx \mathbf{I}
+$$
+
+(Đây chính là kỹ thuật STE mà chính các tác giả Q-MLLM đã dùng để huấn luyện mô hình!).
    - **Xấp xỉ phân phối mềm (Softmax Temperature Approximation):**
-     $$g(h) = \sum_{i=1}^P \frac{\exp(-\|h - e_i\|_2^2 / \tau)}{\sum_j \exp(-\|h - e_j\|_2^2 / \tau)} \cdot e_i$$
-     với nhiệt độ $\tau > 0$ điều chỉnh độ trơn mượt của hàm.
+
+$$
+g(h) = \sum_{i=1}^P \frac{\exp(-\|h - e_i\|_2^2 / \tau)}{\sum_j \exp(-\|h - e_j\|_2^2 / \tau)} \cdot e_i
+$$
+
+với nhiệt độ $\tau > 0$ điều chỉnh độ trơn mượt của hàm.
 3. **Kết hợp EOT (Expectation Over Transformation):**  
    Bằng cách tính trung bình gradient qua nhiều phép biến đổi ngẫu nhiên, kẻ tấn công làm mượt các gờ nhấp nhô của tế bào Voronoi, tái tạo lại một dòng gradient liên tục có độ dốc định hướng tốt.
 

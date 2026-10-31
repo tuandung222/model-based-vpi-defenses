@@ -59,8 +59,8 @@ The complete monograph is authored in high-rigor, publication-grade academic Vie
 | **[00](docs/00_tong_quan_va_ly_thuyet_model_based_defense.md)** | **Bức Tranh Toàn Cảnh & Nền Tảng Lý Thuyết** | Multimodal semantic misalignment, attention hijacking, taxonomic boundary definition | Foundations |
 | **[01](docs/01_vlguard_safety_finetuning.md)** | **VLGuard: Safety Fine-Tuning** | Multimodal safety fine-tuning, catastrophic forgetting prevention, dual-objective loss formulation | **ICML 2024** |
 | **[02](docs/02_safeptr_prune_then_restore.md)** | **SafePTR: Prune-then-Restore** | Token-level jailbreak mitigation, sensitive layer discovery, Benign Feature Restoration (BFR) | **NeurIPS 2025** |
-| **[03](docs/03_argus_activation_steering.md)** | **ARGUS: Activation Steering** | Subspace latent activation steering ($h' = h + \alpha v_{\text{safe}}$), on-demand linear probes | **ArXiv 2025** |
-| **[04](docs/04_ward_web_agent_robust_defense.md)** | **WARD: Web Agent Robust Defense** | Asynchronous parallel inspection (0.8B/2B), A3T adversarial training, zero added latency | **ArXiv 2026** |
+| **[03](docs/03_argus_activation_steering.md)** | **ARGUS: Activation Steering** | Subspace latent activation steering ($h' = h + \alpha v_{\text{safe}}$), on-demand linear probes | **CVPR 2026 (Oral)** |
+| **[04](docs/04_ward_web_agent_robust_defense.md)** | **WARD: Web Agent Robust Defense** | Asynchronous parallel inspection (0.8B/2B), A3T adversarial training, zero added latency | **ICML 2026** |
 | **[05](docs/05_guard_models_llama_guard_va_llavaguard.md)** | **Llama Guard 3 Vision & LlavaGuard** | Auxiliary VLM guardrails, 13 hazard categories, guided rationales, policy exception scores | **Meta / ICML 2025** |
 | **[06](docs/06_guardreasoner_vl_va_safeguard_vl_cot_reasoning.md)** | **GuardReasoner-VL & SafeGuard-VL** | Multimodal Chain-of-Thought (CoT) reasoning, Online RL with dynamic clipping GRPO, RLVR | **NeurIPS 2025 / CVPR 2026** |
 | **[07](docs/07_qmllm_va_discrete_representation_defenses.md)** | **Q-MLLM & Discrete Representations** | Two-level vector quantization codebooks, disrupting continuous gradient feedback, token masking | **NDSS 2026 / ICML 2026** |
@@ -76,8 +76,8 @@ Similar to the multi-document deep dives for CaMeL and VPI-Bench, this repositor
 |:---|:---|:---:|:---|
 | **VLGuard** (ICML 2024) | [`papers/vlguard/`](papers/vlguard/) | 5 Documents | Multimodal Safety Duality, Dataset Engine, Loss Balancing, Empirical Benchmarks, Failure Boundaries |
 | **SafePTR** (NeurIPS 2025) | [`papers/safeptr/`](papers/safeptr/) | 5 Documents | 1% Token Paradox, Layer Sensitivity, Harmful Token Pruning, Benign Features Restoration, GUI Blindspots |
-| **ARGUS** (ArXiv 2025) | [`papers/argus/`](papers/argus/) | 5 Documents | Latent Subspace Probing, Closed-Form Adaptive Steering $\alpha_o$, Multimodal IPI Defense, DPO Comparison |
-| **WARD** (ArXiv 2026) | [`papers/ward/`](papers/ward/) | 5 Documents | Web Agent Threat Surface, PIG Vulnerability, Asynchronous Parallel Watcher, A3T Training, Mind2Web/WebArena |
+| **ARGUS** (CVPR 2026) | [`papers/argus/`](papers/argus/) | 5 Documents | Latent Subspace Probing, Closed-Form Adaptive Steering $\alpha_o$, Multimodal IPI Defense, DPO Comparison |
+| **WARD** (ICML 2026) | [`papers/ward/`](papers/ward/) | 5 Documents | Web Agent Threat Surface, PIG Vulnerability, Asynchronous Parallel Watcher, A3T Training, Mind2Web/WebArena |
 | **Q-MLLM & GTM** (NDSS / ICML 2026) | [`papers/qmllm/`](papers/qmllm/) | 5 Documents | Continuous Gradient Exploitation, Two-Level VQ Bottleneck, Voronoi Cells, Gradient-Guided Token Suppression |
 | **VLM Guardrails & CoT** | [`papers/guard_models/`](papers/guard_models/) | 5 Documents | Llama Guard 3V, LlavaGuard, GuardReasoner-VL CoT Reasoning, SafeGuard-VL Policy-Adaptive RLVR, Latency Trade-offs |
 
@@ -91,8 +91,8 @@ A comparative evaluation of the 8 studied model-based defense systems across sev
 |:---|:---:|:---|:---:|:---|:---|:---:|:---|
 | **VLGuard** | ICML 2024 | Decoder / Projector Weights | White-box (SFT) | Zero added calls | -3.8% (VQA) | ❌ Stateless | Soft Logits / Softmax |
 | **SafePTR** | NeurIPS 2025 | Intermediate Hidden Tokens | White-box (Latent) | < 15% latency | -0.9% (MME) | ❌ Stateless | Semantic Distance Threshold |
-| **ARGUS** | ArXiv 2025 | Hidden Subspace Activations | White-box (Steering) | < 10% latency | -1.2% (MMBench) | ❌ Stateless | Vector Addition ($h + \alpha v$) |
-| **WARD** | ArXiv 2026 | Compact Watcher (0.8B/2B) | **Black-box compatible** | **Zero added latency** | -0.25% (WebArena) | ⚠️ Single-turn focus | Binary Logits (A3T trained) |
+| **ARGUS** | CVPR 2026 | Hidden Subspace Activations | White-box (Steering) | < 10% latency | -1.2% (MMBench) | ❌ Stateless | Vector Addition ($h + \alpha v$) |
+| **WARD** | ICML 2026 | Compact Watcher (0.8B/2B) | **Black-box compatible** | **Zero added latency** | -0.25% (WebArena) | ⚠️ Single-turn focus | Binary Logits (A3T trained) |
 | **Llama Guard 3V** | Meta 2024 | Auxiliary VLM (11B) | **Black-box compatible** | +100% latency | 0.0% (Independent) | ❌ Stateless | 13 Category Multi-class |
 | **GuardReasoner-VL** | NeurIPS 2025 | Auxiliary CoT VLM | **Black-box compatible** | +200% latency | 0.0% (Independent) | ❌ Stateless | Reasoning Chain + Verdict |
 | **SafeGuard-VL** | CVPR 2026 | Policy-Adaptive VLM | **Black-box compatible** | +100% latency | 0.0% (Independent) | ❌ Stateless | RLVR Verifiable Rewards |

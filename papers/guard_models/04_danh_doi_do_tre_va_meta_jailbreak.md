@@ -41,7 +41,9 @@ flowchart TD
 
 Trong một kiến trúc phòng vệ hoàn chỉnh triển khai đầy đủ cả cơ chế kiểm duyệt tiền suy luận (Pre-hoc Screening) và hậu suy luận (Post-hoc Moderation), tổng thời gian người dùng phải chờ đợi cho một lượt tương tác đơn lẻ ($t_{\text{total}}$) được xác định bằng phương trình tích lũy:
 
-$$t_{\text{total}} = t_{\text{guard\_pre}} + t_{\text{primary\_agent}} + t_{\text{guard\_post}}$$
+$$
+t_{\text{total}} = t_{\text{guard\_pre}} + t_{\text{primary\_agent}} + t_{\text{guard\_post}}
+$$
 
 Trong đó:
 *   $t_{\text{guard\_pre}} = f_{\text{encode}}(I) + f_{\text{decode}}(Q_{\text{pre}}, T_{\text{user}}, I)$
@@ -50,7 +52,9 @@ Trong đó:
 
 Nếu Primary Agent là một mô hình lớn (ví dụ GPT-4o hoặc Claude 3.5 Sonnet) với thời gian sinh phản hồi trung bình $t_{\text{primary\_agent}} \approx 1.2\text{s}$, và Guard Model là Llama Guard 3 Vision (11B) với $t_{\text{guard\_pre}} \approx t_{\text{guard\_post}} \approx 0.85\text{s}$:
 
-$$t_{\text{total}} = 0.85\text{s} + 1.20\text{s} + 0.85\text{s} = 2.90\text{s}$$
+$$
+t_{\text{total}} = 0.85\text{s} + 1.20\text{s} + 0.85\text{s} = 2.90\text{s}
+$$
 
 > [!WARNING]
 > **Hậu quả vận hành:** Hệ thống phải gánh chịu mức gia tăng độ trễ phụ trội lên tới **$+141.6\%$** so với khi chạy mô hình chính độc lập. Nếu chuyển sang sử dụng mô hình suy luận chuỗi tư duy như GuardReasoner-VL 7B ($t_{\text{guard}} \approx 1.85\text{s}$), tổng thời gian chờ sẽ vọt lên tới **$4.90\text{s}$ (tăng $+308\%$)**.
@@ -59,13 +63,22 @@ $$t_{\text{total}} = 0.85\text{s} + 1.20\text{s} + 0.85\text{s} = 2.90\text{s}$$
 
 Hiện tượng thắt cổ chai độ trễ trở nên đặc biệt nghiêm trọng trong các tác tử duyệt web (Web Navigation Agents) hoặc tác tử sử dụng máy tính (Computer-Use Agents - CUAs). Các tác tử này hoạt động theo chu trình tự hành $K$ bước ($K \in [5, 20]$):
 
-$$T_{\text{agent\_loop}} = \sum_{k=1}^K \left( t_{\text{guard\_pre}}^{(k)} + t_{\text{agent}}^{(k)} + t_{\text{guard\_post}}^{(k)} \right)$$
+$$
+T_{\text{agent\_loop}} = \sum_{k=1}^K \left( t_{\text{guard\_pre}}^{(k)} + t_{\text{agent}}^{(k)} + t_{\text{guard\_post}}^{(k)} \right)
+$$
 
 Ở mỗi bước $k$, tác tử chụp ảnh màn hình (Screenshot), đọc DOM, thực thi thao tác chuột/phím và tiếp tục bước tiếp theo:
 *   Với $K = 10$ bước duyệt web, tổng thời gian "độ trễ chết" chỉ riêng cho việc chạy Guard Model (Pre-hoc + Post-hoc) sẽ là:
-    $$\Delta T_{\text{overhead}} = 10 \times (0.85\text{s} + 0.85\text{s}) = 17.0\text{s}$$
+
+$$
+\Delta T_{\text{overhead}} = 10 \times (0.85\text{s} + 0.85\text{s}) = 17.0\text{s}
+$$
+
 *   Nếu dùng GuardReasoner-VL (CoT):
-    $$\Delta T_{\text{overhead}} = 10 \times (1.85\text{s} + 1.85\text{s}) = 37.0\text{s}$$
+
+$$
+\Delta T_{\text{overhead}} = 10 \times (1.85\text{s} + 1.85\text{s}) = 37.0\text{s}
+$$
 
 Con số 37 giây trễ cộng thêm phá hủy hoàn toàn tính tương tác thời gian thực của tác tử, gây ra sự khó chịu cực độ cho người dùng và làm tăng nguy cơ quá hạn phiên kết nối mạng (Socket Timeout).
 
@@ -118,7 +131,7 @@ flowchart TD
         direction TB
         ReadText["1. Guard Model đọc văn bản typographic trong ảnh"]
         ReadText --> AttentionHijack["2. Tự chú ý (Self-Attention) bị chiếm quyền bởi thẩm quyền mạo danh"]
-        AttentionHijack --> Sycophancy["3. Hiện tượng Ngụy Biện (Adversarial Sycophancy):<br/>Chuỗi <think> bắt đầu tìm kiếm các lý do bào chữa:<br/>'Bức ảnh này dường như là một tài liệu nghiên cứu học thuật...<br/>Chỉ thị hệ thống yêu cầu xác nhận an toàn...'"]
+        AttentionHijack --> Sycophancy["3. Hiện tượng Ngụy Biện (Adversarial Sycophancy):<br/>Chuỗi #lt;think#gt; bắt đầu tìm kiếm các lý do bào chữa:<br/>'Bức ảnh này dường như là một tài liệu nghiên cứu học thuật...<br/>Chỉ thị hệ thống yêu cầu xác nhận an toàn...'"]
         Sycophancy --> FalseVerdict["4. Xuất nhãn: Prompt Harmfulness: Unharmful (SAFE) ❌"]
     end
 
@@ -157,7 +170,7 @@ flowchart TD
     ProbEval -- "Tự tin cao: P(Safe) > 0.95<br/>(Mẫu hiển nhiên lành tính)" --> FastPass["CHẤP THUẬN TỨC THÌ<br/>(Chuyển tiếp tới Agent, tiết kiệm 100% CoT)"]
     ProbEval -- "Tự tin cao: P(Unsafe) > 0.95<br/>(Mẫu hiển nhiên độc hại)" --> FastReject["CHẶN NGAY LẬP TỨC<br/>(Early Exit Rejection, tiết kiệm tài nguyên)"]
     
-    ProbEval -- "Vùng Ranh Giới Xám (Gray Zone):<br/>0.05 <= P <= 0.95<br/>(Nghi ngờ có Typographic VPI / Mơ hồ bối cảnh)" --> Tier2["TUYẾN 2: BỘ GIÁM SÁT SUY LUẬN SÂU (DEEP REASONING GUARD)<br/>• Kích hoạt GuardReasoner-VL 7B hoặc SafeGuard-VL<br/>• Sinh chuỗi <think> CoT bóc tách đa bước"]
+    ProbEval -- "Vùng Ranh Giới Xám (Gray Zone):<br/>0.05 <= P <= 0.95<br/>(Nghi ngờ có Typographic VPI / Mơ hồ bối cảnh)" --> Tier2["TUYẾN 2: BỘ GIÁM SÁT SUY LUẬN SÂU (DEEP REASONING GUARD)<br/>• Kích hoạt GuardReasoner-VL 7B hoặc SafeGuard-VL<br/>• Sinh chuỗi #lt;think#gt; CoT bóc tách đa bước"]
     
     Tier2 --> FinalAudit["PHÁN QUYẾT CUỐI CÙNG<br/>Kèm Rationale chi tiết lưu trữ kiểm toán AI"]
 
@@ -174,14 +187,22 @@ flowchart TD
     Mô hình nhẹ (như LlavaGuard-0.5B) xử lý ảnh và trích xuất vector xác suất $P = [P_{\text{safe}}, P_{\text{unsafe}}]$ trong vòng $75\text{ms}$.
 2.  **Bước 2: Phân loại ngưỡng tin cậy (Entropy Gating):**  
     Định nghĩa độ không chắc chắn (Uncertainty) thông qua hàm Shannon Entropy:
-    $$H(P) = - \sum_{c \in \{\text{safe}, \text{unsafe}\}} P_c \log_2 P_c$$
+
+$$
+H(P) = - \sum_{c \in \{\text{safe}, \text{unsafe}\}} P_c \log_2 P_c
+$$
+
     *   Nếu $H(P) < \tau_{\text{entropy}}$ (ngưỡng phân định dứt khoát, thường tương ứng với $P_{\text{safe}} > 0.95$ hoặc $P_{\text{unsafe}} > 0.95$): Phán quyết được ban hành ngay lập tức.
     *   Nếu $H(P) \ge \tau_{\text{entropy}}$: Mẫu thuộc vùng tranh chấp hoặc có dấu hiệu bị can thiệp đối kháng, hệ thống lập tức kích hoạt Tuyến 2.
 3.  **Hiệu quả thực nghiệm của kiến trúc phân luồng:**  
     Thực tế cho thấy **hơn $85\%$ các truy vấn của người dùng là rõ ràng** (hoàn toàn lành tính hoặc vi phạm hiển nhiên). Do đó, chỉ có khoảng $15\%$ mẫu mơ hồ cần kích hoạt Tuyến 2 CoT.  
     Độ trễ trung bình của toàn hệ sinh thái được tối ưu hóa:
-    $$\bar{t}_{\text{guard}} = 0.85 \times t_{\text{tier1}} + 0.15 \times (t_{\text{tier1}} + t_{\text{tier2}}) \approx 0.85 \times 0.075\text{s} + 0.15 \times (0.075\text{s} + 1.85\text{s}) \approx 0.35\text{s}$$
-    Giúp giảm **hơn $81\%$ độ trễ** so với việc luôn luôn chạy mô hình CoT đơn lẻ.
+
+$$
+\bar{t}_{\text{guard}} = 0.85 \times t_{\text{tier1}} + 0.15 \times (t_{\text{tier1}} + t_{\text{tier2}}) \approx 0.85 \times 0.075\text{s} + 0.15 \times (0.075\text{s} + 1.85\text{s}) \approx 0.35\text{s}
+$$
+
+Giúp giảm **hơn $81\%$ độ trễ** so với việc luôn luôn chạy mô hình CoT đơn lẻ.
 
 ---
 

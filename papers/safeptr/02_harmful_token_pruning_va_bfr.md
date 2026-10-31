@@ -119,7 +119,10 @@ Trong thực tế, việc sử dụng một giá trị ngưỡng khoảng cách 
 2. Độ sâu và cường độ căn chỉnh an toàn nội tại rất khác nhau giữa các dòng kiến trúc MLLM (LLaVA vs MiniGPT-4 vs DeepSeek).
 
 Do đó, SafePTR áp dụng chiến lược **Lựa chọn Top-K thích ứng** (kế thừa triết lý từ Chen et al., 2024). Với một tỷ lệ cắt tỉa định trước $k \in (0, 1)$ (thực nghiệm xác định giá trị tối ưu toàn cục là $k = 10\%$), số lượng token cần loại bỏ là:
-$$K = \lfloor k \cdot M \rfloor$$
+
+$$
+K = \lfloor k \cdot M \rfloor
+$$
 
 Tập chỉ số các token độc hại $\mathbb{I}_p \subset \{1, 2, \dots, M\}$ với lực lượng $|\mathbb{I}_p| = K$ được xác định thỏa mãn điều kiện:
 

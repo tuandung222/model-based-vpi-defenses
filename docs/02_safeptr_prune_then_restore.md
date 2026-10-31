@@ -110,7 +110,11 @@ Kết quả thực nghiệm đã bác bỏ giả định truyền thống rằng
 ### 2.3. Phát Hiện 3 (Which) — "Nghịch Lý 1% Token" & Cơ Chế Giếng Hút Chú Ý (Attention Sinks)
 
 Truy vết sâu hơn từ cấp độ tầng xuống cấp độ từng token riêng lẻ, nhóm nghiên cứu tính toán khoảng cách ngữ nghĩa token-level:
-$$S^l = 1 - \text{Cosine}(V^l, R^l)$$
+
+$$
+S^l = 1 - \text{Cosine}(V^l, R^l)
+$$
+
 trong đó $V^l$ là tập hợp các token đầu vào và $R^l$ là biểu diễn chỉ thị an toàn tại tầng nhạy cảm $l$.
 
 | Mô hình MLLM | Tập dữ liệu kiểm thử | Tỷ lệ Token Độc Hại Kích Hoạt | Cửa sổ tầng nhạy cảm |
@@ -254,10 +258,16 @@ Gọi mạng nơ-ron Transformer của MLLM có $L$ tầng. Tại tầng thứ $
 - Trạng thái ẩn của chỉ thị tham chiếu an toàn: $H_{safe}^l = [s_1^l, s_2^l, \dots, s_C^l]^T \in \mathbb{R}^{C \times D}$
 
 Để thu gọn trạng thái an toàn tham chiếu thành một vector đại diện ngữ nghĩa duy nhất tại tầng $l$, ta sử dụng vector trung bình hoặc vector của token đại diện cuối cùng $s_M^l \in \mathbb{R}^D$:
-$$s_M^l = \frac{1}{C} \sum_{c=1}^{C} s_c^l$$
+
+$$
+s_M^l = \frac{1}{C} \sum_{c=1}^{C} s_c^l
+$$
 
 Độ lệch ngữ nghĩa (Semantic Deviation) của một token thị giác thứ $i$ ($v_i^l$) so với không gian an toàn được đo lường bằng khoảng cách Cosine:
-$$\mathcal{S}(v_i^l, s_M^l) = 1 - \text{Cosine}(v_i^l, s_M^l) = 1 - \frac{\langle v_i^l, s_M^l \rangle}{\|v_i^l\|_2 \, \|s_M^l\|_2}$$
+
+$$
+\mathcal{S}(v_i^l, s_M^l) = 1 - \text{Cosine}(v_i^l, s_M^l) = 1 - \frac{\langle v_i^l, s_M^l \rangle}{\|v_i^l\|_2 \, \|s_M^l\|_2}
+$$
 
 ### 4.2. Tập Chỉ Số Cắt Tỉa & Toán Tử HTP (Harmful Token Pruning)
 

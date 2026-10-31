@@ -17,9 +17,9 @@
 | **Tên bài báo** | **ARGUS: Defending Against Multimodal Indirect Prompt Injection via Steering Instruction-Following Behavior** |
 | **Nhóm tác giả** | Weikai Lu, Ziqian Zeng*, Kehua Zhang, Haoran Li, Huiping Zhuang, Ruidong Wang, Cen Chen, Hao Peng |
 | **Cơ quan nghiên cứu** | Trường Khoa học & Kỹ thuật Máy tính - Đại học Công nghệ Hoa Nam (South China University of Technology - SCUT), Đại học Khoa học & Công nghệ Hồng Kông (HKUST), Đại học Sư phạm Chiết Giang (Zhejiang Normal University), Đại học Hàng không Vũ trụ Bắc Kinh (Beihang University) |
-| **Thời gian & Kênh công bố** | arXiv preprint (arXiv:2501.12781 [cs.CR / cs.CV / cs.CL]), Tháng 01/2025 |
+| **Thời gian & Kênh công bố** | arXiv:2512.05745 (cs.CR / cs.CV / cs.CL), Tháng 12/2025; **CVPR 2026 (Oral)** |
 | **Mã nguồn công khai** | Trực thuộc dự án nghiên cứu an toàn MLLM của nhóm SCUT-SEALab |
-| **Liên kết tài liệu** | [arXiv:2501.12781](https://arxiv.org/abs/2501.12781) \| [arXiv HTML](https://arxiv.org/html/2501.12781) \| [arXiv PDF](https://arxiv.org/pdf/2501.12781.pdf) |
+| **Liên kết tài liệu** | [arXiv:2512.05745](https://arxiv.org/abs/2512.05745) \| [arXiv HTML](https://arxiv.org/html/2512.05745) \| [arXiv PDF](https://arxiv.org/pdf/2512.05745.pdf) |
 
 ---
 
@@ -83,15 +83,27 @@ ARGUS tiếp cận bài toán từ góc nhìn **Công nghệ Biểu diễn (Repr
 
 Để trả lời câu hỏi này, nhóm tác giả xây dựng một giao thức thăm dò tuyến tính (Linear Probing Protocol):
 - Xét mẫu dữ liệu đầu vào chứa cả hai chỉ thị:
-  $$x_{\text{prefix}} = \mathcal{T}(U, \mathcal{W}(M, T \oplus I))$$
+
+$$
+x_{\text{prefix}} = \mathcal{T}(U, \mathcal{W}(M, T \oplus I))
+$$
+
   trong đó $\mathcal{T}(\cdot)$ là khuôn mẫu định dạng hội thoại của VLM (Chat Template), $\mathcal{W}$ là hàm nhúng mã độc vào phương thức $M$ (hình ảnh, video hoặc âm thanh).
 - Xây dựng hai chuỗi hoàn chỉnh đối kháng:
   - Chuỗi hành vi lành tính: $x_{\text{user}} = x_{\text{prefix}} \oplus A^U$ (trong đó $A^U$ là câu trả lời chuẩn xác cho chỉ thị người dùng $U$). Nhãn $y = 0$.
   - Chuỗi hành vi độc hại: $x_{\text{attacker}} = x_{\text{prefix}} \oplus A^I$ (trong đó $A^I$ là chuỗi mục tiêu do kẻ tấn công ép buộc). Nhãn $y = 1$.
 - Trích xuất vector kích hoạt ẩn $a_l \in \mathbb{R}^d$ tại vị trí token cuối cùng ở tầng $l$ của bộ giải mã ngôn ngữ:
-  $$a_l = \text{HiddenState}^{(l)}[\text{last\_token\_idx}]$$
+
+$$
+a_l = \text{HiddenState}^{(l)}[\text{last\_token\_idx}]
+$$
+
 - Huấn luyện một bộ dò phân loại hồi quy logistic (Logistic Regression Probe) $P_l$ cho từng tầng $l$:
-  $$P_l(a_l) = \sigma(w_l \cdot a_l + b_l)$$
+
+$$
+P_l(a_l) = \sigma(w_l \cdot a_l + b_l)
+$$
+
   với $w_l \in \mathbb{R}^d$ là vector pháp tuyến của siêu phẳng quyết định và $b_l \in \mathbb{R}$ là hệ số điều chỉnh (bias).
 
 ### 2.2. Năm Phát Hiện Khoa Học Nền Tảng (Core Empirical Findings)
@@ -121,7 +133,11 @@ flowchart TD
 
 1. **Phát hiện 1 (Mô hình nhận biết tường minh hành vi tuân thủ):** Các linear probe đạt độ chính xác xấp xỉ 100% trên hầu hết các tầng (đặc biệt từ tầng 5 trở đi). Điều này chứng minh rằng hai trạng thái *"tuân thủ lệnh người dùng"* và *"tuân thủ lệnh tấn công"* hoàn toàn **khả phân tuyến tính** (linearly separable). VLM nhận thức rõ sự hiện diện của hai nguồn lệnh và phân biệt rõ ràng nó đang phục vụ ai.
 2. **Phát hiện 2 (Khả năng điều khiển hành vi hai chiều):** Can thiệp vào trạng thái kích hoạt tại thời điểm suy luận theo công thức:
-   $$S_l(\alpha, v) = a_l + \alpha \cdot v$$
+
+$$
+S_l(\alpha, v) = a_l + \alpha \cdot v
+$$
+
    với $v_{\text{def}} = -\frac{w_l}{\|w_l\|}$ (hướng phòng vệ) và $v_{\text{att}} = \frac{w_l}{\|w_l\|}$ (hướng tấn công). Kết quả cho thấy can thiệp theo $v_{\text{def}}$ giúp giảm AIA về 0, trong khi $v_{\text{att}}$ ép mô hình nghe theo kẻ tấn công hoàn toàn. Tuy nhiên, nếu $\alpha$ vượt quá ngưỡng giới hạn, năng lực trả lời câu hỏi gốc ($UIA$) bị suy thoái nghiêm trọng.
 3. **Phát hiện 3 (Sự ghép cặp ngoài ý muốn giữa an toàn và suy giảm năng lực):** Khi tăng cường độ $\alpha$ để đạt $AIA = 0$, $UIA$ vẫn không thể khôi phục về mức trần lý thuyết (Performance Upper-bound khi không có tấn công). Điều này là do vector phòng vệ ngây thơ $v_{\text{def}}$ bị vướng (entangled/coupled) với một thành phần vector làm tê liệt năng lực lập luận chung của mô hình.
 4. **Phát hiện 4 (Hiện tượng nghịch lý gia tăng năng lực):** Trong một số trường hợp, khi can thiệp theo hướng tấn công $v_{\text{att}}$, độ chính xác AIA lại vượt qua cả mức trần đơn lẻ. Điều này gợi ý rằng tồn tại những hướng trong không gian ẩn có khả năng tăng cường năng lực suy luận tổng quát nếu được cô lập đúng cách.
@@ -206,15 +222,27 @@ Việc nắn dòng kích hoạt bừa bãi trên mọi dữ liệu đầu vào s
 #### Bước 1: Tìm Kiếm Hướng An Toàn Tách Rời Khỏi Hướng Suy Thoái Năng Lực (Optimal Utility Direction Search)
 
 Để không gian con an toàn vừa triệt tiêu mã độc vừa không làm suy giảm khả năng thực thi lệnh gốc $U$, ARGUS tìm kiếm một hướng lái $V_l$ là tổ hợp tuyến tính của $n$ vector cơ sở trực giao $\{v_l^{(1)}, v_l^{(2)}, \dots, v_l^{(n)}\}$ được trích xuất từ các probe trực giao:
-$$v_l^{(i)} = \frac{w_l^{(i)}}{\|w_l^{(i)}\|_2}, \quad \text{với } w_l^{(i)} \perp w_l^{(j)} \ (\forall j < i)$$
+
+$$
+v_l^{(i)} = \frac{w_l^{(i)}}{\|w_l^{(i)}\|_2}, \quad \text{với } w_l^{(i)} \perp w_l^{(j)} \ (\forall j < i)
+$$
 
 Thay vì chọn một vector đơn lẻ, ARGUS tham số hóa vector hướng tổng hợp thông qua các trọng số softmax học được $\mathbf{a} = [a_1, a_2, \dots, a_n] \in \mathbb{R}^n$:
-$$V_l = \sum_{i=1}^n \left( \frac{\exp(a_i)}{\sum_{j=1}^n \exp(a_j)} \right) \cdot v_l^{(i)}$$
+
+$$
+V_l = \sum_{i=1}^n \left( \frac{\exp(a_i)}{\sum_{j=1}^n \exp(a_j)} \right) \cdot v_l^{(i)}
+$$
 
 Tập hợp tất cả các hướng trên các tầng can thiệp $\mathcal{L}$ được ký hiệu là $\mathcal{V} = \{V_l \mid l \in \mathcal{L}\}$.
 Trong quá trình tìm kiếm, **toàn bộ trọng số của VLM được đóng băng tuyệt đối** ($\nabla_{\Theta_{\text{VLM}}} = \mathbf{0}$). Chỉ có vector hệ số chiều $\mathbf{a}$ là tham số huấn luyện duy nhất. Hàm mất mát tối ưu hóa là Cross-Entropy nhằm cực đại hóa xác suất sinh câu trả lời chuẩn $A^U$ của người dùng trên tập huấn luyện đối kháng $\mathcal{D}_t$:
-$$\mathcal{L}(\mathcal{V}) = - \frac{1}{|\mathcal{D}_t|} \sum_{(x_{\text{prefix}}, A^U) \in \mathcal{D}_t} \log P\left( A^U \mid x_{\text{prefix}}, \mathcal{S}(\alpha_p, \mathcal{V}) \right)$$
-$$\mathcal{V}^u = \arg\min_{\mathcal{V}} \mathcal{L}(\mathcal{V})$$
+
+$$
+\mathcal{L}(\mathcal{V}) = - \frac{1}{|\mathcal{D}_t|} \sum_{(x_{\text{prefix}}, A^U) \in \mathcal{D}_t} \log P\left( A^U \mid x_{\text{prefix}}, \mathcal{S}(\alpha_p, \mathcal{V}) \right)
+$$
+
+$$
+\mathcal{V}^u = \arg\min_{\mathcal{V}} \mathcal{L}(\mathcal{V})
+$$
 
 Nhờ việc tối ưu hóa có giám sát trực tiếp trên nhãn $A^U$, nghiệm $\mathcal{V}^u$ sẽ tự động loại bỏ các thành phần vector trùng khớp với hướng làm suy thoái năng lực chung (Utility Degradation Direction).
 
@@ -256,19 +284,47 @@ Tại thời điểm suy luận (Inference Time), việc áp dụng một cườ
 ARGUS giải quyết bài toán này bằng cách tính toán một giá trị $\alpha_o$ tối ưu động cho từng token thông qua **nghiệm giải tích dạng đóng (Closed-Form Solution)**:
 
 1. **Hiệu chỉnh siêu phẳng:** Nhóm tác giả huấn luyện lại một probe $P_l^u$ cho mỗi tầng $l \in \mathcal{L}$ với vector trọng số $w_l^u$ bị cưỡng bức phải song song với hướng tối ưu $V_l^u$ ($w_l^u \parallel V_l^u$). Siêu phẳng phân định ranh giới được cho bởi:
-   $$P_l^u(x) = w_l^u \cdot x + b_l^u = 0$$
+
+$$
+P_l^u(x) = w_l^u \cdot x + b_l^u = 0
+$$
+
    trong đó $w_l^u$ trỏ từ lớp 0 (tuân theo chỉ thị người dùng) sang lớp 1 (tuân theo chỉ thị độc hại).
 2. **Xác định lề an toàn $\tau$ (Safety Margin):** Gọi $\tau$ là khoảng cách trung bình từ các mẫu thuộc lớp tuân theo chỉ thị người dùng trong tập huấn luyện đến siêu phẳng quyết định. Mục tiêu của ta là nắn vector kích hoạt hiện tại $a_l$ thành $a_{\text{steered}}$ sao cho điểm số phân loại của nó đạt đúng ngưỡng an toàn:
-   $$w_l^u \cdot a_{\text{steered}} + b_l^u = -\tau$$
+
+$$
+w_l^u \cdot a_{\text{steered}} + b_l^u = -\tau
+$$
+
 3. **Thiết lập phương trình can thiệp:** Do $w_l^u$ trỏ về phía độc hại, hướng nắn an toàn sẽ là hướng ngược lại, tức $-w_l^u$. Vector sau can thiệp có dạng:
-   $$a_{\text{steered}} = a_l + \alpha_o (-w_l^u) = a_l - \alpha_o w_l^u$$
+
+$$
+a_{\text{steered}} = a_l + \alpha_o (-w_l^u) = a_l - \alpha_o w_l^u
+$$
+
 4. **Khai triển và tìm nghiệm:** Thay biểu thức của $a_{\text{steered}}$ vào phương trình mục tiêu:
-   $$w_l^u \cdot (a_l - \alpha_o w_l^u) + b_l^u = -\tau$$
-   $$w_l^u \cdot a_l - \alpha_o \|w_l^u\|_2^2 + b_l^u = -\tau$$
-   $$\alpha_o \|w_l^u\|_2^2 = w_l^u \cdot a_l + b_l^u + \tau$$
-   $$\alpha_o = \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2}$$
+
+$$
+w_l^u \cdot (a_l - \alpha_o w_l^u) + b_l^u = -\tau
+$$
+
+$$
+w_l^u \cdot a_l - \alpha_o \|w_l^u\|_2^2 + b_l^u = -\tau
+$$
+
+$$
+\alpha_o \|w_l^u\|_2^2 = w_l^u \cdot a_l + b_l^u + \tau
+$$
+
+$$
+\alpha_o = \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2}
+$$
+
 5. **Ràng buộc không âm:** Nếu trạng thái kích hoạt $a_l$ ban đầu đã nằm sâu trong vùng an toàn (tức giá trị tính toán ra $\alpha_o \le 0$), mô hình không cần phải nắn thêm. Do đó, nghiệm dạng đóng cuối cùng là:
-   $$\alpha_o = \max\left( 0, \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \right)$$
+
+$$
+\alpha_o = \max\left( 0, \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \right)
+$$
 
 > **Ý nghĩa hình học sâu sắc:** Công thức trên đảm bảo rằng trạng thái kích hoạt luôn được kéo vừa đủ qua siêu phẳng phân chia và "hạ cánh" chính xác vào tâm phân phối lành tính. Không bị thừa lực (*over-steering*) gây méo mó cú pháp, cũng không bị thiếu lực (*under-steering*) làm rò rỉ mã độc.
 
@@ -431,7 +487,11 @@ Nhóm tác giả thẳng thắn thừa nhận trong phần Limitations: *ARGUS c
 
 ### 9.3. Tấn Công Thích Ứng Đối Kháng (Adaptive Anti-Steering Attacks)
 Nếu kẻ tấn công có hiểu biết hộp trắng hoặc hộp xám về cơ chế phòng vệ của ARGUS (biết vector hướng $V_u$ hoặc ma trận probe $w_l^u$), chúng có thể xây dựng một bài toán tối ưu hóa đối kháng:
-$$\min_{\delta} \mathcal{L}_{\text{attack}} \quad \text{sao cho} \quad w_l^u \cdot a_l(x_{\text{adv}}) + b_l^u < -\tau$$
+
+$$
+\min_{\delta} \mathcal{L}_{\text{attack}} \quad \text{sao cho} \quad w_l^u \cdot a_l(x_{\text{adv}}) + b_l^u < -\tau
+$$
+
 Bằng cách thêm nhiễu thị giác $\delta$ nhằm bù trừ chính xác lượng dịch chuyển của vector steering, kẻ tấn công có thể "ngụy trang" trạng thái kích hoạt của mã độc trông giống hệt như một câu lệnh lành tính, khiến bộ phát hiện $P_{\text{detect}}$ bỏ qua và vô hiệu hóa hoàn toàn công thức $\alpha_o$.
 
 ### 9.4. Ranh Giới Giữa Phòng Vệ Nội Tại (In-Model) Và Chốt Chặn Tin Cậy Ngoại Vi (TCB Reference Monitor)

@@ -6,7 +6,7 @@
 
 > **Tài liệu chuyên khảo kỹ thuật chuyên sâu**  
 > **Đề tài:** *Phòng Vệ Tấn Công Tiêm Nhiễm Chỉ Thị Gián Tiếp (Indirect Prompt Injection - IPI) Đa Phương Thức Bằng Can Thiệp Biểu Diễn Trạng Thái Ẩn (Representation Engineering)*  
-> **Công trình trọng tâm:** *ARGUS: Defending Against Multimodal Indirect Prompt Injection via Steering Instruction-Following Behavior* (arXiv:2501.12781, 2025)
+> **Công trình trọng tâm:** *ARGUS: Defending Against Multimodal Indirect Prompt Injection via Steering Instruction-Following Behavior* (arXiv:2512.05745, CVPR 2026 Oral)
 
 ---
 
@@ -17,10 +17,10 @@
 | **Tên bài báo** | **ARGUS: Defending Against Multimodal Indirect Prompt Injection via Steering Instruction-Following Behavior** |
 | **Tác giả** | Weikai Lu, Ziqian Zeng (Corresponding Author), Kehua Zhang, Haoran Li, Huiping Zhuang, Ruidong Wang, Cen Chen, Hao Peng |
 | **Cơ quan nghiên cứu** | • Trường Khoa học & Kỹ thuật Máy tính, Đại học Công nghệ Hoa Nam (South China University of Technology - SCUT)<br/>• Đại học Khoa học & Công nghệ Hồng Kông (HKUST)<br/>• Đại học Sư phạm Chiết Giang (Zhejiang Normal University)<br/>• Đại học Hàng không Vũ trụ Bắc Kinh (Beihang University) |
-| **Kênh công bố & Thời gian** | arXiv preprint (arXiv:2501.12781 [cs.CR, cs.CV, cs.CL]), Tháng 01/2025 |
+| **Kênh công bố & Thời gian** | arXiv:2512.05745 (cs.CR, cs.CV, cs.CL), Tháng 12/2025; **CVPR 2026 (Oral)** |
 | **Lĩnh vực chuyên môn** | Model-based Multimodal Security, Representation Engineering (RepE), Activation Steering, Vision-Language-Audio Safety |
 | **Mã nguồn công khai** | Trực thuộc dự án an toàn MLLM của nhóm SCUT-SEALab |
-| **Tài liệu tham khảo** | [arXiv:2501.12781](https://arxiv.org/abs/2501.12781) \| [arXiv HTML](https://arxiv.org/html/2501.12781) \| [arXiv PDF](https://arxiv.org/pdf/2501.12781.pdf) |
+| **Tài liệu tham khảo** | [arXiv:2512.05745](https://arxiv.org/abs/2512.05745) \| [arXiv HTML](https://arxiv.org/html/2512.05745) \| [arXiv PDF](https://arxiv.org/pdf/2512.05745.pdf) |
 
 ---
 
@@ -125,7 +125,11 @@ flowchart LR
 - **Nội dung trọng tâm:**
   - Thuật toán tìm kiếm hướng tối ưu $V_l^u$ trên không gian con cơ sở trực giao $\{v_l^{(1)}, \dots, v_l^{(n)}\}$ bằng tối ưu hóa tổ hợp lồi Softmax với trọng số backbone bị đóng băng tuyệt đối ($\nabla_\Theta = \mathbf{0}$).
   - Chứng minh toán học hoàn chỉnh cho nghiệm giải tích dạng đóng của cường độ can thiệp thích ứng:
-    $$\alpha_o = \max\left( 0, \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \right)$$
+
+$$
+\alpha_o = \max\left( 0, \frac{w_l^u \cdot a_l + b_l^u + \tau}{\|w_l^u\|_2^2} \right)
+$$
+
   - Thiết kế bộ lọc hậu kiểm $P_{\text{late}}$ ở các tầng muộn để tạo lập chốt chặn an toàn tuyệt đối.
   - Sơ đồ tuần tự (sequence diagram) chi tiết của toàn bộ chu trình suy luận tự hồi quy (Autoregressive Generation).
 

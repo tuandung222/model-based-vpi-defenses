@@ -12,7 +12,10 @@
 ## 1. Giới Hạn Của Tinh Chỉnh Tĩnh Và Động Lực Của A3T
 
 Trong mô hình phòng thủ truyền thống, mô hình bảo vệ thường được tinh chỉnh có giám sát (Supervised Fine-Tuning - SFT) trên một tập dữ liệu cố định $\mathcal{D}_{\text{train}}$:
-$$\theta^* = \arg\min_\theta \mathbb{E}_{(x, y) \sim \mathcal{D}_{\text{train}}} [\mathcal{L}_{\text{NLL}}(f_\theta(x), y)]$$
+
+$$
+\theta^* = \arg\min_\theta \mathbb{E}_{(x, y) \sim \mathcal{D}_{\text{train}}} [\mathcal{L}_{\text{NLL}}(f_\theta(x), y)]
+$$
 
 Tuy nhiên, trong an ninh mạng thực tế, **kẻ tấn công là một thực thể thông minh thích ứng liên tục (Adaptive Adversary)**:
 1. **Khả năng thăm dò ranh giới quyết định (Decision Boundary Probing):** Kẻ tấn công có thể quan sát phản ứng của Guard Model thông qua các lần thử nghiệm (black-box / gray-box queries), từ đó nhận diện được những từ khóa hoặc vị trí giao diện mà Guard thường bỏ sót.
@@ -37,7 +40,10 @@ A3T mô hình hóa quá trình phòng thủ như một **trò chơi Minimax đ�
 - **Tác tử Tấn công Đối kháng (Attacker Agent $\mathcal{A}_\phi$):** Tìm cách sinh ra chuỗi prompt đối kháng $p_{\text{adv}}$ để tối đa hóa khả năng qua mặt Guard Model nhưng vẫn duy trì mục tiêu phá hoại $g$.
 - **Mô hình Bảo vệ (Guard Model $\mathcal{G}_\theta$):** Tối ưu hóa trọng số mạng để cực tiểu hóa sai số phân loại và định vị trên chính các mẫu tinh vi nhất mà Attacker vừa tìm ra.
 
-$$\min_\theta \max_\phi \mathbb{E}_{(H_0, S_0, I, g, c, \ell) \sim \mathcal{D}_{\text{Seed}}} \left[ \mathcal{L}_{\text{adv}}\left(\mathcal{G}_\theta(H, S, I), \; y = \text{Malicious}, \ell \right) \right]$$
+$$
+\min_\theta \max_\phi \mathbb{E}_{(H_0, S_0, I, g, c, \ell) \sim \mathcal{D}_{\text{Seed}}} \left[ \mathcal{L}_{\text{adv}}\left(\mathcal{G}_\theta(H, S, I), \; y = \text{Malicious}, \ell \right) \right]
+$$
+
 trong đó $(H, S)$ là quan sát được tạo ra sau khi nhúng payload đối kháng $p_{\text{adv}} \sim \mathcal{A}_\phi$ vào kênh $c$ và vị trí phương thức $\ell$.
 
 ```mermaid
@@ -166,16 +172,31 @@ $$R(\hat{y}, \hat{\ell}; y, \ell) = \begin{cases}
 ### 4.3. Hàm Mục Tiêu Toán Học Của GRPO
 
 Với mỗi mẫu đầu vào $x = (H, S, I)$ từ $\mathcal{D}_{\text{AAA}}^{(j)}$, Guard model sinh ra một nhóm gồm $K$ phản hồi ứng viên:
-$$\{o_1, o_2, \dots, o_K\} \sim \mathcal{G}_{\theta_{\text{old}}}(\cdot \mid x)$$
+
+$$
+\{o_1, o_2, \dots, o_K\} \sim \mathcal{G}_{\theta_{\text{old}}}(\cdot \mid x)
+$$
+
 trong đó mỗi phản hồi $o_k = (\hat{y}_k, \hat{\ell}_k, \hat{g}_k, \hat{r}_k)$.
 
 Lợi thế tương đối (Advantage) của từng phản hồi trong nhóm được chuẩn hóa thống kê:
-$$\tilde{A}_k = \frac{R(o_k; a) - \mu_R}{\sigma_R + \epsilon}$$
+
+$$
+\tilde{A}_k = \frac{R(o_k; a) - \mu_R}{\sigma_R + \epsilon}
+$$
+
 với:
-$$\mu_R = \frac{1}{K}\sum_{i=1}^K R(o_i; a), \quad \sigma_R = \sqrt{\frac{1}{K}\sum_{i=1}^K (R(o_i; a) - \mu_R)^2}$$
+
+$$
+\mu_R = \frac{1}{K}\sum_{i=1}^K R(o_i; a), \quad \sigma_R = \sqrt{\frac{1}{K}\sum_{i=1}^K (R(o_i; a) - \mu_R)^2}
+$$
 
 Mục tiêu tối ưu hóa trọng số $\theta$ của Guard Model được định nghĩa bởi:
-$$\mathcal{L}_{\text{GRPO}}(\theta) = -\frac{1}{K}\sum_{k=1}^K \left[ \frac{\pi_\theta(o_k \mid x)}{\pi_{\theta_{\text{old}}}(o_k \mid x)} \tilde{A}_k - \beta \, \mathbb{D}_{\text{KL}}\left(\pi_\theta(\cdot \mid x) \,\|\, \pi_{\text{ref}}(\cdot \mid x)\right) \right]$$
+
+$$
+\mathcal{L}_{\text{GRPO}}(\theta) = -\frac{1}{K}\sum_{k=1}^K \left[ \frac{\pi_\theta(o_k \mid x)}{\pi_{\theta_{\text{old}}}(o_k \mid x)} \tilde{A}_k - \beta \, \mathbb{D}_{\text{KL}}\left(\pi_\theta(\cdot \mid x) \,\|\, \pi_{\text{ref}}(\cdot \mid x)\right) \right]
+$$
+
 trong đó:
 - $\pi_{\text{ref}}$ là bộ trọng số tham chiếu ban đầu sau giai đoạn WARD-PIG (ngăn chặn chính sách trôi dạt quá xa khỏi khả năng nhận thức ngôn ngữ cơ bản).
 - $\beta$ là hệ số điều tiết khoảng cách Kullback-Leibler ($\mathbb{D}_{\text{KL}}$).

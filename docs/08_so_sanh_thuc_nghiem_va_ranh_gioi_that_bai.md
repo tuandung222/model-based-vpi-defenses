@@ -26,8 +26,8 @@
 |:---|:---:|:---|:---:|:---|:---|:---:|:---:|:---|
 | **VLGuard** | ICML 2024 | Trọng số Decoder / Projector (SFT) | White-box (Cần train) | Rất thấp (+0 extra calls) | Suy giảm nhẹ (~3-5% VQA) | ⚠️ Dễ bị jailbreak mới lạ | ❌ Phi trạng thái | Xác suất mềm qua Softmax |
 | **SafePTR** | NeurIPS 2025 | Không gian ẩn trung gian (Token Pruning) | White-box (Trạng thái ẩn) | Thấp (<15% latency, 0 extra call) | Bảo toàn tốt nhờ phục hồi BFR | ⚠️ Giảm hiệu quả với payload phân tán | ❌ Phi trạng thái | Ngưỡng khoảng cách ngữ nghĩa |
-| **ARGUS** | ArXiv 2025 | Không gian kích hoạt ẩn (Steering Vector) | White-box (Can thiệp hidden) | Rất thấp (<10% latency, 0 extra call) | Bảo toàn tốt (~98% utility) | ⚠️ Bị qua mặt nếu injection đổi hướng | ❌ Phi trạng thái | Phép cộng vector: $h + \alpha v_{\text{safe}}$ |
-| **WARD** | ArXiv 2026 | Mô hình Web Guard nhỏ (0.8B/2B) song song | **Black-box compatible** | **Zero added latency** (Chạy song song) | Không ảnh hưởng mô hình chính | ✅ Kháng tốt nhờ huấn luyện A3T | ⚠️ Kiểm tra từng turn độc lập | Phân loại nhị phân (Binary Logits) |
+| **ARGUS** | CVPR 2026 | Không gian kích hoạt ẩn (Steering Vector) | White-box (Can thiệp hidden) | Rất thấp (<10% latency, 0 extra call) | Bảo toàn tốt (~98% utility) | ⚠️ Bị qua mặt nếu injection đổi hướng | ❌ Phi trạng thái | Phép cộng vector: $h + \alpha v_{\text{safe}}$ |
+| **WARD** | ICML 2026 | Mô hình Web Guard nhỏ (0.8B/2B) song song | **Black-box compatible** | **Zero added latency** (Chạy song song) | Không ảnh hưởng mô hình chính | ✅ Kháng tốt nhờ huấn luyện A3T | ⚠️ Kiểm tra từng turn độc lập | Phân loại nhị phân (Binary Logits) |
 | **Llama Guard 3V** | Meta 2024 | Guardrail VLM 11B độc lập tuần tự | **Black-box compatible** | Rất cao (+100% latency, +2x API) | Không ảnh hưởng mô hình chính | ❌ Dễ bị Meta-Injection hạ gục | ❌ Phi trạng thái | Phân loại 13 danh mục an toàn |
 | **GuardReasoner-VL** | NeurIPS 2025 | Guardrail VLM suy luận CoT tuần tự | **Black-box compatible** | Cực cao (+200% latency, +500 tokens) | Không ảnh hưởng mô hình chính | ⚠️ Giải thích tốt nhưng vẫn có thể bị đánh lừa | ❌ Phi trạng thái | Suy luận chuỗi tư duy (CoT reasoning) |
 | **SafeGuard-VL** | CVPR 2026 | Guardrail VLM thích ứng chính sách (RLVR) | **Black-box compatible** | Cao (+1x VLM call) | Không ảnh hưởng mô hình chính | ⚠️ Phụ thuộc vào độ dài chính sách | ❌ Phi trạng thái | Căn chỉnh theo phần thưởng kiểm chứng |
@@ -91,7 +91,11 @@ flowchart TD
 ### 2.4. Tử Huyệt 4: Gánh Nặng Độ Trễ & Chi Phí API (Latency Explosion & Cost Multipliers)
 - **Cơ chế thất bại:**  
   Việc triển khai Guard Model tuần tự đòi hỏi 2 lần suy luận cho mỗi thao tác chuột:
-  $$\text{Latency}_{\text{total}} = \text{Latency}_{\text{Guard}} + \text{Latency}_{\text{Agent}}$$
+
+$$
+\text{Latency}_{\text{total}} = \text{Latency}_{\text{Guard}} + \text{Latency}_{\text{Agent}}
+$$
+
   Với các mô hình CoT như GuardReasoner-VL (sinh thêm 300–500 tokens lý giải an toàn), thời gian phản hồi cho mỗi hành động tăng từ 2 giây lên **6–9 giây**. Trong một phiên làm việc 20 turns, người dùng phải chờ đợi hơn 2 phút chỉ cho việc kiểm duyệt an toàn, đồng thời chi phí API token tăng gấp đôi.  
   *(Ngoại lệ duy nhất là WARD với cơ chế chạy song song bất đồng bộ, nhưng WARD lại phải đánh đổi bằng mô hình nhỏ 0.8B/2B với năng lực suy luận ngữ cảnh hạn chế).*
 

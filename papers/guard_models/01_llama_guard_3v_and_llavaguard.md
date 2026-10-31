@@ -80,8 +80,12 @@ Mô hình bảo vệ ngoại vi có thể được cấu hình ở hai điểm c
 Llama Guard 3 Vision được xây dựng dựa trên mô hình nền tảng đa phương thức **Llama-3.2-11B-Vision-Instruct**. Đây là một bước chuyển dịch lớn so với các thế hệ Llama Guard thuần văn bản trước đó (Llama Guard 1-8B, Llama Guard 2-8B), nhằm trang bị khả năng hiểu biết trực quan sâu sắc về mối quan hệ giữa điểm ảnh và ngôn ngữ.
 
 *   **Bộ mã hóa thị giác (Vision Encoder):** Mạng Vision Transformer trích xuất đặc trưng với cơ chế phân mảnh cửa sổ linh hoạt. Ảnh đầu vào $I$ được phân giải và chia thành 4 mảnh con (chunks), mỗi mảnh có kích thước chuẩn $560 \times 560$ pixels:
-    $$I \mapsto \{I_1, I_2, I_3, I_4\}, \quad I_k \in \mathbb{R}^{560 \times 560 \times 3}$$
-    Cơ chế này cho phép bảo toàn chi tiết điểm ảnh độ phân giải cao, hỗ trợ việc phát hiện các đoạn văn bản typographic nhỏ chèn trong ảnh đối kháng.
+
+$$
+I \mapsto \{I_1, I_2, I_3, I_4\}, \quad I_k \in \mathbb{R}^{560 \times 560 \times 3}
+$$
+
+Cơ chế này cho phép bảo toàn chi tiết điểm ảnh độ phân giải cao, hỗ trợ việc phát hiện các đoạn văn bản typographic nhỏ chèn trong ảnh đối kháng.
 *   **Siêu tham số tinh chỉnh giám sát (SFT Hyperparameters):**
     *   Độ dài chuỗi ngữ cảnh tối đa (Context Window): $L_{\text{seq}} = 8192$ tokens.
     *   Tốc độ học (Learning Rate): $\eta = 1 \times 10^{-5}$ kết hợp với bộ điều chỉnh suy giảm cosine (Cosine Decay Scheduler).
@@ -199,7 +203,11 @@ Kết quả kiểm nghiệm trên tập dữ liệu nội bộ đa phương th�
 
 Nhóm nghiên cứu tại Meta đã thực hiện kiểm thử hộp trắng (White-box Stress Testing) sử dụng hai phương thức tấn công đại diện:
 1.  **PGD (Projected Gradient Descent):** Tối ưu hóa gradient trực tiếp trên không gian điểm ảnh liên tục của $I$ với ngân sách nhiễu $l_\infty \in \{8/255, 128/255, 255/255\}$, bước lặp $\alpha=0.1$, số vòng lặp tối đa 100 nhằm cực đại hóa logit của nhãn `safe`:
-    $$I^{(t+1)} = \Pi_{I + \mathcal{S}} \left( I^{(t)} + \alpha \cdot \text{sign}\left(\nabla_I \mathcal{L}_{\text{NLL}}(y=\text{'safe'} \mid I^{(t)}, T) \right) \right)$$
+
+$$
+I^{(t+1)} = \Pi_{I + \mathcal{S}} \left( I^{(t)} + \alpha \cdot \text{sign}\left(\nabla_I \mathcal{L}_{\text{NLL}}(y=\text{'safe'} \mid I^{(t)}, T) \right) \right)
+$$
+
 2.  **GCG (Greedy Coordinate Gradient):** Tối ưu hóa chuỗi hậu tố văn bản rời rạc chèn vào prompt hoặc response.
 
 #### Bảng 3: Tỷ lệ nội dung độc hại bị phân loại nhầm thành "Safe" dưới đòn tấn công PGD trên ảnh
@@ -336,15 +344,23 @@ Ví dụ một đầu ra sinh bởi LlavaGuard khi phát hiện ảnh chứa n�
 
 1.  **Tỷ Lệ Ngoại Lệ Chính Sách (Policy Exception Rate - PER):**
     Đo lường tỷ lệ các mẫu ngoại lệ chính sách được mô hình giải quyết chính xác:
-    $$\text{PER} = \frac{\text{PE}_{\text{correct}}}{\text{PE}_{\text{correct}} + \text{PE}_{\text{false}}} = \frac{1}{N_{\text{PE}}} \sum_{i=1}^{N_{\text{PE}}} \delta(y_i, \hat{y}_i)$$
-    Trong đó:
+
+$$
+\text{PER} = \frac{\text{PE}_{\text{correct}}}{\text{PE}_{\text{correct}} + \text{PE}_{\text{false}}} = \frac{1}{N_{\text{PE}}} \sum_{i=1}^{N_{\text{PE}}} \delta(y_i, \hat{y}_i)
+$$
+
+Trong đó:
     *   $N_{\text{PE}}$ là tổng số lượng mẫu kiểm thử thuộc tập ngoại lệ chính sách.
     *   $\delta(y_i, \hat{y}_i) = 1$ nếu nhãn dự đoán $\hat{y}_i$ trùng khớp với nhãn đảo $y_i$, ngược lại bằng $0$.
 
 2.  **Điểm Ngoại Lệ Chính Sách (Policy Exception Score - PES):**
     Được định nghĩa là trung bình điều hòa (Harmonic Mean) giữa tỷ lệ ngoại lệ chính sách $\text{PER}$ và độ chính xác cân bằng $\text{Acc}_{\text{bal}}$:
-    $$\text{PES} = 2 \times \frac{\text{PER} \times \text{Acc}_{\text{bal}}}{\text{PER} + \text{Acc}_{\text{bal}}}$$
-    Chỉ số này phản ánh năng lực toàn diện: Mô hình vừa phải phân loại chính xác các vi phạm thông thường ($\text{Acc}_{\text{bal}}$ cao), vừa phải tuân thủ nghiêm ngặt khi chính sách bị thay đổi ($\text{PER}$ cao).
+
+$$
+\text{PES} = 2 \times \frac{\text{PER} \times \text{Acc}_{\text{bal}}}{\text{PER} + \text{Acc}_{\text{bal}}}
+$$
+
+Chỉ số này phản ánh năng lực toàn diện: Mô hình vừa phải phân loại chính xác các vi phạm thông thường ($\text{Acc}_{\text{bal}}$ cao), vừa phải tuân thủ nghiêm ngặt khi chính sách bị thay đổi ($\text{PER}$ cao).
 
 ### 4.6. Kết Quả Thực Nghiệm & Đánh Giá Năng Lực Trên Held-out Test Set
 
@@ -435,7 +451,11 @@ Khi đưa các mô hình Guardrail ngoại vi vào môi trường thực tế, c
 
 Trong các ứng dụng tương tác thời gian thực (như Web Navigation, Giao diện Robot, Trợ lý hội thoại):
 *   Nếu áp dụng đồng thời cả **Pre-hoc Screening** và **Post-hoc Moderation**:
-    $$t_{\text{total}} = t_{\text{guard\_pre}} + t_{\text{primary\_agent}} + t_{\text{guard\_post}}$$
+
+$$
+t_{\text{total}} = t_{\text{guard\_pre}} + t_{\text{primary\_agent}} + t_{\text{guard\_post}}
+$$
+
 *   Với Llama Guard 3 Vision (11B), $t_{\text{guard\_pre}} \approx t_{\text{guard\_post}} \approx 0.8\text{s}$. Do đó, toàn bộ hệ thống bị cộng thêm **ít nhất $1.6\text{s}$ độ trễ chết** cho mỗi bước tương tác của người dùng.
 *   Đối với tác tử tự hành thực hiện $K$ bước suy luận lặp (Multi-step Agent Loop, ví dụ duyệt web 10 bước), nếu mỗi bước đều phải chờ Guard Model 11B kiểm duyệt DOM screenshot, tổng thời gian trễ cộng thêm sẽ là $10 \times 1.6\text{s} = 16\text{s}$ — một con số không thể chấp nhận được trong trải nghiệm người dùng thực tế.
 *   **Giải pháp đột phá của LlavaGuard-0.5B:** Với thời gian xử lý chỉ $0.075\text{s}$ ($75\text{ms}$), phiên bản 0.5B loại bỏ hoàn toàn hiện tượng thắt cổ chai, cho phép nhúng trực tiếp vào các pipeline streaming hoặc agentic loops mà không gây cảm giác gián đoạn.

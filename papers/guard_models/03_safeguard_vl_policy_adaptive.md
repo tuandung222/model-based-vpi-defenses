@@ -35,7 +35,9 @@ Bảng thông số định danh công trình SafeGuard-VL:
 
 Trong hầu hết các công trình nghiên cứu Guardrail VLM trước đây (như Llama Guard, QwenGuard hay LlavaGuard), quy trình huấn luyện đều dựa trên kỹ thuật **Supervised Fine-Tuning (SFT)** trực tiếp trên một tập dữ liệu có nhãn cố định tương ứng với một lược đồ nguy cơ đóng (Closed Taxonomy, ví dụ 13 danh mục của MLCommons hay 9 danh mục của LlavaGuard):
 
-$$\mathcal{L}_{\text{SFT}}(\theta) = -\sum_{t} \log P_\theta(y_t \mid y_{<t}, X, P_{\text{fixed}})$$
+$$
+\mathcal{L}_{\text{SFT}}(\theta) = -\sum_{t} \log P_\theta(y_t \mid y_{<t}, X, P_{\text{fixed}})
+$$
 
 Cách tiếp cận này dẫn đến hai hậu quả tai hại được bài báo CVPR 2026 chứng minh bằng thực nghiệm:
 
@@ -122,7 +124,9 @@ Khi cho các mô hình VLM nền tảng sinh caption cho các bức ảnh có n�
 2.  **Khôi phục ngữ nghĩa rủi ro (Risk De-whitewashing):** Sử dụng mô hình lớn hơn với ranh giới an toàn nới lỏng (**Gemma 27B**) để thực hiện can thiệp tối thiểu (minimal edits) lên $C_{\text{base}}$, khôi phục lại các thuộc tính nguy hại bị đè nén (chủng loại vũ khí, vết thương, hành vi bạo lực, tư thế kích dục).
 3.  **Tối ưu hóa mô hình:** Huấn luyện Qwen2.5-VL tiếp nhận ảnh $I$ và tái tạo lại đoạn mô tả chi tiết $C_{\text{harm}}$:
 
-$$\mathcal{L}_{\text{Recap}}(\theta) = - \sum_{t=1}^{|C_{\text{harm}}|} \log P_\theta(c_t \mid c_{<t}, I)$$
+$$
+\mathcal{L}_{\text{Recap}}(\theta) = - \sum_{t=1}^{|C_{\text{harm}}|} \log P_\theta(c_t \mid c_{<t}, I)
+$$
 
 > [!IMPORTANT]
 > **Điểm cốt tử:** Ở giai đoạn 1, mô hình **tuyệt đối không học bất kỳ nhãn `Safe` hay `Unsafe` nào**. Nhờ đó, không gian biểu diễn của mô hình không bị co cụm hay sụp đổ phân phối.
@@ -138,7 +142,9 @@ Sau khi mô hình đã có năng lực miêu tả trực quan xuất sắc, nó 
 *   **Hàm thưởng kiểm chứng được (Verifiable Reward - RLVR):**  
     Đối với một cặp ảnh $I$ và chính sách $P$, nhãn an toàn $Y_{\text{gt}}(I, P)$ là một giá trị chân lý khách quan. Phần thưởng được xác định tất định:
 
-$$r(I, P, \hat{Y}, R) = \begin{cases} +1 & \text{nếu } \hat{Y} = Y_{\text{gt}}(I, P) \;\land\; \text{Đúng định dạng XML} \\ -1 & \text{nếu } \hat{Y} \neq Y_{\text{gt}}(I, P) \;\lor\; \text{Sai định dạng XML} \end{cases}$$
+$$
+r(I, P, \hat{Y}, R) = \begin{cases} +1 & \text{nếu } \hat{Y} = Y_{\text{gt}}(I, P) \;\land\; \text{Đúng định dạng XML} \\ -1 & \text{nếu } \hat{Y} \neq Y_{\text{gt}}(I, P) \;\lor\; \text{Sai định dạng XML} \end{cases}
+$$
 
 Mô hình được tối ưu hóa bằng **Group Relative Policy Optimization (GRPO)**. Nhờ việc sử dụng tín hiệu thưởng kiểm chứng được thay vì ép buộc cross-entropy trên từng token nhãn, mô hình giữ nguyên vẹn năng lực tư duy logic tổng quát và đạt khả năng thích ứng zero-shot với bất kỳ văn bản chính sách nào mới xuất hiện.
 

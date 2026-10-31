@@ -131,7 +131,7 @@ flowchart TD
     BranchB --> ProjB
 
     subgraph LLM_GENERATION["3. BỘ GIẢI MÃ NGÔN NGỮ (LLM DECODER)"]
-        LLM_Core["LLM Decoder (Vicuna / LLaMA-3 / Qwen)<br/>Sinh tự hồi quy: P(y_t | H_fusion, y_<t)"]
+        LLM_Core["LLM Decoder (Vicuna / LLaMA-3 / Qwen)<br/>Sinh tự hồi quy: P(y_t | H_fusion, y_#lt;t)"]
         SafeResponse["Phản hồi an toàn & hữu dụng cho người dùng"]
         
         TextInput --> LLM_Core

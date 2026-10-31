@@ -14,22 +14,36 @@
 ### 1.1. Mô Hình Toán Học Tiến Trình Quyết Định Web Agent (POMDP Formulation)
 
 Hoạt động của một tác tử duyệt web tự trị (Autonomous Web Agent) trong không gian Internet mở được mô hình hóa chặt chẽ như một **Quá trình Quyết định Markov Quan sát Một phần (Partially Observable Markov Decision Process - POMDP)**, biểu diễn bởi bộ 6 thành phần:
-$$\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{T}, \mathcal{R}, \Omega, \mathcal{O} \rangle$$
+
+$$
+\mathcal{M} = \langle \mathcal{S}, \mathcal{A}, \mathcal{T}, \mathcal{R}, \Omega, \mathcal{O} \rangle
+$$
 
 Trong đó:
 - $\mathcal{S}$ là không gian trạng thái thực sự của toàn bộ ứng dụng web và máy chủ phía sau (Server state, Session cookies, Hidden DOM branches, Database state). Tác tử không thể tiếp cận trực tiếp $\mathcal{S}$.
 - $\Omega$ là không gian quan sát đa phương thức cục bộ mà trình duyệt render ra tại bước thời gian $t$:
-  $$x_t = (S_t, H_t) \in \Omega$$
+
+$$
+x_t = (S_t, H_t) \in \Omega
+$$
+
   - **$S_t \in \mathbb{R}^{H \times W \times 3}$**: Ảnh chụp màn hình giao diện đồ họa trực quan (Screenshot) được kết xuất ở độ phân giải thực.
   - **$H_t \in \mathcal{V}^*$**: Chuỗi mã văn bản cấu trúc HTML DOM đã qua tiền xử lý, giữ lại các nút có thể tương tác (Interactive DOM Tree).
 - $\mathcal{A}$ là không gian hành động khả dĩ trên trình duyệt:
-  $$\mathcal{A} = \{\text{click}(e, x, y), \text{type}(e, \tau), \text{scroll}(\Delta x, \Delta y), \text{navigate}(u), \text{submit}(e), \text{stop}()\}$$
+
+$$
+\mathcal{A} = \{\text{click}(e, x, y), \text{type}(e, \tau), \text{scroll}(\Delta x, \Delta y), \text{navigate}(u), \text{submit}(e), \text{stop}()\}
+$$
+
   với $e$ là bộ định vị phần tử (selector / bounding box), $\tau$ là chuỗi ký tự nhập liệu, $u$ là URL đích.
 - $\mathcal{O}: \mathcal{S} \to \Omega$ là hàm ánh xạ quan sát xác suất.
 - $\mathcal{T}: \mathcal{S} \times \mathcal{A} \to \Delta(\mathcal{S})$ là phân phối xác suất chuyển đổi trạng thái trình duyệt sau mỗi thao tác.
 
 Người dùng cung cấp một chỉ thị nhiệm vụ ban đầu $I \in \mathcal{V}^*$ (ví dụ: *"Truy cập tài khoản ngân hàng và kiểm tra lịch sử giao dịch tháng 9"*). Tại mỗi bước $t$, dựa trên chỉ thị $I$, quan sát hiện thời $x_t$, và lịch sử tương tác $\mathcal{H}_{<t} = (x_0, a_0, \dots, x_{t-1}, a_{t-1})$, tác tử tính toán phân phối chính sách hành động:
-$$\pi_\theta(a_t \mid I, x_t, \mathcal{H}_{<t})$$
+
+$$
+\pi_\theta(a_t \mid I, x_t, \mathcal{H}_{<t})
+$$
 
 ```mermaid
 flowchart TD
@@ -42,12 +56,12 @@ flowchart TD
     subgraph AGENT_PERCEPTION["KHÔNG GIAN NHẬN THỨC TÁC TỬ (AGENT PERCEPTION)"]
         Observation["Quan sát đa phương thức:<br/>x_t = (S_t, H_t)"]
         TaskGoal["Chỉ thị mục tiêu người dùng: I"]
-        ContextHistory["Lịch sử phiên tương tác: H_{<t}"]
+        ContextHistory["Lịch sử phiên tương tác: H_{#lt;t}"]
     end
 
     subgraph AGENT_POLICY["BỘ SUY LUẬN & THỰC THI (VLM AGENT CORE)"]
         CrossAttention["Cơ chế Cross-Attention<br/>Hòa lẫn token văn bản và token thị giác"]
-        ActionGenerator["Phân phối chính sách:<br/>pi_theta(a_t | I, x_t, H_{<t})"]
+        ActionGenerator["Phân phối chính sách:<br/>pi_theta(a_t | I, x_t, H_{#lt;t})"]
         BrowserAction["Hành động thực thi a_t:<br/>click, type, download, exfiltrate"]
     end
 
@@ -76,7 +90,11 @@ Trong an ninh hệ thống máy tính truyền thống, kiến trúc phần cứ
 Tuy nhiên, trong kiến trúc mạng nơ-ron biến đổi đa phương thức (Vision-Language Models):
 1. **Kiến trúc đồng nhất về token (Homogeneous Token Space):** Toàn bộ dữ liệu đầu vào—dù là chỉ thị hệ thống của nhà phát triển, nhiệm vụ hợp thức của người dùng ($I$), nội dung trang web ngẫu nhiên ($H_t$), hay ma trận điểm ảnh đã tokenize thành patch embeddings ($S_t$)—đều được chuyển đổi thành các vector nhúng (embeddings) trong cùng một không gian ẩn $\mathbb{R}^d$.
 2. **Cơ chế chú ý toàn cục không phân biệt (Permissive Self-Attention & Cross-Attention):** Mọi token trong chuỗi đều có quyền tương tác với mọi token khác thông qua ma trận Softmax Attention:
-   $$\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V$$
+
+$$
+\text{Attention}(Q, K, V) = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right)V
+$$
+
    Mô hình không sở hữu cơ chế cứng nào để đánh dấu rằng các token sinh ra từ $H_t$ hay $S_t$ chỉ được xem là "dữ liệu bị động" (passive data).
 
 ### 2.1. So Sánh Bề Mặt Tấn Công: Text LLM vs Multimodal Web Agent
@@ -326,7 +344,11 @@ flowchart TD
 
 Thay vì sử dụng nhãn Ground Truth đưa trực tiếp vào prompt sinh lý do (khiến mô hình sinh lý luận thiên kiến), WARD sử dụng cơ chế vòng lặp hai mô hình:
 1. **Generator (Mô hình sinh):** Nhận đầu vào thuần túy $x = (H, S, I)$ và độc lập dự đoán:
-   $$\hat{o}^{(k)} = (\hat{r}^{(k)}, \hat{g}^{(k)}, \hat{\ell}^{(k)}, \hat{y}^{(k)})$$
+
+$$
+\hat{o}^{(k)} = (\hat{r}^{(k)}, \hat{g}^{(k)}, \hat{\ell}^{(k)}, \hat{y}^{(k)})
+$$
+
 2. **Evaluator (Mô hình thẩm định):** So khớp nghiêm ngặt nhãn nhị phân $\hat{y}^{(k)}$ và vị trí tiêm $\hat{\ell}^{(k)}$ với nhãn chuẩn $(y, \ell)$.
 3. Nếu khớp, chuỗi tư duy $\hat{r}^{(k)}$ được chấp nhận làm Ground Truth $r$. Nếu sai, Evaluator trả về một chỉ dẫn phản hồi (hint) $h^{(k)}$ chỉ rõ sai sót để Generator thử lại cho đến khi hội tụ.
 

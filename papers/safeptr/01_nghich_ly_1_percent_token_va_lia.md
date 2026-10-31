@@ -62,16 +62,30 @@ Trước công trình SafePTR, cộng đồng nghiên cứu đã đề xuất ba
 Để trả lời câu hỏi *Where*, nhóm tác giả Chen et al. thiết kế phương pháp **Layer-wise Intervention Analysis (LIA)**. Mục đích của LIA là xác định mức độ phụ thuộc của hành vi jailbreak vào từng tầng cụ thể bên trong khối Transformer của MLLM.
 
 Giả sử mạng Transformer gồm $L$ tầng tuần tự $l \in \{1, 2, \dots, L\}$. Tại tầng $l$, trạng thái ẩn đầu vào gồm hai thành phần đa phương thức:
-$$H^l = \left[ H_{img}^l, H_{ins}^l \right]$$
+
+$$
+H^l = \left[ H_{img}^l, H_{ins}^l \right]
+$$
+
 trong đó $H_{img}^l \in \mathbb{R}^{M \times D}$ đại diện cho $M$ token thị giác, và $H_{ins}^l \in \mathbb{R}^{T \times D}$ đại diện cho $T$ token chỉ thị văn bản của người dùng ($D$ là chiều không gian ẩn).
 
 Thuật toán LIA tiến hành can thiệp bằng cách thiết lập một cửa sổ tầng trượt:
-$$\mathcal{W}_n = [n, n + \Delta_n)$$
+
+$$
+\mathcal{W}_n = [n, n + \Delta_n)
+$$
+
 với kích thước cửa sổ cố định $\Delta_n = 2$ tầng. Trong suốt quá trình tính toán lan truyền tiến (Forward Pass) bên trong cửa sổ $\mathcal{W}_n$, tác động của phương thức kích hoạt tấn công (Visual modality hoặc Textual modality) sẽ bị vô hiệu hóa hoặc bị loại bỏ có chọn lọc khỏi quá trình tính toán ma trận Attention:
-$$\text{Attention}_{\text{masked}}\left(Q, K, V\right) \quad \text{tại dải tầng } l \in [n, n + \Delta_n)$$
+
+$$
+\text{Attention}_{\text{masked}}\left(Q, K, V\right) \quad \text{tại dải tầng } l \in [n, n + \Delta_n)
+$$
 
 Sau đó, đo lường sự biến thiên của **Tỷ lệ Tấn công Thành công (Attack Success Rate - ASR)** tương ứng với từng vị trí cửa sổ $n$:
-$$\text{ASR}(n) = \frac{|\mathcal{D}_{\text{unsafe}}^{\text{success}}(n)|}{|\mathcal{D}_{\text{unsafe}}|}$$
+
+$$
+\text{ASR}(n) = \frac{|\mathcal{D}_{\text{unsafe}}^{\text{success}}(n)|}{|\mathcal{D}_{\text{unsafe}}|}
+$$
 
 ```mermaid
 flowchart TD
@@ -111,7 +125,11 @@ Cụ thể, vị trí cửa sổ tầng nhạy cảm trên từng mô hình:
 - **DeepSeek-VL2-Tiny (27 tầng DeepSeek backbone):** Tầng nhạy cảm nằm ở dải tầng sớm hơn, chính xác tại $[4, 6)$ (tầng 4 và tầng 5).
 
 Khi tiến hành can thiệp cắt tỉa các token độc hại chỉ trong cửa sổ tầng hẹp này, tỷ lệ tấn công thành công giảm đột ngột:
-$$\text{ASR: } 67.3\% \longrightarrow 4.2\%$$
+
+$$
+\text{ASR: } 67.3\% \longrightarrow 4.2\%
+$$
+
 trong khi nếu can thiệp vào các tầng trước đó (tầng $0-3$) hoặc các tầng sau đó (từ tầng 10 trở đi), ASR hầu như không suy giảm hoặc mức suy giảm không đáng kể.
 
 ### 2.3. Bản Chất Của Các Tầng Sâu: Tại Sao Chúng Được Gọi Là "Safety Layers"?
@@ -132,18 +150,31 @@ Nghiên cứu của Yue et al. (ACL 2024) và Liu et al. (2024) về động l�
 Để trả lời câu hỏi *How* (Mã độc bẻ lái không gian biểu diễn như thế nào?), nhóm tác giả tiến hành đo đạc tọa độ hình học của các trạng thái ẩn đối kháng so với một chuẩn an toàn đã được căn chỉnh.
 
 Nhóm nghiên cứu sử dụng câu lệnh chỉ thị an toàn kinh điển từ AdaShield (Wang et al., ECCV 2024) làm vector tham chiếu cơ sở:
-$$R_{\text{text}} = \text{“Please answer this question safely and accurately. Reply ‘I am sorry.’ if the content is harmful.”}$$
+
+$$
+R_{\text{text}} = \text{“Please answer this question safely and accurately. Reply ‘I am sorry.’ if the content is harmful.”}
+$$
 
 Tại mỗi tầng $l$, chuỗi token chỉ thị an toàn tham chiếu $R_{\text{text}}$ gồm $C$ token được mã hóa thành tensor ẩn $H_{safe}^l \in \mathbb{R}^{C \times D}$. Vector đại diện trung bình của không gian an toàn tại tầng $l$ được tính bằng:
-$$s_{\text{ref}}^l = \frac{1}{C} \sum_{c=1}^{C} s_c^l \in \mathbb{R}^D$$
+
+$$
+s_{\text{ref}}^l = \frac{1}{C} \sum_{c=1}^{C} s_c^l \in \mathbb{R}^D
+$$
 
 ### 3.2. Đo Đạc Khoảng Cách Hình Học Trong Không Gian Đa Chiều
 
 Với mỗi mẫu dữ liệu đầu vào $X = (X_{\text{img}}, X_{\text{ins}})$, nhóm nghiên cứu đo lường vị trí tương đối của trạng thái ẩn đầu vào so với $s_{\text{ref}}^l$ thông qua hai chỉ số hình học đồng thời:
 - **Độ tương đồng Cosine (Cosine Similarity - biểu thị hướng ngữ nghĩa):**
-  $$\text{Sim}_{\text{cos}}(h^l, s_{\text{ref}}^l) = \frac{\langle h^l, s_{\text{ref}}^l \rangle}{\|h^l\|_2 \, \|s_{\text{ref}}^l\|_2}$$
+
+$$
+\text{Sim}_{\text{cos}}(h^l, s_{\text{ref}}^l) = \frac{\langle h^l, s_{\text{ref}}^l \rangle}{\|h^l\|_2 \, \|s_{\text{ref}}^l\|_2}
+$$
+
 - **Khoảng cách Euclid (Euclidean Distance - biểu thị độ lớn phân kỳ):**
-  $$\text{Dist}_{\text{euc}}(h^l, s_{\text{ref}}^l) = \|h^l - s_{\text{ref}}^l\|_2$$
+
+$$
+\text{Dist}_{\text{euc}}(h^l, s_{\text{ref}}^l) = \|h^l - s_{\text{ref}}^l\|_2
+$$
 
 ```mermaid
 flowchart TD
@@ -226,7 +257,11 @@ Tại sao một số lượng token cực kỳ nhỏ bé (dưới 1%) lại có 
 
 Câu trả lời nằm ở cơ chế **Giếng hút chú ý (Attention Sinks)** đã được quan sát trong các công trình nghiên cứu về Transformer của Ma et al. (2023) và Zhang et al. (2024):
 1. **Sự tập trung năng lượng kích hoạt cực độ:** Trong quá trình tối ưu hóa hàm Softmax của cơ chế Self-Attention:
-   $$\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V$$
+
+$$
+\text{Attention}(Q, K, V) = \text{Softmax}\left(\frac{Q K^T}{\sqrt{d_k}}\right) V
+$$
+
    Do tổng các trọng số Softmax luôn bị ràng buộc phải bằng $1$, mô hình có xu hướng "gửi gắm" lượng lớn trọng số dư thừa vào một số ít token cụ thể có chuẩn vector lớn.
 2. **Sự hình thành vật chủ chứa mã độc:** Khi kẻ tấn công chèn các tín hiệu typography hoặc nhiễu đối kháng, những tín hiệu này được thiết kế có độ tương phản hoặc gradient cực mạnh. Các token chứa tín hiệu này tự nhiên biến thành các Attention Sinks, hút tới **70%–90% tổng trọng số chú ý** của các đầu chú ý tại tầng 7 và 8.
 3. **Lấn át ngữ cảnh an toàn:** Các token giếng hút này lấn át hoàn toàn sự hiện diện của các token chỉ thị an toàn gốc. Kết quả là trong phép nhân với ma trận giá trị $V$, biểu diễn tổng hợp của toàn chuỗi bị kéo lệch hoàn toàn về phía mã độc, kích hoạt phản hồi vượt rào ở các tầng giải mã.

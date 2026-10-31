@@ -5,12 +5,78 @@ Prevents:
 1. \\tag{...} which triggers "KaTeX parse error: \\tag works only in display equations"
 2. file:/// local URI links
 3. Half-open interval brackets in Mermaid labels like [0, n) or [n, n+Delta_n)
+4. Single-line display math ($$ ... $$ on one line) - AGENTS.md section 1.2
+5. GFM tables whose delimiter row has a different number of cells than the header
+6. Raw HTML-like tags (e.g. <think>, y_<t) inside Mermaid blocks (only <br/> is allowed)
+7. Invalid GitHub alert types (only NOTE, TIP, IMPORTANT, WARNING, CAUTION exist)
 """
 
 import sys
 import os
 import re
 import argparse
+
+
+SINGLE_LINE_DISPLAY = re.compile(r'^(\s*)\$\$(.+?)\$\$\s*$')
+VALID_ALERTS = {"NOTE", "TIP", "IMPORTANT", "WARNING", "CAUTION"}
+
+
+def split_cells(row):
+    row = row.strip()
+    if row.startswith("|"):
+        row = row[1:]
+    if row.endswith("|") and not row.endswith("\\|"):
+        row = row[:-1]
+    cells, cur, in_math, i = [], "", False, 0
+    while i < len(row):
+        ch = row[i]
+        if ch == "\\" and i + 1 < len(row):
+            cur += row[i:i + 2]
+            i += 2
+            continue
+        if ch == "$":
+            in_math = not in_math
+        if ch == "|" and not in_math:
+            cells.append(cur)
+            cur = ""
+        else:
+            cur += ch
+        i += 1
+    cells.append(cur)
+    return cells
+
+
+def scan_lines(content):
+    """Yield (line_no, line, in_code, in_mermaid) for every line."""
+    fence, lang = None, ""
+    for idx, line in enumerate(content.splitlines(), 1):
+        m = re.match(r'^\s*(```+|~~~+)\s*(\w*)', line)
+        if m:
+            if fence is None:
+                fence, lang = m.group(1)[:3], m.group(2)
+                yield idx, line, True, lang == "mermaid"
+                continue
+            if m.group(1).startswith(fence) and not m.group(2):
+                yield idx, line, True, lang == "mermaid"
+                fence, lang = None, ""
+                continue
+        yield idx, line, fence is not None, fence is not None and lang == "mermaid"
+
+
+def fix_single_line_display(content):
+    out, changed = [], False
+    for idx, line, in_code, _ in scan_lines(content):
+        m = None if in_code else SINGLE_LINE_DISPLAY.match(line)
+        if m and "$$" not in m.group(2):
+            if out and out[-1].strip():
+                out.append("")
+            out += ["$$", m.group(2).strip(), "$$", ""]
+            changed = True
+        else:
+            out.append(line)
+    text = "\n".join(out) + ("\n" if content.endswith("\n") else "")
+    return re.sub(r'\n{3,}', '\n\n', text) if changed else content
+
 
 def lint_file(fpath, auto_fix=False):
     with open(fpath, "r", encoding="utf-8") as f:
@@ -62,6 +128,41 @@ def lint_file(fpath, auto_fix=False):
             closes = line.count(']')
             if opens != closes:
                 issues.append(f"Mermaid Block #{b_idx+1}, Line {l_idx+1}: Unbalanced brackets '[' vs ']' in: {line.strip()}")
+
+
+    # 6. Single-line display math
+    for idx, line, in_code, _ in scan_lines(content):
+        if not in_code and SINGLE_LINE_DISPLAY.match(line) and "$$" not in SINGLE_LINE_DISPLAY.match(line).group(2):
+            issues.append(f"Line {idx}: Single-line display math '$$...$$'. Put '$$' opening and closing on their own lines (AGENTS.md 1.2).")
+    if auto_fix:
+        modified_content = fix_single_line_display(modified_content)
+
+    # 7. Table delimiter row must have same number of cells as header
+    lines = content.splitlines()
+    code_flags = {i: c for i, _, c, _ in scan_lines(content)}
+    for i in range(1, len(lines)):
+        if code_flags.get(i + 1) or not re.match(r'^\s*\|?\s*:?-{3,}', lines[i]) or "|" not in lines[i]:
+            continue
+        if "|" not in lines[i - 1]:
+            continue
+        h, d = len(split_cells(lines[i - 1])), len(split_cells(lines[i]))
+        if h != d:
+            issues.append(f"Line {i+1}: Table delimiter row has {d} cells but header has {h}.")
+
+    # 8. Raw HTML-like tags inside Mermaid
+    for idx, line, _, in_mermaid in scan_lines(content):
+        if not in_mermaid:
+            continue
+        probe = re.sub(r'<br\s*/?>', '', line)
+        probe = re.sub(r'<-+|<=+|<\.-+', '', probe)
+        if re.search(r'<[A-Za-z/_{]', probe):
+            issues.append(f"Line {idx}: Raw '<' tag-like text inside Mermaid (use #lt; / #gt;): {line.strip()[:80]}")
+
+    # 9. Invalid GitHub alert types
+    for idx, line, in_code, _ in scan_lines(content):
+        m = re.match(r'^\s*>\s*\[!(\w+)\]', line)
+        if not in_code and m and m.group(1).upper() not in VALID_ALERTS:
+            issues.append(f"Line {idx}: Invalid GitHub alert '[!{m.group(1)}]'.")
 
     if auto_fix and modified_content != content:
         with open(fpath, "w", encoding="utf-8") as f:

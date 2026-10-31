@@ -31,13 +31,20 @@ flowchart LR
 ```
 
 Tổng thời gian thực thi của mỗi bước tương tác trong đường ống tuần tự được tính bằng tổng thời gian của hai tiến trình:
-$$T_{\text{total\_step}} = T_{\text{Guard}} + T_{\text{Agent}}$$
+
+$$
+T_{\text{total\_step}} = T_{\text{Guard}} + T_{\text{Agent}}
+$$
 
 ### 1.1. Sự Tê Liệt Khi Ứng Dụng Trong Thực Tế
 
 Trong môi trường thực chiến:
 1. **Sự bùng nổ thời gian chờ đợi:** Các mô hình guardrail hiện hành như WebAgentGuard-8B mất trung bình **10.03 giây** cho mỗi lần thẩm định trang web. Khi kết hợp với tác tử sử dụng GPT-4o (mất trung bình **4.84 giây**), thời gian phản hồi cho một cú click chuột bị đội lên tới:
-   $$T_{\text{total\_step}} = 10.03\text{s} + 4.84\text{s} = 14.87\text{ giây / bước}$$
+
+$$
+T_{\text{total\_step}} = 10.03\text{s} + 4.84\text{s} = 14.87\text{ giây / bước}
+$$
+
    Đối với một nhiệm vụ duyệt web thông thường gồm 10 đến 15 bước tương tác, người dùng phải chờ từ **2.5 đến gần 4 phút**, phá hủy hoàn toàn tính khả dụng của tác tử tự trị.
 2. **Sự lãng phí tài nguyên của chuỗi CoT cồng kềnh:** Các guard model tiền nhiệm thường sinh ra các chuỗi suy luận Chain-of-Thought rất dài (trung bình từ 400 đến 470 output tokens), vừa làm tăng chi phí tính toán vừa kéo dài thời gian giải mã tự hồi quy (Autoregressive Decoding Overhead).
 
@@ -71,13 +78,21 @@ WARD được xây dựng trên nền tảng hai kiến trúc Vision-Language Mo
 ### 2.2. Thiết Kế Không Gian Đầu Vào và Đầu Ra Có Cấu Trúc
 
 **Không gian đầu vào:**
-$$x = (H, S, I)$$
+
+$$
+x = (H, S, I)
+$$
+
 - $H$: Cấu trúc văn bản HTML đã qua tiền xử lý (loại bỏ script và svg thừa, giữ lại selector và text nội dung).
 - $S$: Ảnh chụp màn hình giao diện (Screenshot) ở độ phân giải gốc.
 - $I$: Chỉ thị tác vụ người dùng.
 
 **Không gian đầu ra có cấu trúc:**
-$$a = (y, \ell, g, r)$$
+
+$$
+a = (y, \ell, g, r)
+$$
+
 - $y \in \{\text{Malicious}, \text{Benign}\}$: Phán quyết an toàn nhị phân.
 - $\ell \in \{\text{HTML}, \text{Screenshot}, \text{Both}, \text{None}\}$: Định vị chính xác tọa độ/kênh phương thức xuất hiện lệnh tiêm.
 - $g \in \mathcal{G} \cup \{\text{None}\}$: Loại mục tiêu phá hoại được phát hiện (thuộc 6 nhóm phá hoại).
@@ -126,9 +141,16 @@ sequenceDiagram
 ### 3.1. Chứng Minh Toán Học Về Độ Trễ Bổ Sung Bằng 0 (Zero Added Latency Proof)
 
 Gọi $T_{\text{Agent}}$ là biến ngẫu nhiên biểu diễn thời gian hoàn thành suy luận một bước của tác tử chính:
-$$T_{\text{Agent}} \sim \mathcal{D}_{\text{Agent}}$$
+
+$$
+T_{\text{Agent}} \sim \mathcal{D}_{\text{Agent}}
+$$
+
 Gọi $T_{\text{Guard}}$ là biến ngẫu nhiên biểu diễn thời gian thẩm định của mô hình WARD:
-$$T_{\text{Guard}} \sim \mathcal{D}_{\text{Guard}}$$
+
+$$
+T_{\text{Guard}} \sim \mathcal{D}_{\text{Guard}}
+$$
 
 Do hai tiến trình được kích hoạt đồng thời tại thời điểm $t_0$, thời điểm hoàn thành của Agent là $t_0 + T_{\text{Agent}}$ và của WARD là $t_0 + T_{\text{Guard}}$.  
 Hành động $a_t$ của Agent chỉ được phép gửi tới trình duyệt khi và chỉ khi cả hai điều kiện sau được thỏa mãn:
@@ -136,10 +158,16 @@ Hành động $a_t$ của Agent chỉ được phép gửi tới trình duyệt 
 2. WARD đã hoàn tất thẩm định và trả về kết quả an toàn ($y = \text{Benign}$).
 
 Do đó, tổng thời gian hệ thống phải chờ đợi trước khi hành động $a_t$ được gửi đi là:
-$$T_{\text{effective}} = \max(T_{\text{Agent}}, T_{\text{Guard}})$$
+
+$$
+T_{\text{effective}} = \max(T_{\text{Agent}}, T_{\text{Guard}})
+$$
 
 Độ trễ gia tăng bổ sung (Added Latency) đối với hệ thống được định nghĩa là:
-$$\Delta T = T_{\text{effective}} - T_{\text{Agent}} = \max(0, \, T_{\text{Guard}} - T_{\text{Agent}})$$
+
+$$
+\Delta T = T_{\text{effective}} - T_{\text{Agent}} = \max(0, \, T_{\text{Guard}} - T_{\text{Agent}})
+$$
 
 Từ bảng kết quả đo đạc thực nghiệm trên phần cứng tiêu chuẩn **NVIDIA H200 (Batch Size = 1)**:
 - Đối với WARD-0.8B: $\mathbb{E}[T_{\text{Guard}}] = 2.24\text{s}$ (trên WebArena) và $2.37\text{s}$ (trên VPI).
@@ -150,8 +178,14 @@ Từ bảng kết quả đo đạc thực nghiệm trên phần cứng tiêu chu
   - Claude-3.7-Sonnet: $\mathbb{E}[T_{\text{Agent}}] = 7.35\text{s} - 11.99\text{s}$
 
 Nhận xét: Trong mọi cấu hình triển khai, ta luôn có bất đẳng thức ngặt:
-$$P(T_{\text{Guard}} < T_{\text{Agent}}) \approx 1.0$$
-$$\implies \mathbb{E}[\Delta T] = \mathbb{E}[\max(0, \, T_{\text{Guard}} - T_{\text{Agent}})] = 0.00 \text{ ms}$$
+
+$$
+P(T_{\text{Guard}} < T_{\text{Agent}}) \approx 1.0
+$$
+
+$$
+\implies \mathbb{E}[\Delta T] = \mathbb{E}[\max(0, \, T_{\text{Guard}} - T_{\text{Agent}})] = 0.00 \text{ ms}
+$$
 
 > [!IMPORTANT]
 > **Kết luận toán học:** Khi triển khai song song với các Web Agent thương mại hoặc mã nguồn mở hiện nay, WARD luôn luôn hoàn thành việc thẩm định an toàn **sớm hơn từ 1.2 giây đến 9.6 giây** so với thời điểm Agent tính toán xong hành động. Do đó, WARD đạt được trạng thái lý tưởng: **Hoàn toàn không làm tăng thêm độ trễ của hệ thống (Zero Added Latency)**.

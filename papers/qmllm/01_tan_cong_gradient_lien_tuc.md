@@ -46,29 +46,57 @@ Tuy nhiên, khi tích hợp thêm nhánh thị giác, bộ mã hóa thị giác 
 Giả sử ảnh đầu vào là $X_{\text{img}} \in \mathbb{R}^{H \times W \times C}$.
 1. **Chia mảnh và chiếu tuyến tính (Patch Embedding):**  
    Ảnh $X_{\text{img}}$ được chia thành $N = \frac{H \cdot W}{P^2}$ mảnh điểm ảnh, mỗi mảnh có kích thước $P \times P$. Mỗi mảnh được duỗi thẳng thành véc-tơ $x_p^i \in \mathbb{R}^{P^2 C}$ và chiếu qua ma trận trọng số $E_p \in \mathbb{R}^{(P^2 C) \times d_v}$:
-   $$z_0 = [x_{\text{class}}; x_p^1 E_p; x_p^2 E_p; \dots; x_p^N E_p] + E_{\text{pos}}$$
+
+$$
+z_0 = [x_{\text{class}}; x_p^1 E_p; x_p^2 E_p; \dots; x_p^N E_p] + E_{\text{pos}}
+$$
+
    trong đó $x_{\text{class}} \in \mathbb{R}^{d_v}$ là token đặc biệt đại diện cho ngữ nghĩa toàn cục (CLS token), và $E_{\text{pos}} \in \mathbb{R}^{(N+1) \times d_v}$ là ma trận mã hóa vị trí (positional embedding).
 
 2. **Mã hóa qua các tầng Vision Transformer ($\mathcal{F}_v$):**  
    Dữ liệu đi qua $L_v$ tầng Transformer:
-   $$z_\ell' = \text{MSA}(\text{LN}(z_{\ell-1})) + z_{\ell-1}, \quad \ell = 1, \dots, L_v$$
-   $$z_\ell = \text{MLP}(\text{LN}(z_\ell')) + z_\ell', \quad \ell = 1, \dots, L_v$$
+
+$$
+z_\ell' = \text{MSA}(\text{LN}(z_{\ell-1})) + z_{\ell-1}, \quad \ell = 1, \dots, L_v
+$$
+
+$$
+z_\ell = \text{MLP}(\text{LN}(z_\ell')) + z_\ell', \quad \ell = 1, \dots, L_v
+$$
+
    Đầu ra của Vision Encoder là tập hợp các véc-tơ đặc trưng liên tục:
-   $$Z_v = \mathcal{F}_v(X_{\text{img}}) = \{z_{\text{cls}}, z_1, z_2, \dots, z_N\} \subset \mathbb{R}^{(N+1) \times d_v}$$
+
+$$
+Z_v = \mathcal{F}_v(X_{\text{img}}) = \{z_{\text{cls}}, z_1, z_2, \dots, z_N\} \subset \mathbb{R}^{(N+1) \times d_v}
+$$
 
 3. **Chiếu thích ứng đa phương thức ($\mathcal{F}_h$):**  
    Do chiều biểu diễn của thị giác $d_v$ thường khác với chiều ẩn của ngôn ngữ $d_h$ (ví dụ: $d_v = 1024$ trong ViT-L, còn $d_h = 4096$ trong LLaMA-7B), một bộ chiếu tuyến tính hoặc MLP 2 tầng $\mathcal{F}_h$ được sử dụng:
-   $$H_v = \mathcal{F}_h(Z_v) \in \mathbb{R}^{(N+1) \times d_h}$$
+
+$$
+H_v = \mathcal{F}_h(Z_v) \in \mathbb{R}^{(N+1) \times d_h}
+$$
 
 4. **Ghép nối chuỗi đa phương thức (Multimodal Fusion):**  
    Chuỗi token văn bản của người dùng $X_{\text{text}} = (t_1, t_2, \dots, t_U)$ được chuyển thành véc-tơ từ vựng qua ma trận Word Embedding $E_t \in \mathbb{R}^{|V| \times d_h}$:
-   $$H_t = X_{\text{text}} E_t \in \mathbb{R}^{U \times d_h}$$
+
+$$
+H_t = X_{\text{text}} E_t \in \mathbb{R}^{U \times d_h}
+$$
+
    Toàn bộ chuỗi đầu vào cấp cho LLM là chuỗi ghép nối:
-   $$H_{\text{fusion}} = [H_v \parallel H_t] \in \mathbb{R}^{(N + 1 + U) \times d_h}$$
+
+$$
+H_{\text{fusion}} = [H_v \parallel H_t] \in \mathbb{R}^{(N + 1 + U) \times d_h}
+$$
 
 5. **Sinh giải mã tự hồi quy trong LLM Decoder ($\mathcal{F}_{\text{LLM}}$):**  
    Chuỗi $H_{\text{fusion}}$ đi qua $L_m$ tầng giải mã Transformer để dự đoán phân phối xác suất có điều kiện của từng token tiếp theo:
-   $$P(y_t \mid H_{\text{fusion}}, y_{<t}) = \text{Softmax}\left( W_u \cdot \text{LN}(h_{L_m, t}) \right)$$
+
+$$
+P(y_t \mid H_{\text{fusion}}, y_{<t}) = \text{Softmax}\left( W_u \cdot \text{LN}(h_{L_m, t}) \right)
+$$
+
    trong đó $h_{L_m, t}$ là véc-tơ trạng thái ẩn tầng cuối cùng tại bước sinh $t$, và $W_u \in \mathbb{R}^{|V| \times d_h}$ là ma trận chiếu ngược về từ điển (Unembedding matrix).
 
 ---
@@ -77,7 +105,9 @@ Giả sử ảnh đầu vào là $X_{\text{img}} \in \mathbb{R}^{H \times W \tim
 
 Giả sử kẻ tấn công muốn ép mô hình sinh ra một chuỗi văn bản nguy hại xác định $Y^* = (y_1^*, y_2^*, \dots, y_m^*)$ (ví dụ: *"Sure, here is the exploit code..."*). Hàm mất mát đối kháng được thiết lập theo hàm Negative Log-Likelihood:
 
-$$\mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta, X_{\text{text}}, Y^*) = - \sum_{t=1}^m \log P(y_t^* \mid \mathcal{F}_{\text{LLM}}([\mathcal{F}_h(\mathcal{F}_v(X_{\text{img}} + \delta)) \parallel H_t]), y_{<t}^*)$$
+$$
+\mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta, X_{\text{text}}, Y^*) = - \sum_{t=1}^m \log P(y_t^* \mid \mathcal{F}_{\text{LLM}}([\mathcal{F}_h(\mathcal{F}_v(X_{\text{img}} + \delta)) \parallel H_t]), y_{<t}^*)
+$$
 
 ```mermaid
 flowchart LR
@@ -94,11 +124,17 @@ flowchart LR
 
 Đạo hàm của hàm mất mát đối kháng theo từng điểm ảnh của nhiễu $\delta$ được tính bằng chuỗi nhân ma trận Jacobi thông qua quy tắc chuỗi:
 
-$$\nabla_\delta \mathcal{L}_{\text{adv}} = \frac{\partial \mathcal{L}_{\text{adv}}}{\partial (X_{\text{img}} + \delta)} = \underbrace{\frac{\partial \mathcal{L}_{\text{adv}}}{\partial h_{L_m}}}_{(1)} \cdot \underbrace{\left( \prod_{\ell=1}^{L_m} \frac{\partial h_\ell}{\partial h_{\ell-1}} \right)}_{(2)} \cdot \underbrace{\frac{\partial h_0}{\partial H_v}}_{(3)} \cdot \underbrace{\frac{\partial H_v}{\partial Z_v}}_{(4)} \cdot \underbrace{\left( \prod_{k=1}^{L_v} \frac{\partial z_k}{\partial z_{k-1}} \right)}_{(5)} \cdot \underbrace{\frac{\partial z_0}{\partial (X_{\text{img}} + \delta)}}_{(6)}$$
+$$
+\nabla_\delta \mathcal{L}_{\text{adv}} = \frac{\partial \mathcal{L}_{\text{adv}}}{\partial (X_{\text{img}} + \delta)} = \underbrace{\frac{\partial \mathcal{L}_{\text{adv}}}{\partial h_{L_m}}}_{(1)} \cdot \underbrace{\left( \prod_{\ell=1}^{L_m} \frac{\partial h_\ell}{\partial h_{\ell-1}} \right)}_{(2)} \cdot \underbrace{\frac{\partial h_0}{\partial H_v}}_{(3)} \cdot \underbrace{\frac{\partial H_v}{\partial Z_v}}_{(4)} \cdot \underbrace{\left( \prod_{k=1}^{L_v} \frac{\partial z_k}{\partial z_{k-1}} \right)}_{(5)} \cdot \underbrace{\frac{\partial z_0}{\partial (X_{\text{img}} + \delta)}}_{(6)}
+$$
 
 #### Phân tích tính khả vi của từng thành phần:
 1. **Thành phần (1) - Đạo hàm Logits & Softmax:**  
-   $$\frac{\partial \mathcal{L}_{\text{adv}}}{\partial \text{logit}_j} = P(y_t = j \mid \cdot) - \mathbb{I}(j = y_t^*)$$  
+
+$$
+\frac{\partial \mathcal{L}_{\text{adv}}}{\partial \text{logit}_j} = P(y_t = j \mid \cdot) - \mathbb{I}(j = y_t^*)
+$$
+
    Đây là hàm trơn mượt liên tục hoàn hảo.
 2. **Thành phần (2) & (5) - Đạo hàm qua các tầng Transformer (LLM & ViT):**  
    Mỗi tầng Transformer gồm:
@@ -110,7 +146,7 @@ $$\nabla_\delta \mathcal{L}_{\text{adv}} = \frac{\partial \mathcal{L}_{\text{adv
 4. **Thành phần (6) - Đạo hàm qua Phép chia mảnh (Patch Extraction):**  
    Thao tác lấy mảnh điểm ảnh và nhân ma trận tuyến tính $E_p$ tương đương với phép tích chập 2D (Conv2d) với kernel size bằng stride ($P \times P$). Đạo hàm của nó chỉ đơn giản là việc trải ngược gradient trở về từng pixel tương ứng.
 
-> [!CRITICAL]
+> [!WARNING]
 > **Kết luận cốt lõi:**  
 > Không có bất kỳ rào cản phi vi phân nào trên toàn bộ hành trình từ logit đầu ra của LLM ngược về từng điểm ảnh của ảnh đầu vào. **Hệ thống là một cỗ máy khả vi trơn tru 100% (100% end-to-end differentiable)**. Điều này cho phép kẻ tấn công tính toán chính xác hướng giảm dốc nhanh nhất của hàm mất mát độc hại.
 
@@ -138,19 +174,27 @@ Câu trả lời nằm ở **Giả thuyết Tuyến tính hóa Cục bộ (Local
 ### 3.1. Dẫn Xuất Toán Học Về Sự Tích Tụ Năng Lượng Nhiễu
 Xét một lớp tuyến tính trong mạng nơ-ron với véc-tơ trọng số $\mathbf{w} \in \mathbb{R}^D$ và đầu vào $\mathbf{x} \in \mathbb{R}^D$. Khi đầu vào bị cộng thêm một lượng nhiễu $\boldsymbol{\delta}$:
 
-$$\mathbf{w}^\top \tilde{\mathbf{x}} = \mathbf{w}^\top (\mathbf{x} + \boldsymbol{\delta}) = \mathbf{w}^\top \mathbf{x} + \mathbf{w}^\top \boldsymbol{\delta}$$
+$$
+\mathbf{w}^\top \tilde{\mathbf{x}} = \mathbf{w}^\top (\mathbf{x} + \boldsymbol{\delta}) = \mathbf{w}^\top \mathbf{x} + \mathbf{w}^\top \boldsymbol{\delta}
+$$
 
 Để cực đại hóa giá trị kích hoạt với ràng buộc chuẩn vô cùng $\|\boldsymbol{\delta}\|_\infty \le \epsilon$, kẻ tấn công chọn:
 
-$$\boldsymbol{\delta} = \epsilon \cdot \text{sign}(\mathbf{w})$$
+$$
+\boldsymbol{\delta} = \epsilon \cdot \text{sign}(\mathbf{w})
+$$
 
 Khi đó, độ biến thiên kích hoạt trở thành:
 
-$$\Delta = \mathbf{w}^\top \boldsymbol{\delta} = \epsilon \sum_{i=1}^D |w_i| = \epsilon \cdot \|\mathbf{w}\|_1$$
+$$
+\Delta = \mathbf{w}^\top \boldsymbol{\delta} = \epsilon \sum_{i=1}^D |w_i| = \epsilon \cdot \|\mathbf{w}\|_1
+$$
 
 Giả sử trung bình mỗi trọng số có độ lớn $|\bar{w}| = v$. Khi đó:
 
-$$\Delta \approx \epsilon \cdot D \cdot v$$
+$$
+\Delta \approx \epsilon \cdot D \cdot v
+$$
 
 Trong một mô hình VLM hiện đại:
 - Ảnh đầu vào kích thước $336 \times 336 \times 3$ tương đương số chiều $D = 338.688$.
@@ -189,18 +233,26 @@ flowchart TD
 ### 4.1. Projected Gradient Descent (PGD) Trên MLLM
 PGD là chuẩn mực của các cuộc tấn công đối kháng hộp trắng. Trong bài toán tấn công VLM, thuật toán giải bài toán tối ưu hóa có ràng buộc:
 
-$$\min_{\delta \in \mathcal{S}} \mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta, X_{\text{text}}, Y^*)$$
+$$
+\min_{\delta \in \mathcal{S}} \mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta, X_{\text{text}}, Y^*)
+$$
 
 trong đó không gian nhiễu cho phép là quả cầu chuẩn $\ell_\infty$: $\mathcal{S} = \{\delta \in \mathbb{R}^{H \times W \times C} \mid \|\delta\|_\infty \le \epsilon\}$.
 
 Công thức lặp PGD tại bước $t$:
 
-$$\delta^{(t+1)} = \Pi_{\mathcal{S}} \left( \delta^{(t)} - \alpha \cdot \text{sign}\left( \nabla_\delta \mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta^{(t)}, X_{\text{text}}, Y^*) \right) \right)$$
+$$
+\delta^{(t+1)} = \Pi_{\mathcal{S}} \left( \delta^{(t)} - \alpha \cdot \text{sign}\left( \nabla_\delta \mathcal{L}_{\text{adv}}(X_{\text{img}} + \delta^{(t)}, X_{\text{text}}, Y^*) \right) \right)
+$$
 
 trong đó:
 - $\alpha$: Kích thước bước nhảy (step size, thường chọn $\alpha = 1/255$ hoặc $2/255$).
 - $\Pi_{\mathcal{S}}(\cdot)$: Phép toán chiếu (projection operator) đưa giá trị nhiễu về lại khoảng $[-\epsilon, \epsilon]$:
-  $$\Pi_{\mathcal{S}}(v) = \max(-\epsilon, \min(\epsilon, v))$$
+
+$$
+\Pi_{\mathcal{S}}(v) = \max(-\epsilon, \min(\epsilon, v))
+$$
+
 - Sau đó, ảnh đối kháng được kẹp vào miền giá trị hợp lệ của điểm ảnh: $\tilde{X}_{\text{img}}^{(t+1)} = \text{clip}(X_{\text{img}} + \delta^{(t+1)}, 0, 1)$.
 
 ---
@@ -214,7 +266,9 @@ Ví dụ: $Y_{\text{prefix}} =$ *"Sure, here is how to manufacture the illegal s
 
 Hàm mất mát của ImgJP:
 
-$$\mathcal{L}_{\text{ImgJP}}(\delta) = - \sum_{t=1}^m w_t \cdot \log P\left(y_t^* \mid \mathcal{F}_{\text{VLM}}(X_{\text{img}} + \delta, X_{\text{harmful\_query}}), y_{<t}^*\right)$$
+$$
+\mathcal{L}_{\text{ImgJP}}(\delta) = - \sum_{t=1}^m w_t \cdot \log P\left(y_t^* \mid \mathcal{F}_{\text{VLM}}(X_{\text{img}} + \delta, X_{\text{harmful\_query}}), y_{<t}^*\right)
+$$
 
 trong đó $w_t$ là trọng số suy giảm theo vị trí để ưu tiên độ chính xác tuyệt đối của 3-5 token đầu tiên.
 
@@ -247,7 +301,9 @@ Khác với ImgJP cần đi kèm một câu lệnh văn bản độc hại ($X_{
 
 Hàm mất mát của VAA là hàm đa mục tiêu:
 
-$$\mathcal{L}_{\text{VAA}}(\delta) = \mathcal{L}_{\text{target}}(\delta) - \lambda \mathcal{L}_{\text{refusal}}(\delta)$$
+$$
+\mathcal{L}_{\text{VAA}}(\delta) = \mathcal{L}_{\text{target}}(\delta) - \lambda \mathcal{L}_{\text{refusal}}(\delta)
+$$
 
 trong đó:
 - $\mathcal{L}_{\text{target}}(\delta) = - \sum_{t=1}^T \log P(y_t^{\text{toxic}} \mid X_{\text{img}} + \delta, X_{\text{neutral\_prompt}}, y_{<t})$: Ép mô hình sinh câu trả lời độc hại.
@@ -267,11 +323,15 @@ Tuy nhiên, trong an ninh VLM, các biện pháp này **hoàn toàn thất bại
 ### 5.1. Thuật Toán Kỳ Vọng Biến Đổi (Expectation Over Transformation - EOT)
 Nếu kẻ tấn công biết hệ thống có áp dụng phép biến đổi ngẫu nhiên $T \sim \mathcal{T}$ (như xoay ảnh, co giãn, nén JPEG vi phân), kẻ tấn công sẽ thay đổi hàm mục tiêu thành kỳ vọng:
 
-$$\min_\delta \mathbb{E}_{t \sim \mathcal{T}} \left[ \mathcal{L}_{\text{adv}}(t(X_{\text{img}} + \delta), X_{\text{text}}, Y^*) \right]$$
+$$
+\min_\delta \mathbb{E}_{t \sim \mathcal{T}} \left[ \mathcal{L}_{\text{adv}}(t(X_{\text{img}} + \delta), X_{\text{text}}, Y^*) \right]
+$$
 
 Tại mỗi bước tối ưu hóa, đạo hàm được lấy trung bình trên một batch gồm $B$ phép biến đổi ngẫu nhiên:
 
-$$\nabla_\delta \approx \frac{1}{B} \sum_{i=1}^B \nabla_\delta \mathcal{L}_{\text{adv}}(t_i(X_{\text{img}} + \delta), X_{\text{text}}, Y^*)$$
+$$
+\nabla_\delta \approx \frac{1}{B} \sum_{i=1}^B \nabla_\delta \mathcal{L}_{\text{adv}}(t_i(X_{\text{img}} + \delta), X_{\text{text}}, Y^*)
+$$
 
 Nhiễu đối kháng được tôi luyện qua EOT trở nên vô cùng bền vững (robust), xuyên thủng hoàn toàn các bộ lọc Gaussian hay nén JPEG thông thường.
 

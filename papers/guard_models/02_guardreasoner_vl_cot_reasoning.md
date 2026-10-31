@@ -35,7 +35,9 @@ Bảng thông số thư mục và định danh của công trình GuardReasoner-
 
 Các mô hình Guardrail thế hệ đầu tiên (như Llama Guard 3 Vision, NSFW-Detector, hay OpenAI Moderation API) mô hình hóa bài toán an toàn dưới dạng một phép ánh xạ trực tiếp từ không gian đầu vào đa phương thức liên tục sang một phân phối xác suất trên tập nhãn rời rạc:
 
-$$\hat{y} = \arg\max_{c \in \{\text{safe}, \text{unsafe}\}} P_\theta(y = c \mid X)$$
+$$
+\hat{y} = \arg\max_{c \in \{\text{safe}, \text{unsafe}\}} P_\theta(y = c \mid X)
+$$
 
 Trong đó $X = (T, I)$ là cặp văn bản và hình ảnh. Cơ chế ánh xạ "hộp đen" này bỏ qua hoàn toàn quá trình giải phóng trạng thái tư duy trung gian, dẫn đến ba khuyết tật nghiêm trọng:
 
@@ -61,7 +63,7 @@ flowchart TD
         Step1 --> Step2["Bước 2: Phân tích ý định & bối cảnh câu hỏi"]
         Step2 --> Step3["Bước 3: Phát hiện xung đột thẩm quyền & payload VPI"]
         Step3 --> Step4["Bước 4: Đối chiếu quy chuẩn an toàn đa phương thức"]
-        Step4 --> Out2["Phán quyết minh bạch:<br/>Chuỗi <think> + Kết quả <result><br/>🛡️ Kháng tương quan giả & VPI"]
+        Step4 --> Out2["Phán quyết minh bạch:<br/>Chuỗi #lt;think#gt; + Kết quả #lt;result#gt;<br/>🛡️ Kháng tương quan giả & VPI"]
     end
 
     style TRADITIONAL fill:#fee2e2,stroke:#ef4444,stroke-width:2px
@@ -74,7 +76,9 @@ flowchart TD
 
 GuardReasoner-VL tái cấu trúc bài toán giám sát an toàn thành bài toán sinh chuỗi tự hồi quy có điều kiện, sản sinh ra một chuỗi suy luận logic $R$ trước khi chốt lại nhãn phân loại nhị phân $\hat{Y}$:
 
-$$\{R, \hat{Y}\} = \mathcal{M}_{\text{GuardReasoner}}(Q, X, S)$$
+$$
+\{R, \hat{Y}\} = \mathcal{M}_{\text{GuardReasoner}}(Q, X, S)
+$$
 
 Trong đó:
 *   $Q$: Câu chỉ thị nhiệm vụ kiểm duyệt an toàn (Guardrail Instruction).
@@ -154,7 +158,9 @@ flowchart TD
 
 Toàn bộ chuỗi suy luận từng bước được sinh tổng hợp bằng mô hình GPT-4o thông qua các prompt định hướng an toàn chuyên sâu. Sau đó, mô hình cơ sở Qwen2.5-VL được huấn luyện khởi động lạnh bằng hàm mất mát **Reasoning Supervised Fine-Tuning (R-SFT)**:
 
-$$\mathcal{L}_{\text{R-SFT}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}} \left[ \log P_\theta(R, Y \mid Q, X, S) \right]$$
+$$
+\mathcal{L}_{\text{R-SFT}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}} \left[ \log P_\theta(R, Y \mid Q, X, S) \right]
+$$
 
 Mục tiêu này buộc mô hình học cách đồng thời sinh chuỗi giải trình $R$ và kết luận nhãn $Y$ theo đúng ngữ pháp XML.
 
@@ -171,11 +177,15 @@ Chạy toàn bộ tập huấn luyện qua mô hình khởi động lạnh $\mat
 Nhằm rèn luyện khả năng phát hiện các chỉ thị tiêm độc hại (VPI payloads) ẩn nấp tinh vi giữa các thông tin hoàn toàn trung tính, nhóm nghiên cứu đề xuất kỹ thuật ghép nối mẫu:  
 Lấy ngẫu nhiên hai mẫu $X_1 = \{T_1, I_1\}$ (nhãn $Y_1$) và $X_2 = \{T_2, I_2\}$ (nhãn $Y_2$), tiến hành ghép nối:
 
-$$T_{\text{new}} = \text{text\_concat}(T_1, T_2), \quad I_{\text{new}} = \text{image\_merge}(I_1, I_2), \quad X_{\text{new}} = \{T_{\text{new}}, I_{\text{new}}\}$$
+$$
+T_{\text{new}} = \text{text\_concat}(T_1, T_2), \quad I_{\text{new}} = \text{image\_merge}(I_1, I_2), \quad X_{\text{new}} = \{T_{\text{new}}, I_{\text{new}}\}
+$$
 
 Quy tắc gán nhãn an toàn hợp nhất (**Safety Union Rule**):
 
-$$Y_{\text{new}} = \begin{cases} \text{Unharmful} & \text{khi và chỉ khi } Y_1 = \text{Unharmful} \;\land\; Y_2 = \text{Unharmful} \\ \text{Harmful} & \text{nếu } Y_1 = \text{Harmful} \;\lor\; Y_2 = \text{Harmful} \end{cases}$$
+$$
+Y_{\text{new}} = \begin{cases} \text{Unharmful} & \text{khi và chỉ khi } Y_1 = \text{Unharmful} \;\land\; Y_2 = \text{Unharmful} \\ \text{Harmful} & \text{nếu } Y_1 = \text{Harmful} \;\lor\; Y_2 = \text{Harmful} \end{cases}
+$$
 
 Kỹ thuật này mô phỏng chân thực các đòn tấn công VPI thực tế: Bức ảnh tổng hợp $I_{\text{new}}$ có thể chứa một phần phong cảnh bình thường và một phần văn bản typographic độc hại. Mô hình bắt buộc phải rà soát toàn bộ không gian đa phương thức để tìm ra vết tích vi phạm thay vì chỉ nhìn lướt qua tổng thể. Kết quả tạo thành tập dữ liệu $\mathcal{D}_{\text{RL}}$ phục vụ huấn luyện tăng cường.
 
@@ -187,7 +197,9 @@ GuardReasoner-VL áp dụng thuật toán **Group Relative Policy Optimization (
 1.  **Loại bỏ số hạng phạt Phân kỳ KL (KL Divergence Penalty):** Việc bỏ ràng buộc KL Divergence giúp mô hình tự do khám phá các cấu trúc suy luận mới lạ vượt ra ngoài phạm vi văn phong của dữ liệu khởi động lạnh.
 2.  **Cơ chế Cắt Động (Dynamic Clipping Parameter $B_s$):** Trong GRPO tiêu chuẩn, ngưỡng cắt tỷ số chính sách thường cố định ở $\epsilon = 0.2$. GuardReasoner-VL đề xuất cơ chế co hẹp dần theo bước huấn luyện $s$:
 
-$$B_s = \left( \prod_{i=1}^s \frac{s_{\text{total}} - i}{s_{\text{total}}} \right) \cdot \epsilon$$
+$$
+B_s = \left( \prod_{i=1}^s \frac{s_{\text{total}} - i}{s_{\text{total}}} \right) \cdot \epsilon
+$$
 
 Trong đó $s_{\text{total}}$ là tổng số bước huấn luyện, $s$ là bước hiện tại, và $\epsilon = 0.2$.
 *   *Giai đoạn đầu ($s \ll s_{\text{total}}$):* $B_s \approx \epsilon$, không gian cập nhật rộng mở, khuyến khích mô hình **khám phá (exploration)** các chiến lược lý giải đa dạng.
@@ -195,13 +207,22 @@ Trong đó $s_{\text{total}}$ là tổng số bước huấn luyện, $s$ là b�
 
 Hàm mất mát Online RL hoàn chỉnh:
 
-$$\mathcal{L}_{\text{RL}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}_{\text{RL}}, \{R_i, \hat{Y}_i\}_{i=1}^G \sim P_{\theta_{\text{old}}}} \left[ \frac{1}{G} \sum_{i=1}^G \min\left( K_i \cdot A_i, \; \text{clip}(K_i, 1 - B_s, 1 + B_s) \cdot A_i \right) \right]$$
+$$
+\mathcal{L}_{\text{RL}}(\theta) = - \mathbb{E}_{(X, S, R, Y) \sim \mathcal{D}_{\text{RL}}, \{R_i, \hat{Y}_i\}_{i=1}^G \sim P_{\theta_{\text{old}}}} \left[ \frac{1}{G} \sum_{i=1}^G \min\left( K_i \cdot A_i, \; \text{clip}(K_i, 1 - B_s, 1 + B_s) \cdot A_i \right) \right]
+$$
 
 Trong đó:
 *   Tỷ số cập nhật chính sách (Policy Ratio):
-    $$K_i = \frac{P_\theta(R_i, \hat{Y}_i \mid Q, X, S)}{P_{\theta_{\text{old}}}(R_i, \hat{Y}_i \mid Q, X, S)}$$
+
+$$
+K_i = \frac{P_\theta(R_i, \hat{Y}_i \mid Q, X, S)}{P_{\theta_{\text{old}}}(R_i, \hat{Y}_i \mid Q, X, S)}
+$$
+
 *   Hệ số lợi thế chuẩn hóa theo nhóm (Group Normalized Advantage):
-    $$A_i = \frac{r_i - \text{mean}(\{r_1, \dots, r_G\})}{\text{std}(\{r_1, \dots, r_G\}) + \epsilon_0}$$
+
+$$
+A_i = \frac{r_i - \text{mean}(\{r_1, \dots, r_G\})}{\text{std}(\{r_1, \dots, r_G\}) + \epsilon_0}
+$$
 
 ---
 
@@ -210,11 +231,19 @@ Trong đó:
 Một rủi ro cố hữu khi áp dụng RL cho mô hình suy luận là hiện tượng **"Nghĩ lan man" (Over-thinking / Verbosity Inflation)**: Mô hình cố tình sinh thêm nhiều token vô nghĩa để kéo dài câu trả lời nhằm né tránh hình phạt. Để triệt tiêu hiện tượng này, nhóm tác giả thiết kế hàm thưởng tích hợp hai thành phần:
 
 #### 1. Phần thưởng an toàn cơ bản ($r_{\text{safety}}$)
-$$r_{\text{safety}} = I_{\text{format}} \times \left( 0.5 \cdot r_{\text{prompt}} + 0.5 \cdot r_{\text{response}} \right)$$
+
+$$
+r_{\text{safety}} = I_{\text{format}} \times \left( 0.5 \cdot r_{\text{prompt}} + 0.5 \cdot r_{\text{response}} \right)
+$$
+
 Trong đó $I_{\text{format}} = 1$ khi chuỗi sinh ra tuân thủ cấu trúc thẻ `<think>...</think>` và `<result>...</result>`, ngược lại $I_{\text{format}} = 0$. $r_{\text{prompt}}, r_{\text{response}} \in \{0, 1\}$ phản ánh tính chính xác của nhãn so với ground-truth.
 
 #### 2. Hàm thưởng phạt điều tiết độ dài (Length-Aware Penalty)
-$$r = \frac{-1 + r_{\text{safety}}}{\min(l_{\text{norm}}, \beta)^2}$$
+
+$$
+r = \frac{-1 + r_{\text{safety}}}{\min(l_{\text{norm}}, \beta)^2}
+$$
+
 Trong đó:
 *   $l_{\text{norm}} \in [0, 1]$ là độ dài chuỗi suy luận $R$ đã chuẩn hóa theo độ dài ngữ cảnh tối đa.
 *   $\beta \in (0, 1]$ là tham số ngưỡng trần kiểm soát độ dài (cut-off hyperparameter).
