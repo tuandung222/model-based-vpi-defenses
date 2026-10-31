@@ -171,3 +171,8 @@ Kho lưu trữ tài liệu này tiến hành giải phẫu kỹ thuật chi ti�
 ---
 
 [🏠 Mục Lục](../README.md) | [Chương tiếp theo: VLGuard - Safety Fine-Tuning ➡️](01_vlguard_safety_finetuning.md)
+
+## Tài Liệu Tham Khảo
+
+- Cao, T. và cộng sự. *VPI-Bench: Visual Prompt Injection Attacks for Computer-Use Agents*. ICLR 2026. arXiv:2506.02456. https://arxiv.org/abs/2506.02456
+- Tài liệu bổ sung từ A/A\* và Big Tech: xem [Chương 9](09_tai_lieu_mo_rong_top_tier.md).

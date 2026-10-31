@@ -174,3 +174,11 @@ ARGUS khẳng định tiềm năng vượt trội của trường phái **Repres
 ---
 
 [🏠 Mục Lục Repo](../../README.md) | [Tổng Quan ARGUS](index.md) | [Bài 1: Hình Học Không Gian Ẩn & Probes ➡️](01_hinh_hoc_khong_gian_an_va_probes.md)
+
+---
+
+## Tài Liệu Tham Khảo
+
+- Lu và cộng sự. *ARGUS*. CVPR 2026 (Oral). arXiv:2512.05745. https://arxiv.org/abs/2512.05745
+
+Tài liệu mở rộng từ hội nghị A/A\* và Big Tech: xem [Chương 9](../../docs/09_tai_lieu_mo_rong_top_tier.md).

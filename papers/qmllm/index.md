@@ -199,3 +199,12 @@ PAPERS / Q-MLLM & GTM MONOGRAPH DIRECTORY
 ---
 
 [🏠 Thư viện Chuyên khảo Model-Based VPI Defenses](../../README.md) | [Bài 1: Tấn Công Gradient Liên Tục ➡️](01_tan_cong_gradient_lien_tuc.md)
+
+---
+
+## Tài Liệu Tham Khảo
+
+- Zhao và cộng sự. *Q-MLLM*. NDSS 2026. arXiv:2511.16229. https://www.ndss-symposium.org/ndss-paper/q-mllm-vector-quantization-for-robust-multimodal-large-language-model-security
+- Zhang và cộng sự. *Localize and Neutralize (GTM)*. ICML 2026. arXiv:2605.25194. https://icml.cc/virtual/2026/poster/63777
+
+Tài liệu mở rộng từ hội nghị A/A\* và Big Tech: xem [Chương 9](../../docs/09_tai_lieu_mo_rong_top_tier.md).

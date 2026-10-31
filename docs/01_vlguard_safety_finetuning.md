@@ -433,6 +433,12 @@ VLGuard được thiết kế cho bài toán hỏi đáp hình ảnh (VQA) tập
    - Nắn dòng kích hoạt ẩn theo thời gian thực (**ARGUS - Chương 3**).
    - Triển khai các tác tử phòng vệ chuyên dụng độc lập (**WARD - Chương 4** và **Llama Guard 3V - Chương 5**).
 
+
+## Tài Liệu Tham Khảo
+
+- Zong, Y., Bohdal, O., Yu, T., Yang, Y., Hospedales, T. *Safety Fine-Tuning at (Almost) No Cost: A Baseline for Vision Large Language Models*. ICML 2024 (PMLR 235). arXiv:2402.02207. https://proceedings.mlr.press/v235/zong24a.html
+- Mã nguồn và dữ liệu: https://github.com/ys-zong/VLGuard
+
 ---
 
 [⬅️ Chương trước: Bức Tranh Toàn Cảnh & Nền Tảng Lý Thuyết](00_tong_quan_va_ly_thuyet_model_based_defense.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp theo: SafePTR - Safe Prune-then-Restore ➡️](02_safeptr_prune_then_restore.md)

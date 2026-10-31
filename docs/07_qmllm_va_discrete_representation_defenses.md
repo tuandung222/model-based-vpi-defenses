@@ -725,6 +725,14 @@ Trường phái phòng vệ không gian biểu diễn rời rạc và triệt ti
 2. **Localize and Neutralize / GTM (ICML 2026)** lại mở ra một hướng tiếp cận vô cùng thanh lịch và thực dụng: Thay vì thay đổi trọng số mô hình, phương pháp này sử dụng chính công cụ gradient để chẩn đoán nội tại, phát hiện sự tập trung bất thường của năng lượng đối kháng trên một tập con thưa thớt các token thị giác và triệt tiêu chúng ngay trước khi bước vào pha giải mã.
 3. Tuy nhiên, cả hai kỹ thuật này đều nhấn mạnh một chân lý trong an ninh VLM: **Triệt tiêu gradient liên tục không đồng nghĩa với giải quyết triệt để vấn đề Visual Prompt Injection.** Khi kẻ tấn công chuyển dịch từ nhiễu vi phân tàng hình sang tiêm lệnh bằng chữ in tự nhiên (Typographic Prompt Injection), ranh giới an toàn của các phương pháp rời rạc hóa thuần túy bị thách thức nghiêm trọng, đòi hỏi sự kết hợp đồng bộ với các cơ chế suy luận chuỗi tư duy (CoT Reasoning Guards) và kiểm soát thẩm quyền hệ thống đa tầng.
 
+
+## Tài Liệu Tham Khảo
+
+- Zhao, W., Li, Z., Li, Y., Sun, J. *Q-MLLM: Vector Quantization for Robust Multimodal Large Language Model Security*. NDSS 2026. arXiv:2511.16229. https://www.ndss-symposium.org/ndss-paper/q-mllm-vector-quantization-for-robust-multimodal-large-language-model-security
+  - Lưu ý phiên bản: các con số DSR 98.4% (jailbreak) và 75.9% (ảnh độc hại) khớp với arXiv v1; trang NDSS ghi Q-MLLM đạt DSR 100% trên jailbreak trừ một trường hợp gây tranh cãi. Cần đối chiếu bản camera-ready trước khi trích dẫn.
+- Zhang, D. và cộng sự. *Localize and Neutralize: Gradient-guided Token Suppression against Visual Prompt Injection Attack* (GTM). ICML 2026. arXiv:2605.25194. https://icml.cc/virtual/2026/poster/63777
+  - Lưu ý: tiêu đề bản arXiv ghi là "Localization then Neutralization".
+
 ---
 
 [⬅️ Chương trước: GuardReasoner-VL & SafeGuard-VL](06_guardreasoner_vl_va_safeguard_vl_cot_reasoning.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp theo: So Sánh Thực Nghiệm & Ranh Giới Thất Bại ➡️](08_so_sanh_thuc_nghiem_va_ranh_gioi_that_bai.md)

@@ -142,3 +142,14 @@ Bảng đối chiếu tổng quan giữa 4 công trình Guardrail VLM nền tả
 ---
 
 [⬅️ Danh Mục Chuyên Khảo](../../README.md) | [🏠 Thư Mục Guard Models](index.md) | [Chương 1: Llama Guard 3V & LlavaGuard ➡️](01_llama_guard_3v_and_llavaguard.md)
+
+---
+
+## Tài Liệu Tham Khảo
+
+- Chi và cộng sự (Meta). *Llama Guard 3 Vision*. arXiv:2411.10414.
+- Helff và cộng sự. *LlavaGuard*. ICML 2025. arXiv:2406.05113. https://proceedings.mlr.press/v267/helff25a.html
+- Liu và cộng sự. *GuardReasoner-VL*. NeurIPS 2025. arXiv:2505.11049.
+- *Towards Policy-Adaptive Image Guardrail (SafeGuard-VL)*. CVPR 2026. https://cvpr.thecvf.com/virtual/2026/poster/38961
+
+Tài liệu mở rộng từ hội nghị A/A\* và Big Tech: xem [Chương 9](../../docs/09_tai_lieu_mo_rong_top_tier.md).

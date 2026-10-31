@@ -457,6 +457,12 @@ GuardReasoner-VL (NeurIPS 2025) và SafeGuard-VL (CVPR 2026) đánh dấu bướ
 *   **SafeGuard-VL** đập tan giả định sai lầm về "an toàn cố định", mở ra hướng đi **Thích ứng chính sách động (Policy-Adaptive Guardrail)** thông qua kỹ thuật tách rời nhận thức (Self-Recaption SFT) và học tăng cường với phần thưởng kiểm chứng được (**RLVR**), giúp mô hình thích ứng linh hoạt với mọi bộ luật của tổ chức mà không làm suy giảm năng lực trí tuệ tổng quát.
 *   Tuy nhiên, sự bùng nổ độ trễ (+1.5s đến +3.5s) và nguy cơ bị tấn công ngược chuỗi tư duy (Adversarial CoT Hijacking) khẳng định rằng: **CoT Guardrail không thể là một viên đạn bạc đơn lẻ**, mà phải được phối hợp trong một hệ thống phòng vệ đa tầng kết hợp giữa lọc nhanh, suy luận sâu và các chốt chặn thực thi tất định ở tầng hệ điều hành.
 
+
+## Tài Liệu Tham Khảo
+
+- Liu, Y. và cộng sự. *GuardReasoner-VL: Safeguarding VLMs via Reinforced Reasoning*. NeurIPS 2025. arXiv:2505.11049. https://arxiv.org/abs/2505.11049
+- *Towards Policy-Adaptive Image Guardrail: Benchmark and Method* (SafeGuard-VL). CVPR 2026. https://cvpr.thecvf.com/virtual/2026/poster/38961
+
 ---
 
 [⬅️ Chương trước: Llama Guard 3 Vision & LlavaGuard](05_guard_models_llama_guard_va_llavaguard.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp theo: Q-MLLM & Discrete Representation Defenses ➡️](07_qmllm_va_discrete_representation_defenses.md)

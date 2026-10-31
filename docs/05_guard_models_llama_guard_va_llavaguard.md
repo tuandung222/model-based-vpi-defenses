@@ -524,6 +524,13 @@ Bản thân Guard Model **cũng là một mạng nơ-ron tích chập / Vision T
 2.  **LlavaGuard (ICML 2025)** mang lại sự đột phá về **tính linh hoạt chính sách (Policy Responsiveness)** và **tính minh bạch giải trình (Guided Rationales)**. Phiên bản siêu nhẹ **LlavaGuard-0.5B** ($75\text{ms}$ latency) là ứng viên lý tưởng cho tầng lọc sơ cấp tốc độ cao trong các hệ thống xử lý dữ liệu lớn hoặc stream video.
 3.  **Ranh giới bất khả kháng:** Các VLM Guardrails ngoại vi tĩnh **KHÔNG THỂ** là tấm khiên duy nhất chống lại Visual Prompt Injection. Do bản chất bất tương xứng giữa bài toán kiểm duyệt nội dung (Content Moderation) và bài toán kiểm soát luồng chỉ thị (Instruction Hijacking), một hệ thống an ninh AI hoàn chỉnh bắt buộc phải kết hợp Guard Models với các cơ chế can thiệp biểu diễn nội tại (như SafePTR, ARGUS) hoặc các kiến trúc kiểm soát thẩm quyền thực thi phần cứng/hệ thống (TCB Reference Monitors).
 
+
+## Tài Liệu Tham Khảo
+
+- Chi, J. và cộng sự (Meta). *Llama Guard 3 Vision: Safeguarding Human-AI Image Understanding Conversations*. arXiv:2411.10414. https://arxiv.org/abs/2411.10414
+- Helff, L., Friedrich, F., Brack, M., Kersting, K., Schramowski, P. *LlavaGuard: An Open VLM-based Framework for Safeguarding Vision Datasets and Models*. ICML 2025 (PMLR 267). arXiv:2406.05113. https://proceedings.mlr.press/v267/helff25a.html
+- Google. *ShieldGemma 2: Robust and Tractable Image Content Moderation*. arXiv:2504.01081.
+
 ---
 
 [⬅️ Chương trước: WARD - Web Agent Robust Defense](04_ward_web_agent_robust_defense.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp theo: GuardReasoner-VL & SafeGuard-VL ➡️](06_guardreasoner_vl_va_safeguard_vl_cot_reasoning.md)

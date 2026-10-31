@@ -185,3 +185,11 @@ papers/safeptr/
 ---
 
 [⬅️ Nghiên Cứu Trước: VLGuard](../vlguard/index.md) | [🏠 Mục Lục](../../README.md) | [Chương 1: Nghịch Lý 1% Token & LIA ➡️](01_nghich_ly_1_percent_token_va_lia.md)
+
+---
+
+## Tài Liệu Tham Khảo
+
+- Chen và cộng sự. *SafePTR*. NeurIPS 2025. arXiv:2507.01513. https://neurips.cc/virtual/2025/poster/118476
+
+Tài liệu mở rộng từ hội nghị A/A\* và Big Tech: xem [Chương 9](../../docs/09_tai_lieu_mo_rong_top_tier.md).

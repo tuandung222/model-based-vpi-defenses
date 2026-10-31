@@ -1,4 +1,4 @@
-[⬅️ Chương trước: Q-MLLM & Discrete Representation Defenses](07_qmllm_va_discrete_representation_defenses.md) | [🏠 Mục Lục](../README.md)
+[⬅️ Chương trước: Q-MLLM & Discrete Representation Defenses](07_qmllm_va_discrete_representation_defenses.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp: Thư Mục Tài Liệu Mở Rộng ➡️](09_tai_lieu_mo_rong_top_tier.md)
 
 ---
 
@@ -168,6 +168,12 @@ flowchart LR
 
 Đây chính là luận điểm cốt lõi giúp định vị chính xác vị thế học thuật của các nghiên cứu phòng vệ VPI hiện đại: **Trường phái Model-Based làm giảm ô nhiễm tri giác, nhưng chỉ có Chốt chặn Kiến trúc Hệ thống mới có thể đảm bảo an toàn tuyệt đối cho người dùng.**
 
+
+## Tài Liệu Tham Khảo
+
+- Các nguồn gốc của từng hệ thống: xem phần Tài Liệu Tham Khảo ở Chương 1 đến 7.
+- Bổ sung từ A/A\* và Big Tech, kể cả bằng chứng về giới hạn trước tấn công thích ứng: xem [Chương 9](09_tai_lieu_mo_rong_top_tier.md) và [Chương 10](10_gemini_adversarial_training_google_deepmind.md).
+
 ---
 
-[⬅️ Chương trước: Q-MLLM & Discrete Representation Defenses](07_qmllm_va_discrete_representation_defenses.md) | [🏠 Mục Lục](../README.md)
+[⬅️ Chương trước: Q-MLLM & Discrete Representation Defenses](07_qmllm_va_discrete_representation_defenses.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp: Thư Mục Tài Liệu Mở Rộng ➡️](09_tai_lieu_mo_rong_top_tier.md)

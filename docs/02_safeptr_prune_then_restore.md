@@ -626,6 +626,12 @@ SafePTR là một bước đột phá học thuật xuất sắc tại NeurIPS 2
 
 Tuy nhiên, như mọi giải pháp Model-Based khác, SafePTR hoạt động dựa trên phán đoán xác suất hình học (Cosine similarity) trong không gian vector. Bản chất này khiến nó không thể mang lại sự bảo đảm an ninh mang tính toán học tất định (Deterministic Security Guarantees). Trong các ứng dụng thực thi tự chủ cao cấp (Autonomous Agents), SafePTR cần được xem như một lớp lọc biểu diễn đầu tiên, kết hợp cùng các cơ chế nắn dòng kích hoạt (như ARGUS ở Chương 3) hoặc các kiến trúc chốt chặn giám sát ngoại vi độc lập.
 
+
+## Tài Liệu Tham Khảo
+
+- Chen, B., Lyu, X., Gao, L., Song, J., Shen, H. T. *SafePTR: Token-Level Jailbreak Defense in Multimodal LLMs via Prune-then-Restore Mechanism*. NeurIPS 2025. arXiv:2507.01513. https://neurips.cc/virtual/2025/poster/118476
+- Mã nguồn: https://github.com/BT-C/SafePTR
+
 ---
 
 [⬅️ Chương trước: VLGuard - Safety Fine-Tuning](01_vlguard_safety_finetuning.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp theo: ARGUS - Activation Steering ➡️](03_argus_activation_steering.md)

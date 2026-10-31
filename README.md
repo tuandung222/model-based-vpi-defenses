@@ -64,6 +64,11 @@ The complete monograph is authored in academic Vietnamese, structured into 9 com
 | **[06](docs/06_guardreasoner_vl_va_safeguard_vl_cot_reasoning.md)** | **GuardReasoner-VL & SafeGuard-VL** | Multimodal Chain-of-Thought (CoT) reasoning, Online RL with dynamic clipping GRPO, RLVR | **NeurIPS 2025 / CVPR 2026** |
 | **[07](docs/07_qmllm_va_discrete_representation_defenses.md)** | **Q-MLLM & Discrete Representations** | Two-level vector quantization codebooks, disrupting continuous gradient feedback, token masking | **NDSS 2026 / ICML 2026** |
 | **[08](docs/08_so_sanh_thuc_nghiem_va_ranh_gioi_that_bai.md)** | **Ma Trận Thực Nghiệm & Ranh Giới Thất Bại** | 7D technical comparison matrix, 5 fatal failure modes, defense-in-depth hybrid architecture | Synthesis & Frontier |
+| **[09](docs/09_tai_lieu_mo_rong_top_tier.md)** | **Extended Literature Map (A/A\* Venues & Big Tech)** | Annotated bibliography with verification level: fine-tuning, representation-level, guard models, inference-time defenses, benchmarks | USENIX Sec 2025, CCS 2025, ICLR 2025/2026, NeurIPS 2024, ECCV 2024, Google, Meta |
+| **[10](docs/10_gemini_adversarial_training_google_deepmind.md)** | **Gemini Adversarial Training (Google DeepMind)** | Adversarial fine-tuning against indirect prompt injection, adaptive red-teaming, layered defense | **Google DeepMind 2025** |
+| **[11](docs/11_secalign_struq_va_instruction_hierarchy.md)** | **StruQ, SecAlign, ISE & Instruction Hierarchy** | Structured queries, DPO-based preference optimization, instructional segment embeddings | **USENIX Sec 2025 / CCS 2025 / ICLR 2025** |
+| **[12](docs/12_circuit_breakers_representation_rerouting.md)** | **Circuit Breakers (Representation Rerouting)** | Rerouting harmful representations via LoRA, multimodal experiment on LLaVA-NeXT | **NeurIPS 2024** |
+| **[13](docs/13_webagentguard_snapguard_va_so_sanh_ward.md)** | **WebAgentGuard, SnapGuard vs. WARD** | Reasoning-driven web-agent guards, VPI-Bench as neutral yardstick | **ICML 2026 / preprints** |
 
 ---
 

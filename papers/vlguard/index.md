@@ -113,3 +113,11 @@ flowchart TD
 ---
 
 [🏠 Mục Lục Repo](../../README.md) | [Bài 1: Data Mix & Duality ➡️](01_datamix_va_multimodal_duality.md)
+
+---
+
+## Tài Liệu Tham Khảo
+
+- Zong và cộng sự. *Safety Fine-Tuning at (Almost) No Cost*. ICML 2024. arXiv:2402.02207. https://proceedings.mlr.press/v235/zong24a.html
+
+Tài liệu mở rộng từ hội nghị A/A\* và Big Tech: xem [Chương 9](../../docs/09_tai_lieu_mo_rong_top_tier.md).

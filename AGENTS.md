@@ -59,4 +59,4 @@
    # Hoặc tự động sửa nếu có phát sinh \tag:
    python3 scripts/check_markdown_katex.py --fix
    ```
-   Repository đã được tích hợp Git Pre-commit Hook tự động tại `.git/hooks/pre-commit`, mọi commit vi phạm sẽ bị chặn tự động.
+   Git hook không được lưu trong repo. Chạy `bash scripts/install_hooks.sh` một lần sau khi clone để cài pre-commit hook; từ đó mọi commit vi phạm sẽ bị chặn tự động.

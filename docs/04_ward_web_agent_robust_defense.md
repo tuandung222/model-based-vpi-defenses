@@ -512,6 +512,13 @@ WARD đại diện cho bước tiến vượt bậc của trường phái **Mô 
 2. **Đột phá về hiệu năng triển khai:** Nhờ kích thước siêu nhỏ (0.8B/2B) và cơ chế chạy song song không đồng bộ, WARD chứng minh rằng an ninh không nhất thiết phải đánh đổi bằng độ trễ hệ thống (Zero Added Latency).
 3. **Tiêu chuẩn dữ liệu mới:** Bộ dữ liệu WARD-Base với 177K mẫu đa dạng trên 13 kênh tiêm giao diện và khung đồng tiến hóa A3T thiết lập một chuẩn mực mới cho việc kiểm thử và rèn luyện độ bền vững đối kháng cho Web Agents.
 
+
+## Tài Liệu Tham Khảo
+
+- Cao, T. và cộng sự. *WARD: Adversarially Robust Defense of Web Agents Against Prompt Injections*. ICML 2026. arXiv:2605.15030. https://arxiv.org/abs/2605.15030
+- Trang ICML 2026: https://icml.cc/virtual/2026/67778
+- So sánh với WebAgentGuard và SnapGuard: xem [Chương 13](13_webagentguard_snapguard_va_so_sanh_ward.md).
+
 ---
 
 [⬅️ Chương trước: ARGUS - Activation Steering](03_argus_activation_steering.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp theo: Llama Guard 3 Vision & LlavaGuard ➡️](05_guard_models_llama_guard_va_llavaguard.md)

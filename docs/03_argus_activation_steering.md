@@ -506,6 +506,12 @@ ARGUS đại diện cho một bước đột phá trong trường phái phòng v
 - **Lời giải toán học thanh lịch:** Thiết kế nghiệm giải tích dạng đóng cho cường độ can thiệp thích ứng $\alpha_o$, giúp cân bằng hoàn hảo giữa an toàn ($AIA \to 0$) và bảo toàn năng lực ($UIA \approx 100\%$).
 - **Hiệu quả thực thi vượt trội:** Tích hợp trọn vẹn vào một lượt forward pass với độ trễ phát sinh không đáng kể (chỉ từ 3 đến 6 ms), giải quyết triệt để vấn đề chi phí của các phương pháp tiền xử lý hay mô hình bảo vệ phụ trợ cồng kềnh.
 
+
+## Tài Liệu Tham Khảo
+
+- Lu, W. và cộng sự. *ARGUS: Defending Against Multimodal Indirect Prompt Injection via Steering Instruction-Following Behavior*. CVPR 2026 (Oral). arXiv:2512.05745. https://arxiv.org/abs/2512.05745
+- Trang CVPR 2026: https://openaccess.thecvf.com/content/CVPR2026/html/Lu_ARGUS_Defending_Against_Multimodal_Indirect_Prompt_Injection_via_Steering_Instruction-Following_CVPR_2026_paper.html
+
 ---
 
 [⬅️ Chương trước: SafePTR - Safe Prune-then-Restore](02_safeptr_prune_then_restore.md) | [🏠 Mục Lục](../README.md) | [Chương tiếp theo: WARD - Web Agent Robust Defense ➡️](04_ward_web_agent_robust_defense.md)

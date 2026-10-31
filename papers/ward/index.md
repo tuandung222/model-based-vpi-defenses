@@ -137,3 +137,11 @@ Dưới đây là bảng tổng hợp các chỉ số định lượng then ch�
 ---
 
 [🏠 Mục Lục Kho Nghiên Cứu](../../README.md) | [01. Bề Mặt Tấn Công & Đòn PIG ➡️](01_be_mat_tan_cong_web_agent_va_pig.md)
+
+---
+
+## Tài Liệu Tham Khảo
+
+- Cao và cộng sự. *WARD*. ICML 2026. arXiv:2605.15030. https://icml.cc/virtual/2026/67778
+
+Tài liệu mở rộng từ hội nghị A/A\* và Big Tech: xem [Chương 9](../../docs/09_tai_lieu_mo_rong_top_tier.md).
