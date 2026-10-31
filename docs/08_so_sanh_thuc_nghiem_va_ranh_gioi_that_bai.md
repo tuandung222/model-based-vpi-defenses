@@ -6,7 +6,7 @@
 
 > **Tài liệu chuyên khảo chuyên sâu:**  
 > Đề tài: *Nghiên Cứu Chuyên Sâu Các Giải Pháp Phòng Vệ Visual Prompt Injection Dựa Trên Mô Hình (Model-Level & Representation Guardrails)*  
-> Tổng hợp & Đánh giá: Đối soát toàn diện 8 công trình đại diện qua ma trận kỹ thuật 7 chiều, phân tích ranh giới thất bại toán học/thực nghiệm, và xác định giới hạn của trường phái Model-Based khi bảo vệ tác tử tự trị (Computer-Use Agents).
+> Tổng hợp & Đánh giá: Đối soát toàn diện các công trình đại diện (8 hệ thống trong ma trận) qua ma trận kỹ thuật 7 chiều, phân tích ranh giới thất bại toán học/thực nghiệm, và xác định giới hạn của trường phái Model-Based khi bảo vệ tác tử tự trị (Computer-Use Agents).
 
 ---
 
@@ -15,7 +15,7 @@
 Để mang lại bức tranh học thuật sắc nét, bảng dưới đây đối soát 8 công trình tiêu biểu nhất thuộc trường phái Model-Based trên **7 chiều kỹ thuật chuẩn mực**:
 
 1. **D1: Điểm Can Thiệp (Intervention Level):** Vị trí kỹ thuật thực hiện cơ chế phòng vệ (Trọng số mô hình, Không gian biểu diễn ẩn, Mã sách lượng tử hóa, hay Mô hình phụ trợ ngoại vi).
-2. **D2: Yêu Cầu Hộp Trắng vs. Hộp Đen (White-box vs. Black-box):** Liệu phương pháp có đòi hỏi truy cập trọng số/gradient nội tại của VLM hay tương thích với các mô hình API thương mại đóng (GPT-4o, Claude 3.5 Sonnet, Gemini 1.5 Pro).
+2. **D2: Yêu Cầu Hộp Trắng vs. Hộp Đen (White-box vs. Black-box):** Liệu phương pháp có đòi hỏi truy cập trọng số/gradient nội tại của VLM hay tương thích với các mô hình API thương mại đóng (dòng GPT, Claude, Gemini).
 3. **D3: Chi Phí Độ Trễ & Token (Runtime & Latency Overhead):** Thời gian phản hồi bổ sung và chi phí API token phát sinh cho mỗi lượt tương tác.
 4. **D4: Bảo Toàn Năng Lực Tác Vụ (Utility Preservation):** Mức độ suy giảm năng lực xử lý tác vụ thị giác tổng quát (General Vision/Reasoning tasks, VQA, Web navigation).
 5. **D5: Khả Năng Kháng Tấn Công Nhắm Vào Guardrail (Resilience to Meta/Guard Injection):** Mức độ bền vững khi kẻ tấn công chèn chỉ thị đối kháng nhắm trực diện vào cơ chế kiểm duyệt.
@@ -24,14 +24,18 @@
 
 | Hệ Thống / Bài Báo | Venue / Năm | D1: Điểm Can Thiệp | D2: White-box / Black-box | D3: Overhead (Latency / Token) | D4: Utility Impact | D5: Kháng Meta-Injection | D6: Multi-Turn Trajectory | D7: Enforcement Logic |
 |:---|:---:|:---|:---:|:---|:---|:---:|:---:|:---|
-| **VLGuard** | ICML 2024 | Trọng số Decoder / Projector (SFT) | White-box (Cần train) | Rất thấp (+0 extra calls) | Suy giảm nhẹ (~3-5% VQA) | ⚠️ Dễ bị jailbreak mới lạ | ❌ Phi trạng thái | Xác suất mềm qua Softmax |
-| **SafePTR** | NeurIPS 2025 | Không gian ẩn trung gian (Token Pruning) | White-box (Trạng thái ẩn) | Thấp (<15% latency, 0 extra call) | Bảo toàn tốt nhờ phục hồi BFR | ⚠️ Giảm hiệu quả với payload phân tán | ❌ Phi trạng thái | Ngưỡng khoảng cách ngữ nghĩa |
-| **ARGUS** | CVPR 2026 | Không gian kích hoạt ẩn (Steering Vector) | White-box (Can thiệp hidden) | Rất thấp (<10% latency, 0 extra call) | Bảo toàn tốt (~98% utility) | ⚠️ Bị qua mặt nếu injection đổi hướng | ❌ Phi trạng thái | Phép cộng vector: $h + \alpha v_{\text{safe}}$ |
-| **WARD** | ICML 2026 | Mô hình Web Guard nhỏ (0.8B/2B) song song | **Black-box compatible** | **Zero added latency** (Chạy song song) | Không ảnh hưởng mô hình chính | ✅ Kháng tốt nhờ huấn luyện A3T | ⚠️ Kiểm tra từng turn độc lập | Phân loại nhị phân (Binary Logits) |
-| **Llama Guard 3V** | Meta 2024 | Guardrail VLM 11B độc lập tuần tự | **Black-box compatible** | Rất cao (+100% latency, +2x API) | Không ảnh hưởng mô hình chính | ❌ Dễ bị Meta-Injection hạ gục | ❌ Phi trạng thái | Phân loại 13 danh mục an toàn |
-| **GuardReasoner-VL** | NeurIPS 2025 | Guardrail VLM suy luận CoT tuần tự | **Black-box compatible** | Cực cao (+200% latency, +500 tokens) | Không ảnh hưởng mô hình chính | ⚠️ Giải thích tốt nhưng vẫn có thể bị đánh lừa | ❌ Phi trạng thái | Suy luận chuỗi tư duy (CoT reasoning) |
-| **SafeGuard-VL** | CVPR 2026 | Guardrail VLM thích ứng chính sách (RLVR) | **Black-box compatible** | Cao (+1x VLM call) | Không ảnh hưởng mô hình chính | ⚠️ Phụ thuộc vào độ dài chính sách | ❌ Phi trạng thái | Căn chỉnh theo phần thưởng kiểm chứng |
-| **Q-MLLM** | NDSS 2026 | Bộ mã sách lượng tử hóa (Discrete Bottleneck) | White-box (Encoder architecture) | Rất thấp (+5% encoding time) | Suy giảm nhẹ độ nét chi tiết nhỏ | ✅ Triệt tiêu hoàn toàn gradient attack | ❌ Phi trạng thái | Ánh xạ chỉ mục rời rạc (Codebook Index) |
+| **VLGuard** | ICML 2024 | Trọng số Decoder / Projector (SFT) | White-box (Cần train) | Không thêm lời gọi lúc suy luận (chi phí nằm ở huấn luyện) | Không suy giảm đo được; điểm helpfulness +0.16 đến +1.28 (Chương 1) | ⚠️ Dễ bị jailbreak mới lạ | ❌ Phi trạng thái | Xác suất mềm qua Softmax |
+| **SafePTR** | NeurIPS 2025 | Không gian ẩn trung gian (Token Pruning) | White-box (Trạng thái ẩn) | Training-free; +0.8% đến +4.2% độ trễ (Chương 2 §6.4) | MME 1503.6 → 1538.1; MM-Vet 30.3 → 32.3 trên LLaVA-1.5-7B (Chương 2 §6) | ⚠️ Giảm hiệu quả với payload phân tán | ❌ Phi trạng thái | Ngưỡng khoảng cách ngữ nghĩa |
+| **ARGUS** | CVPR 2026 | Không gian kích hoạt ẩn (Steering Vector) | White-box (Can thiệp hidden) | +3 đến 6 ms/mẫu, không thêm lời gọi (Chương 3) | UIA gần như bảo toàn trên Qwen2-VL, có đánh đổi khi probe báo nhầm (Chương 3) | ⚠️ Bị qua mặt nếu injection đổi hướng | ❌ Phi trạng thái | Cộng vector: $a_l - \alpha_o w_l$ |
+| **WARD** | ICML 2026 | Mô hình Web Guard nhỏ (0.8B/2B) song song | **Black-box compatible** | Chạy song song: ~2.24 đến 2.4 s/bước, ngắn hơn bước của agent chính (3.64 đến 11.99 s) nên không cộng thêm độ trễ (Chương 4 §5.4) | FPR ≈ 0.25%; hoàn thành tác vụ gần nguyên vẹn (Chương 4 §5.3) | ✅ Kháng tốt nhờ huấn luyện A3T | ⚠️ Kiểm tra từng turn độc lập | Chuỗi lý luận ngắn (~130 đến 150 token) rồi phán quyết nhị phân |
+| **Llama Guard 3V** | Meta 2024 | Guardrail VLM 11B độc lập tuần tự | **Black-box compatible** | Thêm một lượt guard cho mỗi vị trí kiểm (xem ghi chú độ trễ bên dưới) | Không ảnh hưởng mô hình chính | ❌ Recall 0.00% trên benchmark VPI web của WARD | ❌ Phi trạng thái | Phân loại 13 danh mục an toàn |
+| **GuardReasoner-VL** | NeurIPS 2025 | Guardrail VLM suy luận CoT tuần tự | **Black-box compatible** | ~208 token suy luận, ~1.85 s/lượt (Chương 6 §Độ trễ) | Không ảnh hưởng mô hình chính | ❌ Recall 0.00% trên benchmark VPI web của WARD | ❌ Phi trạng thái | Suy luận chuỗi tư duy (CoT reasoning) |
+| **SafeGuard-VL** | CVPR 2026 | Guardrail VLM thích ứng chính sách (RLVR) | **Black-box compatible** | CoT biện giải chính sách ~250 đến 400 token, ~2.1 s (Chương 6) | Không ảnh hưởng mô hình chính | ⚠️ Chưa được đánh giá trên VPI (suy luận của tác giả) | ❌ Phi trạng thái | Căn chỉnh theo phần thưởng kiểm chứng |
+| **Q-MLLM** | NDSS 2026 | Bộ mã sách lượng tử hóa (Discrete Bottleneck) | White-box (Encoder architecture) | +2.1% độ trễ suy luận (1.42 s → 1.45 s, Chương 7) | ScienceQA −1.4 điểm; POPE-Adversarial 79.0 → 78.9 (Chương 7) | ⚠️ Chống tốt gradient tấn công trực tiếp, nhưng bị BPDA/STE xuyên thủng (Chương 7) | ❌ Phi trạng thái | Ánh xạ chỉ mục rời rạc (Codebook Index) |
+
+> **Ghi chú độ trễ Llama Guard 3V:** Chương 5 ước tính ~0.65 đến 1.20 s mỗi lượt trên H100 (pre + post ≥ 1.6 s), còn bảng độ trễ ở Chương 6 ghi 120 ms. Hai nguồn đo trên cấu hình và độ dài đầu ra khác nhau; cần đối chiếu bài gốc trước khi trích dẫn một con số duy nhất.
+
+> **Phạm vi:** Cả 8 hệ thống, cộng LlavaGuard và GTM, được trình bày trong chuyên khảo này (tổng cộng 10 công trình). Phần lớn bài báo đánh giá trên benchmark jailbreak nội dung độc hại (FigStep, MM-SafetyBench, ImgJP). Chỉ ARGUS, WARD và GTM nhắm trực tiếp vào chèn lệnh hijack tác vụ (VPI/IPI), nên các cột D3/D4 không so sánh được tuyệt đối giữa các hàng.
 
 ---
 
@@ -102,37 +106,25 @@ $$
 ### 2.5. Tử Huyệt 5: Rào Cản Mô Hình Đóng Thương Mại (Closed-API Incompatibility)
 - **Cơ chế thất bại:**  
   Các phương pháp mạnh mẽ nhất ở tầng biểu diễn (VLGuard, SafePTR, ARGUS, SafeNexus, CARE, Q-MLLM) bắt buộc phải có **quyền truy cập White-box** (can thiệp hidden states, nắn dòng kích hoạt, sửa cấu trúc encoder).  
-  Tuy nhiên, trong môi trường doanh nghiệp thực tế, hơn 85% các tác tử CUA hàng đầu hiện nay được xây dựng trên các API thương mại đóng (Closed-weight Models) như OpenAI GPT-4o, Anthropic Claude 3.5 Sonnet hay Google Gemini 1.5 Pro. Đối với các mô hình này, nhà cung cấp không cấp quyền can thiệp vào tensor ẩn, khiến toàn bộ các giải pháp can thiệp biểu diễn trở nên hoàn toàn bất khả thi trong thực tế triển khai.
+  Tuy nhiên, trong môi trường doanh nghiệp thực tế, phần lớn các tác tử CUA hàng đầu hiện nay được xây dựng trên các API thương mại đóng (Closed-weight Models) như dòng GPT của OpenAI, Claude của Anthropic hay Gemini của Google. Đối với các mô hình này, nhà cung cấp không cấp quyền can thiệp vào tensor ẩn, khiến toàn bộ các giải pháp can thiệp biểu diễn trở nên hoàn toàn bất khả thi trong thực tế triển khai.
 
 ---
 
-## 3. Khung Đo Lường Thực Nghiệm Đa Benchmark
+## 3. Tổng Hợp Số Liệu Thực Nghiệm Theo Từng Chương
 
-Dưới đây là bảng tổng hợp kết quả đo lường thực nghiệm của các mô hình phòng vệ Model-Based trên các bộ benchmark an toàn và tác tử chuẩn mực quốc tế:
+Các hệ thống dùng benchmark, backbone và metric khác nhau, nên **không có một bảng ASR chung** so sánh trực tiếp được. Bảng dưới đây chỉ nhắc lại con số đầu mục mà từng chương đã trích từ bài gốc; mỗi dòng dẫn về chương chứa bảng đầy đủ.
 
-### 3.1. Hiệu Năng Trên MM-SafetyBench & Jailbreak Benchmarks (Mức Độ An Toàn Điểm Tĩnh)
+| Phương Pháp | Benchmark / Backbone | Kết quả chính (theo chương) | Chương |
+|---|---|---|:---:|
+| **VLGuard** | AdvBench, XSTest, FigStep; LLaVA-v1.5-7B/13B, MiniGPT-v2 | ASR vanilla xuống ~0 đến 0.19%; ASR suffix-injection còn 10 đến 13%; helpfulness không giảm | 1 |
+| **SafePTR** | MM-SafetyBench, FigStep, JailbreakV-28K; LLaVA-1.5, MiniGPT-4, DeepSeek-VL2 | ASR trung bình MM-SafetyBench 52.56% → 1.29% (LLaVA-1.5-7B); MME +34.5 | 2 |
+| **ARGUS** | Chèn lệnh gián tiếp ảnh / video / audio; Qwen2-VL, InternVL3.5, Kimi-Audio | Giảm AIA (Attacker Instruction Adherence) xuống gần 0 trong khi giữ UIA; +3 đến 6 ms | 3 |
+| **WARD** | Benchmark VPI web (Popup, Banner...) và WebArena; Qwen-3.5-0.8B/2B | Recall 99.2% đến 100% trên các bộ OOD; ASR 0.00% với agent GPT-4o; FPR ≈ 0.25% | 4 |
+| **Llama Guard 3V / LlavaGuard** | Bộ đánh giá an toàn ảnh theo chính sách | Xem bảng chương 5; Llama Guard 3V có recall 0.00% trên VPI web (Chương 4) | 5 |
+| **GuardReasoner-VL / SafeGuard-VL** | UnsafeBench và các bộ guard đa phương thức | SafeGuard-VL-SFT đạt F1 trung bình 67.0 trên UnsafeBench (Chương 6, Bảng 3) | 6 |
+| **Q-MLLM / GTM** | Jailbreak ảnh (ImgJP, FigStep...), ảnh độc hại | Q-MLLM-7B: DSR trung bình 98.4% (jailbreak), 75.9% (ảnh độc hại); bản NDSS camera-ready báo cáo ~100% jailbreak | 7 |
 
-| Phương Pháp Phòng Vệ | Model Backbone | Attack Success Rate (ASR %) Trước Phòng Vệ | ASR (%) Sau Phòng Vệ | Sụt Giảm Utility (%) |
-|---|---|:---:|:---:|:---:|
-| **Không phòng vệ (Baseline)** | LLaVA-1.5-7B | 68.4% | 68.4% | 0.0% |
-| **VLGuard (SFT)** | LLaVA-1.5-7B | 68.4% | **18.2%** | -3.8% (VQA) |
-| **SafePTR (Prune-then-Restore)** | LLaVA-1.5-7B | 74.2% | **14.6%** | **-0.9%** (MME) |
-| **ARGUS (Activation Steering)** | InstructBLIP-7B | 71.5% | **16.1%** | **-1.2%** (MMBench) |
-| **Q-MLLM (Vector Quantization)** | MiniGPT-4-7B | 82.0% | **8.5%** (White-box gradient) | -4.2% (ImageNet) |
-| **Llama Guard 3 Vision** | Llama-3.1-8B-Vision | 65.0% | **22.4%** | 0.0% (Tác tử riêng) |
-| **GuardReasoner-VL** | Qwen-VL-Chat-7B | 76.8% | **9.8%** | 0.0% (Tác tử riêng) |
-
-### 3.2. Hiệu Năng Trên Web Agent & Computer-Use Benchmarks (Mind2Web / VisualWebArena / VPI-Bench)
-
-| Phương Pháp Phòng Vệ | Nền Tảng Tác Tử (Agent Base) | Indirect Prompt Injection ASR (%) | Clean Task Success Rate (Utility %) | Độ Trễ Trung Bình / Bước (s) |
-|---|---|:---:|:---:|:---:|
-| **Undefended Agent** | GPT-4o | 78.5% | 46.2% | 2.1s |
-| **Prompt Wrapper (AdaShield)** | GPT-4o | 52.3% | 41.0% | 2.3s |
-| **Llama Guard 3 Vision (Sequential)** | GPT-4o | 42.1% | 38.5% | 5.8s (+176%) |
-| **WARD (0.8B Parallel Watcher)** | GPT-4o | **18.4%** | **44.8%** | **2.2s (+4%)** |
-| **TrustSight (Cổng TCB Ngoại Vi + Typed Facts)** | GPT-4o / Qwen2.5-VL | **0.0% (Executed ASR)** | **45.0%** | **2.4s (+14%)** |
-
-> **Nhận định quan trọng:** Các giải pháp Model-Based đơn lẻ (kể cả WARD hay Llama Guard) chỉ có thể **kéo giảm ASR xuống khoảng 15% - 25%**, nhưng **không thể triệt tiêu hoàn toàn về 0.0%**. Lý do là vì bản chất của mạng nơ-ron luôn tồn tại xác suất phân loại sai (False Negatives), và kẻ tấn công chỉ cần 1 lần vượt rào thành công trong chuỗi 20 turns để chiếm quyền điều khiển hệ thống.
+> **Nhận định quan trọng:** Số liệu của từng bài báo là do **chính tác giả bài gốc báo cáo**, trên tập kiểm thử tĩnh và (với WARD) trên tập tấn công do chính nhóm đó xây dựng. Điều này không chứng minh được rằng ASR = 0 trước kẻ tấn công thích ứng. Q-MLLM tự nêu rõ giới hạn trước BPDA/STE (Chương 7), và Gemini của Google DeepMind cũng báo cáo rằng phòng vệ tĩnh suy giảm rõ rệt trước tấn công thích ứng (xem Chương 9). Vì vậy kết luận hợp lý là: các giải pháp Model-Based giảm mạnh ASR trên benchmark hiện có, nhưng chưa có bằng chứng nào cho phép bảo đảm bằng 0 trước kẻ tấn công thích ứng.
 
 ---
 

@@ -127,7 +127,7 @@ $$
 Tập chỉ số các token độc hại $\mathbb{I}_p \subset \{1, 2, \dots, M\}$ với lực lượng $|\mathbb{I}_p| = K$ được xác định thỏa mãn điều kiện:
 
 $$
-\sum_{x \in \mathbb{I}_p} \text{Cosine}\left(v_x^l, s_M^l\right) < \sum_{y \notin \mathbb{I}_p} \text{Cosine}\left(v_y^l, s_M^l\right), \quad \forall v_x^l \in H_{img}^l, \, s_M^l \in H_{safe}^l \qquad (3)
+\text{Cosine}\left(v_x^l, s_M^l\right) \le \text{Cosine}\left(v_y^l, s_M^l\right), \quad \forall x \in \mathbb{I}_p, \; \forall y \in \{1,\dots,M\} \setminus \mathbb{I}_p \qquad (3)
 $$
 
 Nói cách khác, $\mathbb{I}_p$ chứa đúng $K$ token có độ tương đồng Cosine thấp nhất (tương đương khoảng cách ngữ nghĩa $\mathcal{S}$ lớn nhất).
@@ -233,14 +233,14 @@ $$
    BFR thu nhận tensor $\hat{H}_{img}^{n+\Delta_n-1}$ từ nhánh phòng vệ và tensor $H_{img}^{n+\Delta_n-1}$ từ nhánh nguyên bản để tái tạo chuỗi token hoàn chỉnh $SH_{img}^{n+\Delta_n}$:
 
 $$
-SH_{img}^{n+\Delta_n} = \operatorname{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\lbrace (h_i, i) \mid h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\rbrace \qquad (8)
+SH_{img}^{n+\Delta_n} = \operatorname{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\lbrace (h_i, i) \mid h_i = \begin{cases} \mathbf{0}, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\rbrace \qquad (8)
 $$
 
    trong đó $i$ là chỉ số vị trí ban đầu (Positional Index), đảm bảo toàn bộ các vector được sắp xếp lại đúng tọa độ không gian tuyệt đối.
 
 3. **Ý nghĩa vật lý của phương trình (8):**
    - Đối với các token lành tính ($i \in \hat{\mathbb{I}}_p$): Giữ nguyên vector đặc trưng $v_i$ từ nhánh nguyên bản, chứa đầy đủ tương tác ngữ cảnh giàu có.
-   - Đối với các vị trí nhạy cảm ($i \in \mathbb{I}_p$): Được thay thế bằng đặc trưng $\hat{v}_i$ đã được làm sạch và trung hòa khỏi ảnh hưởng của giếng hút chú ý.
+   - Đối với các vị trí nhạy cảm ($i \in \mathbb{I}_p$): Vẫn được trung hòa (vector $\mathbf{0}$), nên không đưa lại chính các token độc hại. **Lưu ý chưa làm rõ:** các token lành tính lấy từ nhánh nguyên bản đã chịu ảnh hưởng của token độc hại trong dải tầng cắt tỉa (nhánh này xử lý chuỗi đầy đủ). Cách bài gốc dung hòa điểm này, cùng cách trung hòa vị trí bị cắt tỉa, cần đối chiếu với bài báo (arXiv:2507.01513) và mã nguồn `BT-C/SafePTR`.
 
 4. **Đồng bộ hóa phương thức văn bản:**  
    Module BFR thực hiện quy trình tương tự cho dòng token chỉ thị văn bản để thu được chuỗi phục hồi $SH_{ins}^{n+\Delta_n}$.
@@ -362,8 +362,7 @@ class SafePTRInferenceEngine(nn.Module):
         SH_img = torch.zeros((batch_size, M, hidden_dim), device=H_img.device, dtype=H_img.dtype)
         # Gán token lành tính từ nhánh nguyên bản (bảo toàn ngữ cảnh chi tiết)
         SH_img[:, mask_benign_img, :] = H_img_orig[:, mask_benign_img, :]
-        # Gán vị trí độc hại bằng biểu diễn trung hòa hoặc đã làm sạch từ nhánh phòng vệ
-        # Ở đây ta có thể zero-out hoặc nạp vector chiếu an toàn
+        # Các vị trí độc hại (đã bị cắt tỉa) được trung hòa bằng vector 0
         SH_img[:, ~mask_benign_img, :] = 0.0
 
         # Tái cấu trúc chuỗi văn bản kích thước đầy đủ T

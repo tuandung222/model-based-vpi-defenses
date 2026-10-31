@@ -205,8 +205,10 @@ Nhóm nghiên cứu tại Meta đã thực hiện kiểm thử hộp trắng (Wh
 1.  **PGD (Projected Gradient Descent):** Tối ưu hóa gradient trực tiếp trên không gian điểm ảnh liên tục của $I$ với ngân sách nhiễu $l_\infty \in \{8/255, 128/255, 255/255\}$, bước lặp $\alpha=0.1$, số vòng lặp tối đa 100 nhằm cực đại hóa logit của nhãn `safe`:
 
 $$
-I^{(t+1)} = \Pi_{I + \mathcal{S}} \left( I^{(t)} + \alpha \cdot \text{sign}\left(\nabla_I \mathcal{L}_{\text{NLL}}(y=\text{'safe'} \mid I^{(t)}, T) \right) \right)
+I^{(t+1)} = \Pi_{I + \mathcal{S}} \left( I^{(t)} - \alpha \cdot \text{sign}\left(\nabla_I \mathcal{L}_{\text{NLL}}(y=\text{'safe'} \mid I^{(t)}, T) \right) \right)
 $$
+
+Trong đó $\mathcal{S}=\{\delta:\|\delta\|_\infty\le\epsilon\}$ là tập nhiễu cho phép, $\Pi$ là phép chiếu lên tập này, và kẻ tấn công **cực tiểu hóa** NLL của nhãn "safe" (dấu trừ: giảm dần theo gradient) để ép bộ phân loại trả lời "safe".
 
 2.  **GCG (Greedy Coordinate Gradient):** Tối ưu hóa chuỗi hậu tố văn bản rời rạc chèn vào prompt hoặc response.
 

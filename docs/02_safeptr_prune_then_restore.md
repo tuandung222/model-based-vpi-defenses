@@ -240,7 +240,7 @@ sequenceDiagram
     end
     DefBranch->>BFR: Đặc trưng đã thanh lọc
     OrigBranch->>BFR: Đặc trưng nguyên bản
-    BFR->>BFR: Tái cấu trúc: Giữ v_i từ nhánh chuẩn, thanh lọc v_i từ nhánh phòng vệ
+    BFR->>BFR: Tái cấu trúc: lấy v_i lành tính từ nhánh nguyên bản, giữ vị trí bị cắt tỉa ở trạng thái trung hòa (0)
     BFR->>Deep: Chuỗi token phục hồi hoàn chỉnh SH^(n+Delta_n)
     Deep->>Out: Tích hợp ngữ nghĩa cấp cao & suy luận
     Out-->>Input: Sinh token phản hồi an toàn & chuẩn xác
@@ -276,7 +276,7 @@ Với tỷ lệ cắt tỉa định trước $k \in (0, 1)$ (thực nghiệm ch�
 Tập chỉ số các token độc hại $\mathbb{I}_p \subset \{1, 2, \dots, M\}$ với $|\mathbb{I}_p| = K$ thỏa mãn điều kiện tối thiểu hóa độ tương đồng Cosine:
 
 $$
-\sum_{x \in \mathbb{I}_p} \text{Cosine}(v_x^l, s_M^l) < \sum_{y \notin \mathbb{I}_p} \text{Cosine}(v_y^l, s_M^l), \quad \forall v_x^l \in H_{img}^l, \, s_M^l \in H_{safe}^l \qquad (3)
+\text{Cosine}(v_x^l, s_M^l) \le \text{Cosine}(v_y^l, s_M^l), \quad \forall x \in \mathbb{I}_p, \; \forall y \in \{1,\dots,M\} \setminus \mathbb{I}_p \qquad (1)
 $$
 
 Toán tử cắt tỉa $\text{HTP}(\cdot)$ loại bỏ hoàn toàn các token nằm trong tập chỉ số độc hại $\mathbb{I}_p$:
@@ -316,11 +316,11 @@ $$
 Toán tử khôi phục đặc trưng lành tính $\text{BFR}(\cdot)$ kết hợp thông tin giữa nhánh phòng vệ $\hat{H}_{img}^{n+\Delta_n-1}$ và nhánh nguyên bản $H_{img}^{n+\Delta_n-1}$:
 
 $$
-SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\lbrace (h_i, i) \;\middle|\; h_i = \begin{cases} \hat{v}_i, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\rbrace \qquad (5)
+SH_{img}^{n+\Delta_n} = \text{BFR}\left(\hat{H}_{img}^{n+\Delta_n-1}, H_{img}^{n+\Delta_n-1}\right) = \left\lbrace (h_i, i) \;\middle|\; h_i = \begin{cases} \mathbf{0}, & i \in \mathbb{I}_p \\ v_i, & i \in \hat{\mathbb{I}}_p \end{cases} \right\rbrace \qquad (3)
 $$
 
 > [!NOTE]
-> Trong phương trình (5), các token tại vị trí an toàn $i \in \hat{\mathbb{I}}_p$ được giữ nguyên trạng thái biểu diễn giàu ngữ cảnh $v_i$, trong khi các vị trí nhạy cảm $i \in \mathbb{I}_p$ được thay thế bằng trạng thái đã được thanh lọc $\hat{v}_i$. Quá trình này được tiến hành tương tự cho chuỗi token chỉ thị để tạo ra $SH_{ins}^{n+\Delta_n}$.
+> Trong phương trình (3), các token lành tính $i \in \hat{\mathbb{I}}_p$ được khôi phục từ **nhánh nguyên bản** với trạng thái biểu diễn giàu ngữ cảnh $v_i$ (nhánh phòng vệ không giữ trạng thái cho các vị trí đã bị cắt tỉa), trong khi các vị trí nhạy cảm $i \in \mathbb{I}_p$ vẫn được trung hòa (vector $\mathbf{0}$, khớp với mã minh họa bên dưới). **Lưu ý chưa làm rõ:** token lành tính lấy từ nhánh nguyên bản đã chịu ảnh hưởng của token độc hại trong dải tầng cắt tỉa; cách bài gốc dung hòa điểm này và cách trung hòa vị trí bị cắt tỉa cần đối chiếu với bài báo (arXiv:2507.01513) và mã nguồn công khai `BT-C/SafePTR`. Quá trình này được tiến hành tương tự cho chuỗi token chỉ thị để tạo ra $SH_{ins}^{n+\Delta_n}$.
 
 Sau khi khôi phục, toàn bộ chuỗi token đầy đủ được đưa vào tầng $l = n + \Delta_n$:
 
@@ -411,7 +411,7 @@ def safeptr_forward_step(model, input_ids, pixel_values, safe_instruction_ids,
     SH_img = torch.zeros_like(H_img_orig)
     # Gán các token lành tính từ nhánh nguyên bản
     SH_img[:, mask_img, :] = H_img_orig[:, mask_img, :]
-    # Gán các token tại vị trí nhạy cảm bằng giá trị đã làm sạch (hoặc giữ từ nhánh pruned)
+    # Các vị trí nhạy cảm (đã bị cắt tỉa) được trung hòa bằng vector 0
     SH_img[:, ~mask_img, :] = H_img_orig[:, ~mask_img, :] * 0.0 # Hoặc trung hòa vector
     
     SH_ins = torch.zeros_like(H_ins_orig)

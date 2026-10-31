@@ -267,7 +267,7 @@ flowchart TD
     end
 
     subgraph Strat2["Chiến Lược 2: Mixed Fine-Tuning"]
-        RawVLMData["Tập Dữ Liệu Tinh Chỉnh Gốc (558k mẫu LLaVA Stage 2)"]
+        RawVLMData["Tập Dữ Liệu Tinh Chỉnh Gốc (~665k mẫu LLaVA-1.5 Stage 2 (llava_v1_5_mix665k))"]
         VLGuardData["Tập VLGuard Train (2k mẫu - Chiếm 0.3%)"]
         RawVLMData & VLGuardData --> MixData["Trộn Trực Tiếp Vào Một Tập Huấn Luyện Duy Nhất"]
         MixData --> FullTrain["Huấn Luyện Tinh Chỉnh Tiêu Chuẩn Từ Đầu"]
